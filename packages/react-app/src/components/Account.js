@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ethers } from "ethers";
+import { RelayProvider } from '@opengsn/gsn'
 import BurnerProvider from 'burner-provider';
 import Web3Modal from "web3modal";
 import { Balance, Address } from "."
@@ -7,6 +8,15 @@ import { usePoller } from "../hooks"
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { Button, Typography } from 'antd';
 const { Text } = Typography;
+
+const relayHubAddress = require('../build/gsn/RelayHub.json').address
+const stakeManagerAddress = require('../build/gsn/StakeManager.json').address
+const paymasterAddress = require('../build/gsn/Paymaster.json').address
+const gsnConfig = {
+  relayHubAddress,
+  stakeManagerAddress,
+  paymasterAddress
+}
 
 const INFURA_ID = "2717afb6bf164045b5d5468031b93f87"  // MY INFURA_ID, SWAP IN YOURS!
 
@@ -27,13 +37,16 @@ export default function Account(props) {
 
   const createBurnerIfNoAddress = () => {
     if (!props.injectedProvider && props.localProvider){
+      let burnerProvider
       if(props.localProvider.connection && props.localProvider.connection.url){
-        props.setInjectedProvider(new ethers.providers.Web3Provider(new BurnerProvider(props.localProvider.connection.url)))
+        burnerProvider = new BurnerProvider(props.localProvider.connection.url)
       }else if( props.localProvider._network && props.localProvider._network.name ){
-        props.setInjectedProvider(new ethers.providers.Web3Provider(new BurnerProvider("https://"+props.localProvider._network.name+".infura.io/v3/"+INFURA_ID)))
+        burnerProvider = new BurnerProvider("https://"+props.localProvider._network.name+".infura.io/v3/"+INFURA_ID)
       }else{
-        props.setInjectedProvider(new ethers.providers.Web3Provider(new BurnerProvider("https://mainnet.infura.io/v3/"+INFURA_ID)))
+        burnerProvider = new BurnerProvider("https://mainnet.infura.io/v3/"+INFURA_ID)
       }
+      const gsnProvider = new RelayProvider(burnerProvider, gsnConfig)
+      props.setInjectedProvider(new ethers.providers.Web3Provider(gsnProvider))
     }else{
       pollInjectedProvider()
     }

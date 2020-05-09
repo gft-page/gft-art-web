@@ -1,10 +1,11 @@
 pragma solidity >=0.6.0 <0.7.0;
 
+import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
 import "@nomiclabs/buidler/console.sol";
 
-contract SmartContractWallet {
+contract SmartContractWallet is BaseRelayRecipient {
 
-  string public title = "📄 Smoort Contract Wallet";
+  string public title = "📄 Smart Contract Wallet";
   address public owner;
 
   constructor() public {
@@ -24,10 +25,14 @@ contract SmartContractWallet {
 
   function updateOwner(address newOwner) public {
     //require(msg.sender == owner, "SmartContractWallet::updateOwner NOT THE OWNER!");
-    console.log(msg.sender,"updates owner to",newOwner);
+    console.log(_msgSender(),msg.sender,"updates owner to",newOwner);
     owner = newOwner;
-    emit UpdateOwner(msg.sender,owner);
+    emit UpdateOwner(_msgSender(),owner);
   }
   event UpdateOwner(address oldOwner, address newOwner);
+
+  function setTrustedForwarder(address _trustedForwarder) public {
+    trustedForwarder = _trustedForwarder;
+  }
 
 }
