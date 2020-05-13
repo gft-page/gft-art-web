@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import Blockies from 'react-blockies';
 import { Card, Row, Col, List, Typography, Slider, Divider, Button } from 'antd';
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import { useContractLoader, useContractReader, useEventListener, useBlockNumber, useBalance } from "./hooks"
+import { useContractLoader, useCustomContractLoader, useContractReader, useCustomContractReader, useEventListener, useBlockNumber, useBalance } from "./hooks"
 import { Transactor } from "./helpers"
 import { Address, Balance, Timeline, Dollars } from "./components"
 
@@ -21,27 +21,29 @@ export default function SmartContractWallet(props) {
   const readContracts = useContractLoader(props.localProvider);
   const writeContracts = useContractLoader(props.injectedProvider);
 
-  const owner = useContractReader(readContracts,contractName,"owner",1777);
+  const tokenAddress = useContractReader(readContracts,contractName,"tokenAddress",1777);
+  const priceOracle = useContractReader(readContracts,contractName,"priceOracle",1777);
+  const priceOracleContract = useCustomContractLoader(props.localProvider, "ExamplePriceOracle", priceOracle)
+  const price = useCustomContractReader(priceOracleContract,"getTokenPrice",1777)
+  const stability = useContractReader(readContracts,contractName,"stability",null,1777)
 
   const contractAddress = readContracts?readContracts[contractName].address:""
   const contractBalance = useBalance(contractAddress,props.localProvider)
 
-  const myMode = useContractReader(readContracts,contractName,"mode",null,1777,(unformatted)=>{
-    if(unformatted){
-      return ethers.utils.parseBytes32String(unformatted)
-    }
-    return unformatted
-  })
-
-  const [ stabilityPreference, setStabilityPreference ] = useState()
-  const ourStabilityPreference = useContractReader(readContracts,contractName,"stabilityPreference",null,1777,null,()=>{
-    if(ourStabilityPreference != stabilityPreference){
-      setStabilityPreference(ourStabilityPreference)
-    }
+  const mode = useContractReader(readContracts,contractName,"mode",null,1777,(unformatted)=>{
+    return unformatted?ethers.utils.parseBytes32String(unformatted):unformatted
   })
 
   const myBalance = useContractReader(readContracts,contractName,"balances",[props.address],1777)
+  const myInfluence = useContractReader(readContracts,contractName,"influence",[props.address],1777)
+
+  const [ stabilityPreference, setStabilityPreference ] = useState()
+  const myPreference = useContractReader(readContracts,contractName,"preferences",[props.address],1777,null,(newPreference)=>{
+    setStabilityPreference(newPreference)
+  })
+
   const isOverThreshold = useContractReader(readContracts,contractName,"isOverThreshold",2777)
+  const stabilityTarget = useContractReader(readContracts,contractName,"stabilityTarget",3777)
 
   let display = []
 
@@ -51,36 +53,44 @@ export default function SmartContractWallet(props) {
 
   let stabilityPreferenceDisplay = (
     <span>
-      {ourStabilityPreference}%
+      {stabilityPreference}%
     </span>
   )
 
   const stabilityUpdated = typeof stabilityPreference != "undefined"
 
-  if( stabilityUpdated && ourStabilityPreference != stabilityPreference){
+  if( myPreference && myPreference != stabilityPreference){
     stabilityPreferenceDisplay = (
       <span>
-        {ourStabilityPreference}% => {stabilityPreference}%
+        {myPreference}% => {stabilityPreference}%
       </span>
     )
   }
 
   if(readContracts && readContracts[contractName]){
     display.push(
-      <Row key="ownerRow">
-        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Owner:</Col>
+      <Row key="tokenRow">
+        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Token Address:</Col>
         <Col span={16}>
-          <Address value={owner}/>
+          <Address value={tokenAddress}/>
+        </Col>
+      </Row>
+    )
+    display.push(
+      <Row key="priceRow">
+        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Price Oracle:</Col>
+        <Col span={16}>
+        <Address value={priceOracle}/> (${price?parseFloat(ethers.utils.formatEther(price)).toFixed(2):0})
         </Col>
       </Row>
     )
     display.push(
       <Row key="modeRow">
         <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Mode:</Col>
-        <Col span={12}>
-          <Title level={3} code>{myMode}</Title>
+        <Col span={8}>
+          <Title level={3} code>{mode}</Title>
         </Col>
-        <Col span={4}>
+        <Col span={8}>
           <Button shape="round" type={isOverThreshold?"primary":"dashed"} disabled={!isOverThreshold} onClick={()=>{
             tx(
               writeContracts['SmartContractWallet'].updateMode(
@@ -94,13 +104,24 @@ export default function SmartContractWallet(props) {
       </Row>
     )
 
-    let percentContribution = Math.round((parseFloat(myBalance) / parseFloat(contractBalance)) * 100);
+    display.push(
+      <Row key="stabilityRow">
+        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Stability:</Col>
+        <Col span={8}>
+          <Title level={3} code>{stability?stability:0}%</Title>
+        </Col>
+        <Col span={8}>
+          <Title level={3} code>🎯 {stabilityTarget?stabilityTarget:0}%</Title>
+        </Col>
+
+      </Row>
+    )
 
     display.push(
       <Row key="dividerThing1">
         <Col span={24}>
           <Divider orientation="left" plain>
-            Your Contribution ({percentContribution?percentContribution:"0"}%)
+            Your Contribution ({myInfluence?myInfluence.toNumber():0}%)
           </Divider>
         </Col>
       </Row>
@@ -123,7 +144,7 @@ export default function SmartContractWallet(props) {
       <Row key="dividerThing2">
         <Col span={24}>
           <Divider orientation="left" plain>
-            Stability Preference ({stabilityPreferenceDisplay})
+            Your Stability Preference ({stabilityPreferenceDisplay})
           </Divider>
         </Col>
       </Row>
@@ -131,7 +152,7 @@ export default function SmartContractWallet(props) {
     display.push(
       <Row key="myStability">
         <Col span={24}>
-          <Slider value={stabilityUpdated?stabilityPreference:ourStabilityPreference} tipFormatter={formatter}
+          <Slider value={stabilityUpdated?stabilityPreference:"0"} tipFormatter={formatter}
             onAfterChange={async (value)=>{
               console.log("MAKE TRANSACTION TO SET stabilityPreference to ",stabilityPreference)
               let txResult = await tx(
@@ -167,7 +188,7 @@ export default function SmartContractWallet(props) {
         )}
         size="large"
         style={{ width: 550, marginTop: 25 }}
-        loading={!owner}
+        loading={!tokenAddress}
         actions={[
             <div onClick={()=>{
               tx(
@@ -201,15 +222,31 @@ export default function SmartContractWallet(props) {
           localProvider={props.localProvider}
           address={props.address}
           chainIsUp={typeof localBlockNumber != "undefined"}
-          hasOwner={typeof owner != "undefined"}
+          hasOwner={false}
 
           hasEther={parseFloat(localBalance)>0}
           contractAddress={contractAddress}
           contractHasEther={contractBalance>0}
-          amOwnerOfContract={owner===props.address}
+          amOwnerOfContract={false}
         />
+
       </div>
     </div>
   );
 
 }
+
+
+/*
+<Button shape="round" onClick={async ()=>{
+  console.log("CALLING updateStabilityTarget")
+  let result = await tx(
+    writeContracts['SmartContractWallet'].updateStabilityTarget(
+      { gasLimit: ethers.utils.hexlify(120000) }
+    )
+  )
+  console.log("RESULT OF UPDATE",result)
+}}>
+  🛑
+</Button>
+*/
