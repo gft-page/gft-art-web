@@ -7,7 +7,7 @@ export default function Header(props) {
       window.open("https://github.com/austintgriffith/scaffold-eth");
     }}>
       <PageHeader
-        title="🤖 Smart Contract Wallet"
+        title="⚖️ Auto-Balance Stability DAO"
         subTitle=""
         style={{cursor:'pointer'}}
       />
