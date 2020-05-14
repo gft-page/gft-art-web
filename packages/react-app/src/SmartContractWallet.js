@@ -18,10 +18,14 @@ export default function SmartContractWallet(props) {
   const readContracts = useContractLoader(props.localProvider);
   const writeContracts = useContractLoader(props.injectedProvider);
 
+  const limit = useContractReader(readContracts,contractName,"limit",1777);
+  const friends = useContractReader(readContracts,contractName,"friends",[props.address],1777);
+  const friendUpdates = useEventListener(readContracts,contractName,"UpdateFriend",props.localProvider,1);
   const owner = useContractReader(readContracts,contractName,"owner",1777);
 
   const contractAddress = readContracts?readContracts[contractName].address:""
   const contractBalance = useBalance(contractAddress,props.localProvider)
+
 
   let cardActions = []
   if(props.address==owner){
@@ -64,6 +68,7 @@ export default function SmartContractWallet(props) {
             }}/>
           </Col>
         </Row>
+        
       </div>
     )
   }
@@ -103,11 +108,14 @@ export default function SmartContractWallet(props) {
           address={props.address}
           chainIsUp={typeof localBlockNumber != "undefined"}
           hasOwner={typeof owner != "undefined"}
-          isNotSmoort={ false }
           hasEther={parseFloat(localBalance)>0}
           contractAddress={contractAddress}
           contractHasEther={parseFloat(contractBalance)>0}
           amOwnerOfContract={owner===props.address}
+          hasLimit={limit&&limit.toNumber()>0}
+          hasFriends={typeof friends != "undefined"}
+          hasFriendEvents={typeof friendUpdates != "undefined" && friendUpdates.length > 0}
+          hasRecovery={typeof recoveryAddress != "undefined" && typeof currentRecoveryAddress != "undefined" }
         />
       </div>
     </div>
