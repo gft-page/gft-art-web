@@ -43,8 +43,14 @@ contract SmartContractWallet {
   event UpdateFriend(address sender, address friend, bool isFriend);
 
   uint public timeToRecover = 0;
-  address public recoveryAccount = 0x34aA3F359A9D614239015126635CE7732c18fDF3;
   uint constant public timeDelay = 120; //seconds
+  address public recoveryAccount;
+
+  function setRecoveryAccount(address _recoveryAccount) public {
+    require(isOwner(msg.sender),"NOT THE OWNER!");
+    console.log(msg.sender,"set the recoveryAccount to",recoveryAccount);
+    recoveryAccount = _recoveryAccount;
+  }
 
   function friendRecover() public {
     require(friends[msg.sender],"NOT A FRIEND");

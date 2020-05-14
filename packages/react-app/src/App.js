@@ -39,6 +39,7 @@ function App() {
           address={address}
           injectedProvider={injectedProvider}
           localProvider={localProvider}
+          ensProvider={mainnetProvider}
           price={price}
           gasPrice={gasPrice}
         />
