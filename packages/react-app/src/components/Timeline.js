@@ -35,7 +35,7 @@ export default function TimelineDisplay(props) {
 
       <Timeline.Item dot={"📓"}>
         <Text>
-          Follow along with <a target="_blank" rel="noopener noreferrer" href="#">this guide</a> for more information.
+          Follow along with <a target="_blank" rel="noopener noreferrer" href="https://medium.com/@austin_48503/programming-autonomous-money-300bacec3a4f">this guide</a> for more information.
         </Text>
       </Timeline.Item>
 
