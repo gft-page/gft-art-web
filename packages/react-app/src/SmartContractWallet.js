@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ethers } from "ethers";
-import Blockies from 'react-blockies';
-import { Card, Row, Col, List } from 'antd';
-import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import { useContractLoader, useContractReader, useEventListener, useBlockNumber, useBalance } from "./hooks"
+
+import { Card, Row, Col, List, Input, Button } from 'antd';
+import { DownloadOutlined, UploadOutlined, CloseCircleOutlined, CheckCircleOutlined, RocketOutlined, SafetyOutlined } from '@ant-design/icons';
+import { useContractLoader, useContractReader, useEventListener, useBlockNumber, useBalance, useTimestamp } from "./hooks"
 import { Transactor } from "./helpers"
-import { Address, Balance, Timeline } from "./components"
+import { Address, Balance, Timeline, Blockie } from "./components"
 const { Meta } = Card;
 
 const contractName = "SmartContractWallet"
@@ -17,37 +17,142 @@ export default function SmartContractWallet(props) {
   const localBlockNumber = useBlockNumber(props.localProvider)
   const localBalance = useBalance(props.address,props.localProvider)
 
+
   const readContracts = useContractLoader(props.localProvider);
   const writeContracts = useContractLoader(props.injectedProvider);
 
-  const title = useContractReader(readContracts,contractName,"title",1777);
+  //const title = useContractReader(readContracts,contractName,"title",1777);
   const owner = useContractReader(readContracts,contractName,"owner",1777);
 
-  const ownerUpdates = useEventListener(readContracts,contractName,"UpdateOwner",props.localProvider,1);//set that last number to the block the contract is deployed (this needs to be automatic in the contract loader!?!)
+  const localTimestamp = useTimestamp(props.localProvider)
+  const friendUpdates = useEventListener(readContracts,contractName,"UpdateFriend",props.localProvider,1);//set that last number to the block the contract is deployed (this needs to be automatic in the contract loader!?!)
+  const isFriend = useContractReader(readContracts,contractName,"friends",[props.address],1777);
+  const timeToRecover = useContractReader(readContracts,contractName,"timeToRecover",1777);
 
   const contractAddress = readContracts?readContracts[contractName].address:""
   const contractBalance = useBalance(contractAddress,props.localProvider)
 
-  let displayAddress, displayOwner
+  let display
+  const [ friendAddress, setFriendAddress ] = useState("")
 
-  if(readContracts && readContracts[contractName]){
-    displayAddress = (
-      <Row>
-        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Deployed to:</Col>
-        <Col span={16}><Address value={contractAddress} /></Col>
+  const updateOwner = (newOwner)=>{
+    tx(
+       writeContracts['SmartContractWallet'].updateOwner(newOwner,
+         { gasLimit: ethers.utils.hexlify(40000) }
+       )
+    )
+  }
+
+  const updateFriend = (isFriend)=>{
+    return ()=>{
+      tx(
+         writeContracts['SmartContractWallet'].updateFriend(friendAddress, isFriend,
+           { gasLimit: ethers.utils.hexlify(80000) }
+         )
+      )
+      setFriendAddress("")
+    }
+  }
+
+  let ownerDisplay = ""
+  let cardActions = []
+  if(props.address==owner){
+    ownerDisplay = (
+      <Row align="middle" gutter={4}>
+        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Friend:</Col>
+        <Col span={10}>
+          <Input
+            placeholder="address"
+            prefix={<Blockie address={friendAddress} size={8} scale={3}/>}
+            value={friendAddress}
+            onChange={(e)=>{
+              setFriendAddress(e.target.value)
+            }}
+          />
+        </Col>
+        <Col span={6}>
+          <Button style={{marginLeft:4}} onClick={updateFriend(false)} shape="circle" icon={<CloseCircleOutlined />} />
+          <Button style={{marginLeft:4}} onClick={updateFriend(true)} shape="circle" icon={<CheckCircleOutlined />} />
+        </Col>
       </Row>
     )
-    displayOwner = (
-      <Row>
-        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Owner:</Col>
-        <Col span={16}><Address value={owner} onChange={(newOwner)=>{
+    cardActions = [
+        <div onClick={()=>{
           tx(
-             writeContracts['SmartContractWallet'].updateOwner(newOwner,
-               { gasLimit: ethers.utils.hexlify(40000) }
-             )
+            writeContracts['SmartContractWallet'].withdraw(
+              { gasLimit: ethers.utils.hexlify(40000) }
+            )
           )
-        }}/></Col>
+        }}>
+          <UploadOutlined /> Withdraw
+        </div>,
+        <div onClick={()=>{
+          tx({
+            to: contractAddress,
+            value: ethers.utils.parseEther('0.001'),
+          })
+        }}>
+          <DownloadOutlined /> Deposit
+        </div>,
+    ]
+  }
+
+  if(isFriend){
+    let recoverDisplay = (
+      <Button style={{marginLeft:4}} onClick={()=>{
+        tx(
+           writeContracts['SmartContractWallet'].friendRecover(
+             { gasLimit: ethers.utils.hexlify(80000) }
+           )
+        )
+      }} shape="circle" icon={<SafetyOutlined />}/>
+    )
+
+    if(localTimestamp&&timeToRecover.toNumber()>0){
+      const secondsLeft = timeToRecover.sub(localTimestamp).toNumber()
+      if(secondsLeft>0){
+        recoverDisplay = (
+          <div>
+            {secondsLeft+"s"}
+          </div>
+        )
+      }else{
+        recoverDisplay = (
+          <Button style={{marginLeft:4}} onClick={()=>{
+            tx(
+               writeContracts['SmartContractWallet'].recover(
+                 { gasLimit: ethers.utils.hexlify(80000) }
+               )
+            )
+          }} shape="circle" icon={<RocketOutlined />}/>
+        )
+      }
+    }
+
+    ownerDisplay = (
+      <Row align="middle" gutter={4}>
+        <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Recovery:</Col>
+        <Col span={16}>
+          {recoverDisplay}
+        </Col>
       </Row>
+    )
+  }
+
+  if(readContracts && readContracts[contractName]){
+    display = (
+      <div>
+        <Row align="middle" gutter={4}>
+          <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Deployed to:</Col>
+          <Col span={16}><Address value={contractAddress} /></Col>
+        </Row>
+        <Row align="middle" gutter={4}>
+          <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Owner:</Col>
+          <Col span={16}><Address value={owner} onChange={updateOwner}/>
+          </Col>
+        </Row>
+        {ownerDisplay}
+      </div>
     )
   }
 
@@ -56,8 +161,8 @@ export default function SmartContractWallet(props) {
       <Card
         title={(
           <div>
-            {title}
-            <div style={{float:'right',opacity:title?0.77:0.33}}>
+            📄 Smart Contract Wallet
+            <div style={{float:'right',opacity:owner?0.77:0.33}}>
               <Balance
                 address={contractAddress}
                 provider={props.localProvider}
@@ -68,43 +173,24 @@ export default function SmartContractWallet(props) {
         )}
         size="large"
         style={{ width: 550, marginTop: 25 }}
-        loading={!title}
-        actions={[
-            <div onClick={()=>{
-              tx(
-                writeContracts['SmartContractWallet'].withdraw(
-                  { gasLimit: ethers.utils.hexlify(40000) }
-                )
-              )
-            }}>
-              <UploadOutlined /> Withdraw
-            </div>,
-            <div onClick={()=>{
-              tx({
-                to: contractAddress,
-                value: ethers.utils.parseEther('0.001'),
-              })
-            }}>
-              <DownloadOutlined /> Deposit
-            </div>,
-        ]}>
+        loading={!owner}
+        actions={cardActions}>
           <Meta
             description={(
               <div>
-                {displayAddress}
-                {displayOwner}
+                {display}
               </div>
             )}
           />
       </Card>
       <List
         style={{ width: 550, marginTop: 25}}
-        header={<div><b>UpdateOwner</b> events</div>}
+        header={<div><b>Friend Updates</b></div>}
         bordered
-        dataSource={ownerUpdates}
+        dataSource={friendUpdates}
         renderItem={item => (
           <List.Item style={{ fontSize:22 }}>
-            <Blockies seed={item.oldOwner.toLowerCase()} size={8} scale={2}/> transferred ownership to <Blockies seed={item.newOwner.toLowerCase()} size={8} scale={2}/>
+            <Address value={item.friend}/> {item.isFriend?"✅":"❌"}
           </List.Item>
         )}
       />
@@ -115,7 +201,7 @@ export default function SmartContractWallet(props) {
           address={props.address}
           chainIsUp={typeof localBlockNumber != "undefined"}
           hasOwner={typeof owner != "undefined"}
-          isNotSmoort={ title && ( title.indexOf("Smoort") < 0 ) }
+          isNotSmoort={ false }
           hasEther={parseFloat(localBalance)>0}
           contractAddress={contractAddress}
           contractHasEther={parseFloat(contractBalance)>0}

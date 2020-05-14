@@ -34,22 +34,9 @@ export default function TimelineDisplay(props) {
         </Text>
       </Timeline.Item>
 
-
-      <Timeline.Item dot={"🤡"}>
-        <Text delete={props.isNotSmoort}>
-          Fix error in <Text code>SmartContractWallet.sol</Text> then: <Text strong>yarn run deploy</Text>
-        </Text>
-      </Timeline.Item>
-
       <Timeline.Item dot={<SendOutlined style={{ fontSize: '16px' }} />} color={props.hasEther?"green":"blue"}>
         <Text delete={props.hasEther}>
           Send test ether to your <Blockies seed={(props.address?props.address:"").toLowerCase()} size={8} scale={2}/> address using (bottom left) faucet
-        </Text>
-      </Timeline.Item>
-
-      <Timeline.Item dot={<DownloadOutlined style={{ fontSize: '16px' }} />} color={props.contractHasEther?"green":"blue"}>
-        <Text delete={props.contractHasEther}>
-          Deposit some funds into your <Blockies seed={(props.contractAddress?props.contractAddress:"").toLowerCase()} size={8} scale={2}/> smart contract wallet
         </Text>
       </Timeline.Item>
 
@@ -59,9 +46,9 @@ export default function TimelineDisplay(props) {
         </Text>
       </Timeline.Item>
 
-      <Timeline.Item dot={"☢️"}>
-        <Text>
-          Yikes, anyone can take ownership of <Text code>SmartContractWallet.sol</Text>
+      <Timeline.Item dot={<DownloadOutlined style={{ fontSize: '16px' }} />} color={props.contractHasEther?"green":"blue"}>
+        <Text delete={props.contractHasEther}>
+          Deposit some funds into your <Blockies seed={(props.contractAddress?props.contractAddress:"").toLowerCase()} size={8} scale={2}/> smart contract wallet
         </Text>
       </Timeline.Item>
 
