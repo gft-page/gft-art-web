@@ -39,17 +39,17 @@ export default function TimelineDisplay(props) {
         </Text>
       </Timeline.Item>
 
+      <Timeline.Item dot={<SendOutlined style={{ fontSize: '16px' }} />} color={props.hasEther?"green":"blue"}>
+        <Text delete={props.hasEther}>
+          Send test ether to your <Blockies seed={(props.address?props.address:"").toLowerCase()} size={8} scale={2}/> address using (bottom left) faucet
+        </Text>
+      </Timeline.Item>
+
       <Timeline.Item dot={<EditOutlined style={{ fontSize: '16px' }} />} color={props.amOwnerOfContract?"green":"blue"}>
         <Text delete={props.amOwnerOfContract}>
           Set <b>owner</b> of your <Blockies seed={(props.contractAddress?props.contractAddress:"").toLowerCase()} size={8} scale={2}/> smart contract wallet to your <Blockies seed={(props.address?props.address:"").toLowerCase()} size={8} scale={2}/> address
           <br/>
           Do this by editing the <Text code>SmartContractWallet.args</Text> file in <Text code>packages/buidler/contracts</Text>. Then redeploy your contract.
-        </Text>
-      </Timeline.Item>
-
-      <Timeline.Item dot={<SendOutlined style={{ fontSize: '16px' }} />} color={props.hasEther?"green":"blue"}>
-        <Text delete={props.hasEther}>
-          Send test ether to your <Blockies seed={(props.address?props.address:"").toLowerCase()} size={8} scale={2}/> address using (bottom left) faucet
         </Text>
       </Timeline.Item>
 
