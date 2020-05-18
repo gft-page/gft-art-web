@@ -4,21 +4,23 @@ import Blockies from 'react-blockies';
 import { Card, Row, Col, List } from 'antd';
 import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { useContractLoader, useContractReader, useEventListener, useBlockNumber, useBalance } from "./hooks"
-import { Transactor } from "./helpers"
+import { Transactor, GSN } from "./helpers"
 import { Address, Balance, Timeline } from "./components"
+
 const { Meta } = Card;
 
 const contractName = "SmartContractWallet"
 
 export default function SmartContractWallet(props) {
 
-  const tx = Transactor(props.injectedProvider,props.gasPrice)
-
   const localBlockNumber = useBlockNumber(props.localProvider)
   const localBalance = useBalance(props.address,props.localProvider)
 
   const readContracts = useContractLoader(props.localProvider);
   const writeContracts = useContractLoader(props.injectedProvider);
+
+  const metatxProvider = GSN(props.localProvider)
+  const metatxContracts = useContractLoader(metatxProvider);
 
   const title = useContractReader(readContracts,contractName,"title",1777);
   const owner = useContractReader(readContracts,contractName,"owner",1777);
@@ -27,6 +29,8 @@ export default function SmartContractWallet(props) {
 
   const contractAddress = readContracts?readContracts[contractName].address:""
   const contractBalance = useBalance(contractAddress,props.localProvider)
+
+  const tx = Transactor(props.injectedProvider,props.gasPrice)
 
   let displayAddress, displayOwner
 
@@ -41,11 +45,18 @@ export default function SmartContractWallet(props) {
       <Row>
         <Col span={8} style={{textAlign:"right",opacity:0.333,paddingRight:6,fontSize:24}}>Owner:</Col>
         <Col span={16}><Address value={owner} onChange={(newOwner)=>{
-          tx(
-             writeContracts['SmartContractWallet'].updateOwner(newOwner,
-               { gasLimit: ethers.utils.hexlify(40000) }
-             )
-          )
+          console.log("localBalance",localBalance)
+          if(localBalance<=0){
+            tx(
+               metatxContracts['SmartContractWallet'].updateOwner(newOwner)
+            )
+          }else{
+            tx(
+               writeContracts['SmartContractWallet'].updateOwner(newOwner)
+            )
+          }
+
+
         }}/></Col>
       </Row>
     )

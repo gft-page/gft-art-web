@@ -23,6 +23,7 @@
     "compile": "cd packages/buidler && npx buidler compile",
     "deploy": "cd packages/buidler && npx buidler run scripts/deploy.js && npx buidler run scripts/publish.js",
     "watch": "cd packages/buidler && node scripts/watch.js",
+    "relay": "cd packages/react-app/src/helpers && gsn start",
     "accounts": "cd packages/buidler && npx buidler accounts",
     "balance": "cd packages/buidler && npx buidler balance",
     "send": "cd packages/buidler && npx buidler send"
@@ -30,7 +31,8 @@
   "devDependencies": {
     "@nomiclabs/buidler": "1.3.3-rc.0",
     "@nomiclabs/buidler-truffle5": "1.3.3-rc.0",
-    "@nomiclabs/buidler-web3": "1.3.3-rc.0"
+    "@nomiclabs/buidler-web3": "1.3.3-rc.0",
+    "@opengsn/gsn": "0.9.0"
   },
   "workspaces": {
     "packages": [

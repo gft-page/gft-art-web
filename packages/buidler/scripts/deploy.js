@@ -3,12 +3,18 @@ const chalk = require('chalk');
 async function main() {
   console.log("📡 Deploy \n")
   // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
+  //await autoDeploy();
   // OR
   // custom deploy (to use deployed addresses dynamically for example:)
   //const exampleToken = await deploy("ExampleToken")
   //const examplePriceOracle = await deploy("ExamplePriceOracle")
-  //const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+  const smartContractWallet = await deploy(
+    "SmartContractWallet",
+    JSON.parse(fs.readFileSync("./contracts/SmartContractWallet.args"))
+  )
+  const trustedForwarder = JSON.parse(fs.readFileSync("../react-app/src/helpers/build/gsn/Forwarder.json"))
+  console.log("Setting ⛽️GSN Forwarder to:",chalk.magenta(trustedForwarder.address))
+  await smartContractWallet.setTrustedForwarder(trustedForwarder.address)
 }
 main()
 .then(() => process.exit(0))
