@@ -12,10 +12,13 @@ const { Text } = Typography;
 
 const mainnetProvider = new ethers.providers.InfuraProvider("mainnet","2717afb6bf164045b5d5468031b93f87")
 let localProvider
-if ((window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")){
+if ( (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")){
   localProvider = new ethers.providers.JsonRpcProvider("http://localhost:8545")
 }else{
   localProvider = new ethers.providers.JsonRpcProvider("https://dai.poa.network")
+  if (window.location.protocol !== 'https:') {
+    window.location.replace(`https:${window.location.href.substring(window.location.protocol.length)}`);
+  }
 }
 
 function App() {
@@ -30,10 +33,18 @@ function App() {
   const [amount, setAmount] = useState()
   const [toAddress, setToAddress] = useState()
 
-
   const inputStyle = {
     padding:10
   }
+
+  const qrWidth = 512
+
+  let scale = size.width/(qrWidth*1.3)
+
+  const someProvider = new ethers.providers.JsonRpcProvider("https://dai.poa.network")
+  console.log("someProvider",someProvider)
+
+
 
   return (
     <div className="App">
@@ -51,42 +62,32 @@ function App() {
         />
       </div>
 
-      <Row type="flex" align="middle">
-        <Col span={12}>
-          <div style={{transformOrigin:"50% 0%",transform:"scale("+(size.width/2)/250+")"}}>
-            <Blockie address={address} scale={27}/>
-          </div>
-        </Col>
-        <Col span={12}>
-          <div style={{transformOrigin:"50% 0%",transform:"scale("+(size.width/2)/250+")"}}>
-            <QR value={address?address:""} size={"220"} renderAs={"svg"} imageSettings={{excavate:false}}/>
-          </div>
-        </Col>
-      </Row>
-      <Row type="flex" align="middle" >
-        <Col span={12} style={{zIndex:2}}>
-          <div style={{transformOrigin:"50% -350%",transform:"scale("+(size.width/2)/200+")",fontSize:22,paddingTop:6}}>
-            <Text copyable={{text:address}}>{address?address.substr(0,8):"..."}</Text>
-          </div>
-        </Col>
-        <Col span={12} style={{zIndex:1}}>
-          <div style={{transformOrigin:"50% -350%",transform:"scale("+(size.width/2)/200+")",paddingTop:6}}>
-            <Balance address={address} provider={injectedProvider} dollarMultiplier={price}/>
-          </div>
-        </Col>
-      </Row>
 
-      <div style={{cursor:"pointer",position:'fixed',width:"25vw",height:"25vw",textAlign:'center',right:-4,bottom:8,padding:10}} className={"button"}
+      <div style={{cursor:"pointer",position:'fixed',width:"25vw",height:"25vw",textAlign:'center',right:-4,bottom:"2vw",padding:10}} className={"button"}
         onClick={()=>{setOpen(!open)}}
       >
         <Row type="flex" align="middle" >
           <Col span={24} style={{zIndex:2}}>
-            <SendOutlined style={{color:"#EDEDED",fontSize:"14vw",marginTop:"4vw"}} rotate={0} />
+            <SendOutlined style={{color:"#EDEDED",fontSize:"6vw",marginTop:"7.5vw"}} rotate={0} />
           </Col>
         </Row>
       </div>
 
-    
+
+      <div style={{marginLeft:"11.5vw",width:qrWidth,transform:"scale("+scale+")",transformOrigin:"0 0"}}>
+        <div style={{position:"absolute",bottom:"-10vw",left:0}}>
+          <Text style={{fontSize:"8vw"}} copyable={{text:address}}>{address?address.substr(0,8):"..."}</Text>
+        </div>
+        <div style={{position:"absolute",bottom:"-10vw",right:0}}>
+          <Balance size={"8vw"} address={address} provider={localProvider} dollarMultiplier={price}/>
+        </div>
+
+        <QR value={address?"http://localhost:3000/"+address:""} size={qrWidth} imageSettings={{width:qrWidth/4,height:qrWidth/4,excavate:true}}/>
+        <div style={{position:"absolute",left:192,top:192}}>
+          <Blockie address={address} scale={16}/>
+        </div>
+      </div>
+
 
       <Modal
         visible={open}
@@ -96,7 +97,7 @@ function App() {
               <Address value={address} ensProvider={mainnetProvider}/>
             ):<Spin />}
             <div style={{float:"right",paddingRight:25}}>
-              <Balance address={address} provider={injectedProvider} dollarMultiplier={price}/>
+              <Balance address={address} provider={localProvider} dollarMultiplier={price}/>
             </div>
           </div>
         }
@@ -149,8 +150,6 @@ function App() {
 }
 
 export default App;
-
-
 
 function useWindowSize() {
   const isClient = typeof window === 'object';

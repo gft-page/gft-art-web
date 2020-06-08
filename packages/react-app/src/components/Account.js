@@ -84,7 +84,7 @@ export default function Account(props) {
   }
 
 
-  React.useEffect(async () => {
+  React.useEffect(() => {
     if (web3Modal.cachedProvider) {
       loadWeb3Modal()
     }
@@ -99,7 +99,7 @@ export default function Account(props) {
         {props.address?(
           <Address value={props.address} ensProvider={props.mainnetProvider}/>
         ):"Connecting..."}
-        <Balance address={props.address} provider={props.injectedProvider} dollarMultiplier={props.price}/>
+        <Balance address={props.address} provider={props.localProvider} dollarMultiplier={props.price}/>
         <Wallet address={props.address} provider={props.injectedProvider} ensProvider={props.mainnetProvider} price={props.price} />
       </span>
     )
