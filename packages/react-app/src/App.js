@@ -10,13 +10,15 @@ import { Header, Account, Provider, AddressInput, EtherInput, Blockie, Balance, 
 import QR from 'qrcode.react';
 const { Text } = Typography;
 
+const FORCE_XDAI = false
+
 const mainnetProvider = new ethers.providers.InfuraProvider("mainnet","2717afb6bf164045b5d5468031b93f87")
 let localProvider
-if ( (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")){
+if ( !FORCE_XDAI && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")){
   localProvider = new ethers.providers.JsonRpcProvider("http://localhost:8545")
 }else{
   localProvider = new ethers.providers.JsonRpcProvider("https://dai.poa.network")
-  if (window.location.protocol !== 'https:') {
+  if ( !FORCE_XDAI && window.location.protocol !== 'https:') {
     window.location.replace(`https:${window.location.href.substring(window.location.protocol.length)}`);
   }
 }
@@ -37,14 +39,13 @@ function App() {
     padding:10
   }
 
-  const qrWidth = 512
+  const qrWidth = 600
 
-  let scale = size.width/(qrWidth*1.3)
+  let scale = Math.min(size.width,1024)/(qrWidth*1.3)
 
-  const someProvider = new ethers.providers.JsonRpcProvider("https://dai.poa.network")
-  console.log("someProvider",someProvider)
+  let offset =  0.42
 
-
+  const url  = window.location.href+"" //"https://instantwallet.surge.sh/
 
   return (
     <div className="App">
@@ -63,28 +64,28 @@ function App() {
       </div>
 
 
-      <div style={{cursor:"pointer",position:'fixed',width:"25vw",height:"25vw",textAlign:'center',right:-4,bottom:"2vw",padding:10}} className={"button"}
+      <div style={{cursor:"pointer",position:'fixed',width:"calc( 40px + 10vw )",height:"calc( 40px + 10vw )",textAlign:'center',right:-4,bottom:"2vw",padding:10}} className={"button"}
         onClick={()=>{setOpen(!open)}}
       >
         <Row type="flex" align="middle" >
           <Col span={24} style={{zIndex:2}}>
-            <SendOutlined style={{color:"#EDEDED",fontSize:"6vw",marginTop:"7.5vw"}} rotate={0} />
+            <SendOutlined style={{color:"#EDEDED",fontSize:"6vw",marginTop:"calc( 12px + 2vw )"}} rotate={0} />
           </Col>
         </Row>
       </div>
 
 
       <div style={{marginLeft:"11.5vw",width:qrWidth,transform:"scale("+scale+")",transformOrigin:"0 0"}}>
-        <div style={{position:"absolute",bottom:"-10vw",left:0}}>
-          <Text style={{fontSize:"8vw"}} copyable={{text:address}}>{address?address.substr(0,8):"..."}</Text>
+        <div style={{position:"absolute",bottom:-72,left:0}}>
+          <Text style={{fontSize:56}} copyable={{text:address}}>{address?address.substr(0,8):"..."}</Text>
         </div>
-        <div style={{position:"absolute",bottom:"-10vw",right:0}}>
-          <Balance size={"8vw"} address={address} provider={localProvider} dollarMultiplier={price}/>
+        <div style={{position:"absolute",bottom:-72,right:0}}>
+          <Balance size={56} address={address} provider={localProvider} dollarMultiplier={price}/>
         </div>
 
-        <QR value={address?"http://localhost:3000/"+address:""} size={qrWidth} imageSettings={{width:qrWidth/4,height:qrWidth/4,excavate:true}}/>
-        <div style={{position:"absolute",left:192,top:192}}>
-          <Blockie address={address} scale={16}/>
+        <QR value={address?url+address:""} size={qrWidth} imageSettings={{width:qrWidth/5,height:qrWidth/5,excavate:true}}/>
+        <div style={{position:"absolute",left:qrWidth*offset,top:qrWidth*offset}}>
+          <Blockie address={address} scale={12}/>
         </div>
       </div>
 
@@ -113,10 +114,12 @@ function App() {
           </Button>,
           <Button key="submit" type="primary" disabled={!amount || !toAddress} loading={false} onClick={()=>{
             const tx = Transactor(injectedProvider)
-            tx({
+            const txObject = {
               to: toAddress,
               value: ethers.utils.parseEther(""+amount),
-            })
+            }
+            console.log("TX",txObject)
+            tx(txObject)
             setOpen(!open)
           }}>
             <SendOutlined /> Send
@@ -124,24 +127,30 @@ function App() {
         ]}
       >
         <div>
-          <div style={inputStyle}>
-            <EtherInput
-              autoFocus={true}
-              price={price}
-              value={amount}
-              onChange={(value)=>{
-                setAmount(value)
-              }}
-            />
-          </div>
-          <div style={inputStyle}>
-            <AddressInput
-              ensProvider={mainnetProvider}
-              placeholder="to address"
-              value={toAddress}
-              onChange={setToAddress}
-            />
-          </div>
+
+
+
+
+        <div style={inputStyle}>
+          <AddressInput
+             autoFocus={true}
+            ensProvider={mainnetProvider}
+            placeholder="to address"
+            value={toAddress}
+            onChange={setToAddress}
+          />
+        </div>
+        <div style={inputStyle}>
+          <EtherInput
+            price={price}
+            value={amount}
+            onChange={(value)=>{
+              setAmount(value)
+            }}
+          />
+        </div>
+
+
         </div>
       </Modal>
 
