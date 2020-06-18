@@ -18,6 +18,11 @@ contract xMoonLanding {
         price = _price;
     }
 
+    function updateOwner(address _owner) public {
+        require(msg.sender == owner, "xMoonLanding:updateOwner NOT THE OWNER");
+        owner = _owner;
+    }
+
     function earlyAccess() public {
         require(
             moons.transferFrom(msg.sender, address(this), price),

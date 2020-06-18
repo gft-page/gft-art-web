@@ -1,1 +1,1 @@
-module.exports = ["xMoonLanding"]
+module.exports = ["Moons","xMoonLanding"]

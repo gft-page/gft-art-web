@@ -1,14 +1,16 @@
 const fs = require('fs');
 const chalk = require('chalk');
+const ethers = require("ethers");
 async function main() {
   console.log("📡 Deploy \n")
-  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
-  // OR
-  // custom deploy (to use deployed addresses dynamically for example:)
-  //const exampleToken = await deploy("ExampleToken")
-  //const examplePriceOracle = await deploy("ExamplePriceOracle")
-  //const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+  const moons = await deploy("Moons")
+  const xMoonLanding = await deploy("xMoonLanding",["500000000000000000000",/*"0xDF82c9014F127243CE1305DFE54151647d74B27A"*/moons.address])
+  
+  // paste in your address here to get 10 balloons on deploy:
+  await moons.transfer("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.parseEther("10000"))
+
+  //set the new owner 
+  await xMoonLanding.updateOwner("0x34aA3F359A9D614239015126635CE7732c18fDF3")
 }
 main()
 .then(() => process.exit(0))
