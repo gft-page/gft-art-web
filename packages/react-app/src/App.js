@@ -37,7 +37,7 @@ function App() {
         setHasEarlyAccess(true);
       }
     }
-  }, [earlyAccessEvents, address])
+  }, [earlyAccessEvents, address, injectedProvider])
 
   const [injectedNetwork, setInjectedNetwork] = useState();
   useEffect(() => {
@@ -123,7 +123,7 @@ function App() {
                     setSendingTx(false)
                   }, 20000
                 )
-              }, 100
+              }, 5000
             )
           }}>Request Early Access for {ethers.utils.formatEther(moonPrice)} 🌘</Button>
         </div>
@@ -188,6 +188,14 @@ function App() {
       </div>
 
       {adminDisplay}
+
+      <div style={{position:'fixed',textAlign:'right',right:0,bottom:20,padding:10}}>
+        <Row align="middle" gutter={4}>
+          <Col span={8}>
+            <Provider name={"injected"} provider={injectedProvider} />
+          </Col>
+        </Row>
+      </div>
 
       {/* <div style={{ position: 'fixed', textAlign: 'left', left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={4}>
