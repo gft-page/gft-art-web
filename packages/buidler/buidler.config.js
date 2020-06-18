@@ -1,5 +1,6 @@
 const { usePlugin } = require('@nomiclabs/buidler/config')
 usePlugin("@nomiclabs/buidler-truffle5");
+const fs = require("fs")
 
 const DEBUG = true
 
@@ -92,7 +93,7 @@ async function addr(addr) {
 }
 
 module.exports = {
-  defaultNetwork: 'localhost',
+  defaultNetwork: 'rinkeby',
   networks: {
     localhost: {
       //url: 'https://rinkeby.infura.io/v3/2717afb6bf164045b5d5468031b93f87',
@@ -100,6 +101,12 @@ module.exports = {
       /*accounts: {
         mnemonic: "**SOME MNEMONIC**"
       },*/
+    },
+    rinkeby: {
+      url: 'https://rinkeby.infura.io/v3/c954231486fa42ccb6d132b406483d14',
+      accounts: {
+        mnemonic: (fs.readFileSync("./mnemonic.txt")).toString().trim()
+      },
     },
   },
   solc: {

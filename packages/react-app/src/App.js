@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react'
 import 'antd/dist/antd.css';
 import { ethers } from "ethers";
 import "./App.css";
-import { Row, Col, Button, Alert, Spin } from 'antd';
-import { useExchangePrice, useGasPrice, useContractLoader, useEventListener, useCustomContractLoader, useNonce, useContractReader } from "./hooks"
+import { Row, Col, Button, Alert, Spin, Tooltip } from 'antd';
+import { useExchangePrice, useGasPrice, useContractLoader, useEventListener, useCustomContractLoader, useNonce, useContractReader, useCustomContractReader } from "./hooks"
 import { Header, Account, Provider, Faucet, Ramp, AddressInput, Contract, TokenBalance, Address } from "./components"
 import { Transactor } from "./helpers"
 
 const mainnetProvider = new ethers.providers.InfuraProvider("mainnet", "c954231486fa42ccb6d132b406483d14")
-//const rinkebyProvider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/c954231486fa42ccb6d132b406483d14")
-const localProvider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : "http://localhost:8545")
+const localProvider = new ethers.providers.JsonRpcProvider("https://rinkeby.infura.io/v3/c954231486fa42ccb6d132b406483d14")
+//const localProvider = new ethers.providers.JsonRpcProvider(process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : "http://localhost:8545")
 
 function App() {
 
@@ -23,17 +23,12 @@ function App() {
   const readContracts = useContractLoader(localProvider);
   const writeContracts = useContractLoader(injectedProvider);
 
-  const MOONSADDRESS = readContracts ? readContracts["Moons"].address : ""
-  const MOONSContract = useCustomContractLoader(injectedProvider, "Moons", MOONSADDRESS)
-
   const earlyAccessEvents = useEventListener(readContracts, "xMoonLanding", "EarlyAccess", localProvider, DEPLOYBLOCK);
   const moonPrice = useContractReader(readContracts, "xMoonLanding", "price")
 
   const tx = Transactor(injectedProvider)
   const nonce = useNonce(injectedProvider, address, 3555)
   const [hasEarlyAccess, setHasEarlyAccess] = useState()
-
-
   const [sendingTx, setSendingTx] = useState()
 
   useEffect(() => {
@@ -45,7 +40,6 @@ function App() {
   }, [earlyAccessEvents, address])
 
   const [injectedNetwork, setInjectedNetwork] = useState();
-  console.log(injectedNetwork)
   useEffect(() => {
     const getNetwork = async () => {
       if (injectedProvider) {
@@ -54,7 +48,14 @@ function App() {
       }
     }
     getNetwork()
-  }, [injectedProvider])
+  }, [injectedProvider, address])
+
+
+  const MOONSADDRESS = "0xDF82c9014F127243CE1305DFE54151647d74B27A" //readContracts ? readContracts["Moons"].address : ""
+  const MOONSContract = useCustomContractLoader(injectedProvider, "Moons", MOONSADDRESS)
+  const MOONSBalance = useCustomContractReader(MOONSContract, "balanceOf", [address], 777)
+
+  const incorrectNetwork = (!injectedNetwork || (injectedNetwork.name == "rinkeby" && typeof MOONSBalance == "undefined") || (injectedNetwork.name != "rinkeby" && injectedNetwork.chainId != "31337"))
 
   let display
 
@@ -66,8 +67,7 @@ function App() {
         <h2>Check back here soon for updates and <a href="https://t.me/joinchat/KByvmRsUzUmPw8prHwATNw" target="_blank">join this Telegram</a> for more info.</h2>
       </div>
     )
-  } else if (injectedNetwork && injectedNetwork.name != "rinkeby" && injectedNetwork.chainId != "31337") {
-
+  } else if (incorrectNetwork) {
     display = (
       <div>
         <Alert message={(
@@ -85,10 +85,25 @@ function App() {
     display = (
       <div>
         <div style={{ width: 320, margin: "auto", padding: 16 }}>
-          <Spin/>
+          <Spin />
         </div>
       </div>
     )
+  } else if (!MOONSBalance || MOONSBalance.lt(moonPrice)) {
+
+    display = (
+      <div>
+
+
+        <div style={{ width: 320, margin: "auto", padding: 16 }}>
+          <Tooltip title={"You must obtain " + ethers.utils.formatEther(moonPrice) + " Reddit 🌘MOONs to request early access."}>
+            <Button disabled={true} size="large" shape="round" type="primary">Request Early Access for {ethers.utils.formatEther(moonPrice)} 🌘</Button>
+          </Tooltip>
+
+        </div>
+      </div>
+    )
+
   } else {
 
     display = (
@@ -116,6 +131,16 @@ function App() {
     )
   }
 
+  let adminDisplay = ""
+  if (address == "0x34aA3F359A9D614239015126635CE7732c18fDF3" && !incorrectNetwork) {
+    adminDisplay = (
+      <Contract
+        name={"xMoonLanding"}
+        provider={injectedProvider}
+        address={address}
+      />
+    )
+  }
 
   return (
     <div className="App">
@@ -130,7 +155,7 @@ function App() {
           mainnetProvider={mainnetProvider}
           price={price}
         />
-        <TokenBalance name={"Moons"} img={"🌘"} address={address} contracts={readContracts} />
+        <TokenBalance name={"Moons"} img={"🌘"} address={address} balance={MOONSBalance} />
       </div>
 
       {display}
@@ -144,15 +169,17 @@ function App() {
           Players use Reddit's MOON token to wager and play! Coming Summer 2020!!!
         </div>
         <div>
-          In an attempt to build 🌒 xMOON liquidity, players are asked to send {moonPrice?ethers.utils.formatEther(moonPrice):0} 🌘 MOONs for early access.
+          In an attempt to build 🌒 xMOON liquidity, players are asked to send {moonPrice ? ethers.utils.formatEther(moonPrice) : 0} 🌘 MOONs for early access.
         </div>
-        
+        <div>
+          <b>The price of 🌘 MOONs required for early access will increase as others buy in. Get it while it's hot!</b>
+        </div>
         <div>
           Created by <a href="https://twitter.com/austingriffith" target="_blank">Austin Griffith</a>
         </div>
 
 
-        <div style={{padding:32}}>
+        <div style={{ padding: 32 }}>
           (🌘 MOONs are just a testnet token on Rinkeby <a target="_blank" href="https://www.forbes.com/sites/colinharper/2020/05/14/reddit-launches-ethereum-tokens-for-subbredits-in-new-community-points-campaign/#706974b8533c">deployed by Reddit</a>. They won't have any value until we give them <i>utility</i>!)
         </div>
 
@@ -160,21 +187,7 @@ function App() {
         <iframe style={{ marginTop: 32 }} width="916" height="854" src="https://www.youtube.com/embed/a902XUZbZQU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
 
-      {/* <div style={{display:"none"}}>
-      <Contract
-        name={"xMoonLanding"}
-        // show={["init"]}
-        provider={injectedProvider}
-        address={address}
-      />
-
-      <Contract
-        name={"Moons"}
-        show={["approve", "allowance"]}
-        provider={injectedProvider}
-        address={address}
-      />
-      </div> */}
+      {adminDisplay}
 
       {/* <div style={{ position: 'fixed', textAlign: 'left', left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={4}>
