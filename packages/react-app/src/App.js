@@ -90,7 +90,7 @@ function App() {
           mainnetProvider={mainnetProvider}
           price={price}
         />
-        {nonce} - <TokenBalance name={"Moons"} img={"🌘"} address={address} contracts={readContracts} />
+        <TokenBalance name={"Moons"} img={"🌘"} address={address} contracts={readContracts} />
       </div>
 
       {display}
@@ -101,7 +101,7 @@ function App() {
           xMOON is a massivle multiplayer blockchain game powered by the 🐶 DAOG game engine.
         </div>
         <div>
-          Players can use Reddit's MOON token to wager and play! Coming Summer 2020!!! 
+          Players use Reddit's MOON token to wager and play! Coming Summer 2020!!! 
         </div>
         <div>
           Created by <a href="https://twitter.com/austingriffith" target="_blank">Austin Griffith</a>
@@ -127,7 +127,7 @@ function App() {
       />
       </div> */}
 
-      <div style={{ position: 'fixed', textAlign: 'left', left: 0, bottom: 20, padding: 10 }}>
+      {/* <div style={{ position: 'fixed', textAlign: 'left', left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={4}>
           <Col span={9}>
             <Ramp
@@ -142,7 +142,7 @@ function App() {
             />
           </Col>
         </Row>
-      </div>
+      </div> */}
 
     </div>
   );

@@ -36,5 +36,10 @@
     "packages": [
       "packages/*"
     ]
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "s3": "^4.4.0",
+    "winston": "^3.2.1"
   }
 }
