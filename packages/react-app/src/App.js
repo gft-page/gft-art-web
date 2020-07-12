@@ -12,23 +12,23 @@ const { Text } = Typography;
 
 const FORCE_XDAI = false
 
-const mainnetProvider = new ethers.providers.InfuraProvider("mainnet","2717afb6bf164045b5d5468031b93f87")
-let localProvider
-if ( !FORCE_XDAI && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")){
+const mainnetProvider = new ethers.providers.InfuraProvider("mainnet","ec6a8acd1d354717acec099ad46a0bab")
+let localProvider = new ethers.providers.InfuraProvider("rinkeby","ec6a8acd1d354717acec099ad46a0bab")
+/*if ( !FORCE_XDAI && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")){
   localProvider = new ethers.providers.JsonRpcProvider("http://localhost:8545")
 }else{
   localProvider = new ethers.providers.JsonRpcProvider("https://dai.poa.network")
   if ( !FORCE_XDAI && window.location.protocol !== 'https:') {
     window.location.replace(`https:${window.location.href.substring(window.location.protocol.length)}`);
   }
-}
+}*/
 
 function App() {
 
   const size = useWindowSize();
   const [address, setAddress] = useState();
   const [injectedProvider, setInjectedProvider] = useState();
-  const price = 1
+  const price = 0 // testnet
   const gasPrice = useGasPrice("fast")
 
   const [open, setOpen] = useState()

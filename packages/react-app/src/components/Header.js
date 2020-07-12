@@ -8,7 +8,9 @@ export default function Header(props) {
     }}>
       <PageHeader
         title="🧙‍♂️ Instant Wallet"
-        subTitle=""
+        subTitle={(
+          <span style={{opacity:0.99,color:"#eed11a"}}>Rinkeby</span>
+        )}
         style={{cursor:'pointer'}}
       />
     </div>

@@ -10,5 +10,5 @@ code {
 
 .button {
   z-index: 257;
-  position: relative; background-image: linear-gradient(#1890ff, #096dd9); background-color: #40a9ff; border-radius: 50%; width: 89px; height: 89px; box-shadow: rgb(0, 0, 0) 0.5px 0.5px 5px;
+  position: relative; background-image: linear-gradient(#eed11a, #eed11a); background-color: #40a9ff; border-radius: 50%; width: 89px; height: 89px; box-shadow: rgb(0, 0, 0) 0.5px 0.5px 5px;
 }
