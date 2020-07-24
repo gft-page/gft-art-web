@@ -91,7 +91,7 @@ function App() {
           and give you a form to interact with it locally
       */}
 
-      <Contract name="YourContract" provider={userProvider} address={address} />
+      <Contract name="YourToken" provider={userProvider} address={address} />
 
       <Hints address={address} yourLocalBalance={yourLocalBalance} price={price} mainnetProvider={mainnetProvider} />
 

@@ -1,5 +1,62 @@
 # 🏗 scaffold-eth
 
+---
+
+## Your Token - Contract Sandbox
+
+
+```bash
+git clone https://github.com/austintgriffith/scaffold-eth.git your-token-sandbox
+
+cd your-token-sandbox
+
+git checkout token-sandbox
+
+yarn install
+
+#(ignore node gyp errors)
+
+yarn start
+
+# this will eventually bring up http://localhost:3000
+
+# in another terminal:
+
+yarn run chain
+
+#in a third terminal
+
+yarn run deploy
+
+# you will have an app with a form that talks to your token that is deployed locally 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 > TL;DR: **fork this repo** for an Ethereum dev stack focused on _fast product iteration_
 
 ---
@@ -21,13 +78,13 @@ It's great for building <i>decentralized applications</i> on [Ethereum](https://
 [<H3>🔬 Smart Contract Sandbox</H3>](https://github.com/austintgriffith/scaffold-eth#-smart-contract-sandbox-1)
 
 Learn how to [quickly iterate on a smart contract](https://github.com/austintgriffith/scaffold-eth#-smart-contract-sandbox-1) using the <b>\<Contract /\></b> component.
-  
+
 ---
 
 Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA)  to ask questions and find others building with 🏗 scaffold-eth!
 
 ---
-  
+
 [![splash](https://user-images.githubusercontent.com/2653167/88085723-7ab2b180-cb43-11ea-832d-8db6efcbdc02.png)](https://www.youtube.com/watch?v=ShJZf5lsXiM&feature=youtu.be&t=19)
 
 ---
