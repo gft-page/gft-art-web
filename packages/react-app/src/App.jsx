@@ -102,6 +102,21 @@ function App() {
         },3000)
       }}>xDAI Test</Button>
 
+      <Button onClick={async ()=>{
+        console.log("🚀 TESTING with http://localhost:8545")   ////// RUN: yarn run chain 
+        let burner = new BurnerProvider("http://localhost:8545")
+        console.log("🔥📡 burner",burner)
+        console.log("🔬🦠 blocktracker",burner._blockTracker)
+        let ethersProvider = new ethers.providers.Web3Provider(burner)
+        console.log("💩 provider:",ethersProvider)//.connect()
+        let accounts = await ethersProvider.listAccounts()
+        console.log("😅 accounts:",accounts)
+        setTimeout(async ()=>{
+          let bal = await ethersProvider.getBalance(accounts[0])
+          console.log("💵 balance", bal)
+        },3000)
+      }}>Localhost Test</Button>
+
       {/*<div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
         <Account
           address={address}
