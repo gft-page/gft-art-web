@@ -6,9 +6,11 @@ import { Row, Col, Button } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress, useBalance } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
 import Hints from "./Hints";
+import { signDaiPermit } from 'eth-permit';
+
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -83,6 +85,9 @@ function App() {
   // console.log("readContracts",readContracts)
   // const owner = useCustomContractReader(readContracts?readContracts['YourContract']:"", "owner")
 
+  const contracts = useContractLoader(userProvider);
+
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -119,7 +124,24 @@ function App() {
           and give you a form to interact with it locally
       */}
 
+      <Button onClick={async ()=>{
+
+        console.log(contracts)
+
+        const tokenAddress = contracts.TestDai.address
+        const ownerAddress = "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+        const spender = contracts.YourContract.address
+        const result = await signDaiPermit(window.ethereum, tokenAddress, ownerAddress, spender);
+        console.log("result",result)
+        //await contracts.TestDai.permit(ownerAddress, spender, result.nonce, result.expiry, true, result.v, result.r, result.s);
+      }}>
+      PERMIT
+      </Button>
+
       <Contract name="YourContract" signer={userProvider.getSigner()} provider={localProvider} address={address} />
+
+      <Contract name="TestDai" signer={userProvider.getSigner()} provider={localProvider} address={address} />
+
 
       <Hints address={address} yourLocalBalance={yourLocalBalance} price={price} mainnetProvider={mainnetProvider} />
 
