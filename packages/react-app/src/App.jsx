@@ -119,9 +119,10 @@ function App() {
           and give you a form to interact with it locally
       */}
 
-      <Contract name="YourContract" signer={userProvider.getSigner()} provider={localProvider} address={address} />
 
-      <Hints address={address} yourLocalBalance={yourLocalBalance} price={price} mainnetProvider={mainnetProvider} />
+      <Contract name="CLRTodo" signer={userProvider.getSigner()} provider={localProvider} address={address} />
+
+      <div style={{padding:64}}>🛠</div>
 
       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
         <Row align="middle" gutter={[4, 4]}>
