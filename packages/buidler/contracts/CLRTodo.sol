@@ -16,7 +16,7 @@ contract CLRTodo {
   }
 
   //we pick a date in the future when the payout will happen
-  uint256 ENDTIME = block.timestamp + 60; // round runs for 60s (obv very fast for testing)
+  uint256 ENDTIME = block.timestamp + 120; // round runs for 120s (obv very fast for testing)
 
   //this function will tell us if the CLR round is open
   // (we accept projects and support when open, projects can withdraw after it closes)
@@ -36,7 +36,7 @@ contract CLRTodo {
   //todo is stored as simple struct and we track support (donations directly to this todo)
   struct Todo {
     string name;
-    uint256 support;//we might not even want to track this, just use events?
+    uint256 support;
     uint256 sqrtSupport;
     bool withdrawn;
     address payable supportDestination;
@@ -48,7 +48,7 @@ contract CLRTodo {
     require(isOpen(),"CLRTodo:addTask round is not open");
     Todo memory todo = Todo({
       name: _name,
-      support: 0,//we might not even want to track this, just use events?
+      support: 0,
       sqrtSupport: 0,
       withdrawn: false,
       supportDestination: _supportDestination
@@ -62,7 +62,7 @@ contract CLRTodo {
 
   function supportTodo(uint16 id) public payable {
     require(isOpen(),"CLRTodo:supportTodo round is not open");
-    todos[id].support += msg.value;//we might not even want to track this, just use events?
+    todos[id].support += msg.value;
     console.log("support",id,msg.sender,msg.value);
     uint256 sqrtSupport = sqrt(msg.value);
     console.log("sqrtSupport",sqrtSupport);
@@ -71,20 +71,22 @@ contract CLRTodo {
 
   uint256 finalTotalBalance = 0;
   uint256 totalSquaredSupport = 0;
+  uint256 totalSupport = 0;
 
   //this function could be run in multiple steps paying attention to msg.gas (remaining gas)
   // (when gas gets low you keep track of where you are in the for loop and drop out)
   // (then you call it again and it starts where it left off until it gets to the end)
-  function calculate() public returns (uint256) {
+  function calculate() public {
     require(!isOpen(),"CLRTodo:calculate round is still open");
-    require(finalTotalBalance==0,"CLRTodo:calculate already calculated");
+    require(totalSupport==0,"CLRTodo:calculate already calculated");
     finalTotalBalance = (address(this)).balance;
-    console.log("finalTotalBalance",finalTotalBalance);
     for(uint16 i=0;i<todos.length;i++){
       totalSquaredSupport += todos[i].sqrtSupport * todos[i].sqrtSupport;
+      totalSupport += todos[i].support;
     }
     console.log("totalSquaredSupport",totalSquaredSupport);
-    return totalSquaredSupport;
+    console.log("totalSupport",totalSupport);
+    finalTotalBalance -= totalSupport;//we don't want to split the total balance, just the extra "matching" funds
   }
 
   function withdraw(uint16 id) public returns (uint256) {
@@ -94,6 +96,7 @@ contract CLRTodo {
     todos[id].withdrawn = true;
     uint256 squareOfTheSumOfTheSqrt = todos[id].sqrtSupport * todos[id].sqrtSupport;
     uint256 payout = squareOfTheSumOfTheSqrt * finalTotalBalance / totalSquaredSupport;
+    payout += todos[id].support;
     console.log("payout",id,payout);
     todos[id].supportDestination.transfer(payout);
     return payout;
