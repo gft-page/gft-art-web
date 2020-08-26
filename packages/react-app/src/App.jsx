@@ -23,6 +23,9 @@ import Hints from "./Hints";
     (this is your connection to the main Ethereum network for ENS etc.)
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
+import ConnextSDK from "connext";
+
+const connext = new ConnextSDK();
 
 // 🛰 providers
 console.log("📡 Connecting to Mainnet Ethereum");
@@ -105,18 +108,43 @@ function App() {
     }
   }, [loadWeb3Modal]);
 
+  const [ connextID, setConnextID ] = useState()
+  const [ connextBalance, setConnextBalance ] = useState()
+
   return (
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
-      {/*
-        ⚙️ Here is an example button that sets the purpose in your smart contract:
+        <div>
+        <Button onClick={async ()=>{
+            console.log("Logging in to Connext...")
+            await connext.login();
+            const publicIdentifier = connext.publicIdentifier;
+            setConnextID(publicIdentifier)
+          }}>Login</Button>
+          <div style={{padding:8}}>id:{connextID}</div>
+        </div>
 
-        <Button onClick={()=>{
-        writeContracts.YourContract.setPurpose("🐖 Don't hog the block!")
-      }}>Set Purpose</Button>
-      */}
+
+        <div>
+          <Button onClick={async ()=>{
+            console.log("Getting balance...")
+            const balance = await connext.balance();
+            setConnextBalance(balance)
+          }}>Balance</Button>
+          <div style={{padding:8}}>balance:{connextBalance}</div>
+        </div>
+
+        <div>
+          <Button onClick={async ()=>{
+            console.log("Deposit...")
+            const result = await connext.deposit();
+            console.log(result)
+          }}>Deposit</Button>
+          <div style={{padding:8}}></div>
+        </div>
+
 
        {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
@@ -137,12 +165,6 @@ function App() {
           this <Contract/> component will automatically parse your ABI
           and give you a form to interact with it locally
       */}
-
-      <Contract name="YourContract" signer={userProvider.getSigner()} provider={localProvider} address={address} />
-
-
-      {/* 🗑 Throw these away once you have 🏗 scaffold-eth figured out: */}
-      <Hints address={address} yourLocalBalance={yourLocalBalance} price={price} mainnetProvider={mainnetProvider} />
 
 
      {/* 📟 Extra UI like gas price, eth price, faucet, and support: */}
