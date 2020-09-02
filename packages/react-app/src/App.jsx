@@ -33,7 +33,7 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrl = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : "https://dai.poa.network";
+const localProviderUrl = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : "http://localhost:8545"//"https://dai.poa.network";
 console.log("🏠 Connecting to provider:", localProviderUrl);
 const localProvider = new JsonRpcProvider(localProviderUrl);
 
@@ -95,8 +95,11 @@ function App() {
   console.log("🔐 writeContracts",writeContracts)
 
   //📡 Listen for broadcast events
-  const messages = useEventListener(readContracts, "Broadcastor", "Send", localProvider, 1);
-  console.log("messages",messages)
+  const deposits = useEventListener(readContracts, "Guild", "Deposit", localProvider, 1);
+  console.log("deposits",deposits)
+
+  const withdrawals = useEventListener(readContracts, "Guild", "Withdraw", localProvider, 1);
+  console.log("withdrawals",withdrawals)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -145,18 +148,32 @@ function App() {
       <div style={{ width:600, margin: "auto" }}>
         <List
           bordered
-          dataSource={messages}
+          dataSource={deposits}
           renderItem={item => (
             <List.Item>
-              {"ADDRESS:"+item[0]}
-              {"msg:"+item[1]}
+              {item[0]} ==> 
+              {item[2]}
+            </List.Item>
+          )}
+        />
+      </div>
+
+      <div style={{ width:600, margin: "auto" }}>
+        <List
+          bordered
+          dataSource={withdrawals}
+          renderItem={item => (
+            <List.Item>
+              {item[0]}
             </List.Item>
           )}
         />
       </div>
 
 
-      <Contract name="Broadcastor" signer={userProvider.getSigner()} provider={localProvider} address={address} />
+      <Contract name="Guild" signer={userProvider.getSigner()} provider={localProvider} address={address} />
+
+      <Contract name="Spellbook" signer={userProvider.getSigner()} provider={localProvider} address={address} />
 
     </div>
   );

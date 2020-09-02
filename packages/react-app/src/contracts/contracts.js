@@ -1,1 +1,1 @@
-module.exports = ["Broadcastor"];
+module.exports = ["Guild","Spellbook"];

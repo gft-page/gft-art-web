@@ -2,6 +2,24 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("@nomiclabs/buidler");
 
+
+
+async function main() {
+  console.log("📡 Deploy \n");
+  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
+  //await autoDeploy();
+  // OR
+  // custom deploy (to use deployed addresses dynamically for example:)
+   const Guild = await deploy("Guild");
+  // const examplePriceOracle = await deploy("ExamplePriceOracle")
+   const Spellbook = await deploy("Spellbook",["0x89C479761E39f05374Ec7bB6EC36b255C853A4fd",Guild.address])
+}
+
+
+
+
+
+
 async function deploy(name, _args) {
   const args = _args || [];
 
@@ -48,17 +66,6 @@ async function autoDeploy() {
         deploy(contractName, args).then((result) => [...resultArrSoFar, result])
       );
     }, Promise.resolve([]));
-}
-
-async function main() {
-  console.log("📡 Deploy \n");
-  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
-  // OR
-  // custom deploy (to use deployed addresses dynamically for example:)
-  // const exampleToken = await deploy("ExampleToken")
-  // const examplePriceOracle = await deploy("ExamplePriceOracle")
-  // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
 }
 
 main()
