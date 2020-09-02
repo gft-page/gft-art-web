@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button } from "antd";
+import { Row, Col, Button, List } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
 import Hints from "./Hints";
 /*
@@ -33,7 +33,7 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrl = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : "http://localhost:8545";
+const localProviderUrl = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : "https://dai.poa.network";
 console.log("🏠 Connecting to provider:", localProviderUrl);
 const localProvider = new JsonRpcProvider(localProviderUrl);
 
@@ -63,10 +63,10 @@ const logoutOfWeb3Modal = async () => {
 function App() {
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(mainnetProvider);
+  const price = 1
 
   /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice("fast");
+  const gasPrice = 1
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -93,6 +93,10 @@ function App() {
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
   console.log("🔐 writeContracts",writeContracts)
+
+  //📡 Listen for broadcast events
+  const messages = useEventListener(readContracts, "Broadcastor", "Send", localProvider, 1);
+  console.log("messages",messages)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -138,52 +142,22 @@ function App() {
           and give you a form to interact with it locally
       */}
 
-      <Contract name="YourContract" signer={userProvider.getSigner()} provider={localProvider} address={address} />
-
-
-      {/* 🗑 Throw these away once you have 🏗 scaffold-eth figured out: */}
-      <Hints address={address} yourLocalBalance={yourLocalBalance} price={price} mainnetProvider={mainnetProvider} />
-
-
-     {/* 📟 Extra UI like gas price, eth price, faucet, and support: */}
-      <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={8}>
-            <Ramp price={price} address={address} />
-          </Col>
-
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-            <GasGauge gasPrice={gasPrice} />
-          </Col>
-          <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
-              onClick={() => {
-                window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-              }}
-              size="large"
-              shape="round"
-            >
-              <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                💬
-              </span>
-              Support
-            </Button>
-          </Col>
-        </Row>
-
-        <Row align="middle" gutter={[4, 4]}>
-          <Col span={24}>
-            {
-              /*  if the local provider has a signer, let's show the faucet:  */
-              localProvider && !process.env.REACT_APP_PROVIDER ? (
-                <Faucet localProvider={localProvider} price={price} />
-              ) : (
-                ""
-              )
-            }
-          </Col>
-        </Row>
+      <div style={{ width:600, margin: "auto" }}>
+        <List
+          bordered
+          dataSource={messages}
+          renderItem={item => (
+            <List.Item>
+              {"ADDRESS:"+item[0]}
+              {"msg:"+item[1]}
+            </List.Item>
+          )}
+        />
       </div>
+
+
+      <Contract name="Broadcastor" signer={userProvider.getSigner()} provider={localProvider} address={address} />
+
     </div>
   );
 }
