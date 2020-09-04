@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const directoryName = "build";
 
-const BUCKETNAME = ""; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
+const BUCKETNAME = "instantwallet.io"; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
 
 if (!BUCKETNAME) {
   console.log("☢️   Enter a bucket name in packages/react-app/scripts/s3.js ");
@@ -30,10 +30,10 @@ const options = {
   useIAMRoleCredentials: false,
 };
 
-// optional cloudfront invalidation rule
-// const invalidation = {
-//  awsDistributionId: "<Your CloudFront Distribution Id>",
-//  awsInvalidationPath: "<The Path to Invalidate>"
-// }
+
+const invalidation = {
+ awsDistributionId: "E2KYHB4CLD6FYA",
+ awsInvalidationPath: "*/*"
+}
 
 s3FolderUpload(directoryName, credentials, options /* , invalidation */);
