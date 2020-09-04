@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { WalletOutlined, QrcodeOutlined, SendOutlined } from "@ant-design/icons";
-import { Tooltip, Spin, Modal, Button } from "antd";
+import { Tooltip, Spin, Modal, Button, Row, Col } from "antd";
 import QR from "qrcode.react";
 import { parseEther } from "@ethersproject/units";
 import { useUserAddress } from "eth-hooks";
 import { Transactor } from "../helpers";
+import { QRBlockie } from ".";
 import Address from "./Address";
 import Balance from "./Balance";
 import AddressInput from "./AddressInput";
@@ -20,20 +21,34 @@ export default function Wallet(props) {
   const [toAddress, setToAddress] = useState();
 
   const providerSend = props.provider ? (
-    <Tooltip title="Wallet">
-      <WalletOutlined
-        onClick={() => {
-          setOpen(!open);
-        }}
-        rotate={-90}
-        style={{
-          padding: 7,
-          color: props.color ? props.color : "#1890ff",
-          cursor: "pointer",
-          fontSize: 28,
-          verticalAlign: "middle",
-        }}
-      />
+    <Tooltip title="point camera phone at qr code">
+
+      <QRBlockie {...props} />
+
+      <div style={{
+        cursor:"pointer",
+        position:'fixed',
+        width:"calc( 40px + 10vw )",
+        height:"calc( 40px + 10vw )",
+        textAlign:'center',
+        right:-4,
+        bottom:"2vw",
+        padding:10,
+        zIndex: 257,
+        backgroundImage: "linear-gradient("+props.color1+", "+props.color2+")",
+        backgroundColor: props.color1,
+        borderRadius: "50%",
+        boxShadow: "rgb(0, 0, 0) 0.3px 0.3px 3px"
+      }}
+        onClick={()=>{setOpen(!open)}}
+      >
+        <Row type="flex" align="middle" >
+          <Col span={24} style={{zIndex:2}}>
+            <SendOutlined style={{color:"#EDEDED",fontSize:"6vw",marginTop:"calc( 12px + 2vw )"}} rotate={0} />
+          </Col>
+        </Row>
+      </div>
+
     </Tooltip>
   ) : (
     ""
@@ -52,16 +67,7 @@ export default function Wallet(props) {
         imageSettings={{ excavate: false }}
       />
     );
-    receiveButton = (
-      <Button
-        key="hide"
-        onClick={() => {
-          setQr("");
-        }}
-      >
-        <QrcodeOutlined /> Hide
-      </Button>
-    );
+
   } else {
     const inputStyle = {
       padding: 10,
@@ -89,16 +95,7 @@ export default function Wallet(props) {
         </div>
       </div>
     );
-    receiveButton = (
-      <Button
-        key="receive"
-        onClick={() => {
-          setQr(selectedAddress);
-        }}
-      >
-        <QrcodeOutlined /> Receive
-      </Button>
-    );
+
   }
 
   return (
@@ -123,7 +120,6 @@ export default function Wallet(props) {
           setOpen(!open);
         }}
         footer={[
-          receiveButton,
           <Button
             key="submit"
             type="primary"

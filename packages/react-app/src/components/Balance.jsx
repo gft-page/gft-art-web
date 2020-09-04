@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { formatEther } from "@ethersproject/units";
 import { usePoller } from "eth-hooks";
+import { Spin } from "antd";
+
 
 export default function Balance(props) {
   const [dollarMode, setDollarMode] = useState(true);
@@ -56,7 +58,7 @@ export default function Balance(props) {
         setDollarMode(!dollarMode);
       }}
     >
-      {displayBalance}
+      {floatBalance && floatBalance>0.00001 ? displayBalance : (<Spin size="large" style={{opacity:0.25}}/>)}
     </span>
   );
 }

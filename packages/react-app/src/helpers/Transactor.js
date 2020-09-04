@@ -19,6 +19,7 @@ export default function Transactor(provider, gasPrice, etherscan) {
         dappId: "0b58206a-f3c0-4701-a62f-73c7243e8c77", // GET YOUR OWN KEY AT https://account.blocknative.com
         system: "ethereum",
         networkId: network.chainId,
+        mobilePosition: "bottom",
         // darkMode: Boolean, // (default: false)
         transactionHandler: txInformation => {
           console.log("HANDLE TX", txInformation);
