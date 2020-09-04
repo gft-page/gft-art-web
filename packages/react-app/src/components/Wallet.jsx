@@ -16,7 +16,6 @@ export default function Wallet(props) {
   const selectedAddress = props.address || signerAddress;
 
   const [open, setOpen] = useState();
-  const [qr, setQr] = useState();
   const [amount, setAmount] = useState();
   const [toAddress, setToAddress] = useState();
 
@@ -56,47 +55,35 @@ export default function Wallet(props) {
 
   let display;
   let receiveButton;
-  if (qr) {
-    display = (
-      <QR
-        value={selectedAddress}
-        size="450"
-        level="H"
-        includeMargin
-        renderAs="svg"
-        imageSettings={{ excavate: false }}
-      />
-    );
 
-  } else {
-    const inputStyle = {
-      padding: 10,
-    };
+  const inputStyle = {
+    padding: 10,
+  };
 
-    display = (
-      <div>
-        <div style={inputStyle}>
-          <AddressInput
-            autoFocus
-            ensProvider={props.ensProvider}
-            placeholder="to address"
-            value={toAddress}
-            onChange={setToAddress}
-          />
-        </div>
-        <div style={inputStyle}>
-          <EtherInput
-            price={props.price}
-            value={amount}
-            onChange={value => {
-              setAmount(value);
-            }}
-          />
-        </div>
+  display = (
+    <div>
+      <div style={inputStyle}>
+        <AddressInput
+          autoFocus
+          ensProvider={props.ensProvider}
+          placeholder="to address"
+          value={toAddress}
+          onChange={setToAddress}
+        />
       </div>
-    );
+      <div style={inputStyle}>
+        <EtherInput
+          price={props.price}
+          value={amount}
+          onChange={value => {
+            setAmount(value);
+          }}
+        />
+      </div>
+    </div>
+  );
 
-  }
+
 
   return (
     <span>
@@ -112,18 +99,16 @@ export default function Wallet(props) {
           </div>
         }
         onOk={() => {
-          setQr();
           setOpen(!open);
         }}
         onCancel={() => {
-          setQr();
           setOpen(!open);
         }}
         footer={[
           <Button
             key="submit"
             type="primary"
-            disabled={!amount || !toAddress || qr}
+            disabled={!amount || !toAddress}
             loading={false}
             onClick={() => {
               const tx = Transactor(props.provider);
@@ -141,7 +126,6 @@ export default function Wallet(props) {
                 value,
               });
               setOpen(!open);
-              setQr();
             }}
           >
             <SendOutlined /> Send

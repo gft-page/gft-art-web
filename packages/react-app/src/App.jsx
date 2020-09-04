@@ -154,8 +154,9 @@ function App() {
           {options}
         </Select>
       </div>*/}
-
-      <Wallet address={address} provider={userProvider} ensProvider={mainnetProvider} price={price} color1={networkColor[0]} color2={networkColor[1]}/>
+      <div style={{marginTop:-24}}>
+        <Wallet address={address} provider={userProvider} ensProvider={mainnetProvider} price={price} color1={networkColor[0]} color2={networkColor[1]}/>
+      </div>
 
       {/*
         ⚙️ Here is an example button that sets the purpose in your smart contract:

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
 import QrReader from "react-qr-reader";
 import { CameraOutlined, QrcodeOutlined } from "@ant-design/icons";
-import { Input, Badge } from "antd";
+import { Input, Badge, Button } from "antd";
 import { useLookupAddress } from "eth-hooks";
 import Blockie from "./Blockie";
 
@@ -13,7 +13,8 @@ export default function AddressInput(props) {
   const ens = useLookupAddress(props.ensProvider, currentValue);
 
   const scannerButton = (
-    <div
+    <Button
+      type="primary"
       style={{ marginTop: 4, cursor: "pointer" }}
       onClick={() => {
         setScan(!scan);
@@ -23,7 +24,7 @@ export default function AddressInput(props) {
         <QrcodeOutlined style={{ fontSize: 18 }} />
       </Badge>{" "}
       Scan
-    </div>
+    </Button>
   );
 
   const updateAddress = useCallback(
@@ -95,7 +96,7 @@ export default function AddressInput(props) {
         placeholder={props.placeholder ? props.placeholder : "address"}
         prefix={<Blockie address={currentValue} size={8} scale={3} />}
         value={ens || currentValue}
-        addonAfter={scannerButton}
+        suffix={scannerButton}
         onChange={e => {
           updateAddress(e.target.value);
         }}
