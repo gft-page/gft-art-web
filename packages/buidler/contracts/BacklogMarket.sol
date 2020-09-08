@@ -42,6 +42,7 @@ contract BacklogMarket {
     bytes32 id = getId(owner,repo,issue);
     uint256 salePrice = price[id];
     price[id] = prevPrice(owner, repo, issue);
+    if( price[id] <= startingAt ) price[id] = startingAt;
     require( balanceOf[id][msg.sender] > 0, "NONE TO SELL");
     balanceOf[id][msg.sender]--;
     msg.sender.transfer(salePrice);
