@@ -4,14 +4,10 @@ import "@nomiclabs/buidler/console.sol";
 
 contract YourContract {
 
-  string public purpose = "🛠 Programming Unstoppable Money";
+  bytes32[] public hashes;
 
-  function setPurpose(string memory newPurpose) public {
-    purpose = newPurpose;
-    console.log(msg.sender,"set purpose to",purpose);
-    //emit SetPurpose(msg.sender, purpose);
+  constructor(bytes32[] memory _hashes) public {
+    hashes = _hashes;
   }
 
-  //event SetPurpose(address sender, string purpose);
-  
 }
