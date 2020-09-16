@@ -4,6 +4,7 @@ import { Tooltip, Spin, Modal, Button, Row, Col } from "antd";
 import QR from "qrcode.react";
 import { parseEther } from "@ethersproject/units";
 import { useUserAddress } from "eth-hooks";
+import { useUserProvider } from "../hooks";
 import { Transactor } from "../helpers";
 import { QRBlockie } from ".";
 import Address from "./Address";
@@ -11,9 +12,12 @@ import Balance from "./Balance";
 import AddressInput from "./AddressInput";
 import EtherInput from "./EtherInput";
 
+
 export default function Wallet(props) {
-  const signerAddress = useUserAddress(props.provider);
-  const selectedAddress = props.address || signerAddress;
+  const signerAddress = useUserAddress(props.userProvider);
+
+  //const signerAddress = useUserAddress(props.provider);
+  const selectedAddress = signerAddress;
 
   const [open, setOpen] = useState();
   const [amount, setAmount] = useState();
@@ -22,7 +26,7 @@ export default function Wallet(props) {
   const providerSend = props.provider ? (
     <Tooltip title="point camera phone at qr code">
 
-      <QRBlockie {...props} />
+      <QRBlockie address={signerAddress} provider={props.asset.provider} price={props.asset.price} />
 
       <div style={{
         cursor:"pointer",
@@ -34,9 +38,8 @@ export default function Wallet(props) {
         bottom:"2vw",
         padding:10,
         zIndex: 257,
-        backgroundImage: "linear-gradient("+props.color1+", "+props.color2+")",
+        backgroundImage: "linear-gradient("+props.asset.color1+", "+props.asset.color2+")",
         backgroundColor: props.color1,
-        borderRadius: "50%",
         boxShadow: "rgb(0, 0, 0) 0.3px 0.3px 3px"
       }}
         onClick={()=>{setOpen(!open)}}
@@ -73,7 +76,7 @@ export default function Wallet(props) {
       </div>
       <div style={inputStyle}>
         <EtherInput
-          price={props.price}
+          price={props.asset.price}
           value={amount}
           onChange={value => {
             setAmount(value);
@@ -84,7 +87,7 @@ export default function Wallet(props) {
   );
 
 
-
+  console.log("props.asset.price",props.asset.price)
   return (
     <span>
       {providerSend}
@@ -92,9 +95,9 @@ export default function Wallet(props) {
         visible={open}
         title={
           <div>
-            {selectedAddress ? <Address value={selectedAddress} ensProvider={props.ensProvider} /> : <Spin />}
+            {selectedAddress && selectedAddress != "" ? <Address value={selectedAddress} ensProvider={props.ensProvider} /> : <Spin />}
             <div style={{ float: "right", paddingRight: 25 }}>
-              <Balance address={selectedAddress} provider={props.provider} dollarMultiplier={props.price} />
+              <Balance address={selectedAddress} provider={props.provider} dollarMultiplier={props.asset.price} />
             </div>
           </div>
         }
@@ -111,7 +114,7 @@ export default function Wallet(props) {
             disabled={!amount || !toAddress}
             loading={false}
             onClick={() => {
-              const tx = Transactor(props.provider);
+              const tx = Transactor(props.userProvider);
 
               let value;
               try {

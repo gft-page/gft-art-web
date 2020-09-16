@@ -20,15 +20,17 @@ export default function QRBlockie(props) {
   return (
     <div style={{marginLeft:"0vw",width:qrWidth,transform:"scale("+scale+")",transformOrigin:"0 0"}}>
 
-      <div style={{position:"absolute",bottom:0,left:"11vw"}}>
-        <Text style={{fontSize:36}} copyable={{text:props.address}}>{props.address?props.address.substr(0,8):"..."}</Text>
-      </div>
+    <div style={{position:"absolute",top:"-4vw",right:"10vw"}}>
+      <Balance size={"6vw"} address={props.address} provider={props.provider} dollarMultiplier={props.price}/>
+    </div>
+
+
       <div style={{position:"absolute",bottom:0,right:"10vw"}}>
-        <Balance size={36} address={props.address} provider={props.provider} dollarMultiplier={props.price}/>
+        <Text style={{fontSize:36}} copyable={{text:props.address}}>{props.address?props.address.substr(0,8)+"..."+props.address.substr(-6):" ... "}</Text>
       </div>
 
       <QR level={"M"} includeMargin={true} value={props.address?url+props.address:""} size={qrWidth} imageSettings={{width:qrWidth/5,height:qrWidth/5,excavate:true}}/>
-      <div style={{margin:"auto",width:qrWidth,position:"absolute",top:qrWidth/2-49}}>
+      <div style={{margin:"auto",width:qrWidth,position:"absolute",top:qrWidth/2-48}}>
         <Blockie address={props.address} scale={12}/>
       </div>
     </div>
