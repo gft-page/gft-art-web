@@ -33,7 +33,7 @@ const options = {
 
 const invalidation = {
  awsDistributionId: "E2KYHB4CLD6FYA",
- awsInvalidationPath: "*/*"
+ awsInvalidationPath: "/*"
 }
 
-s3FolderUpload(directoryName, credentials, options /* , invalidation */);
+s3FolderUpload(directoryName, credentials, options, invalidation );
