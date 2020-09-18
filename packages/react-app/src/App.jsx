@@ -44,6 +44,14 @@ const kovanProvider = getDefaultProvider("kovan", { infura: INFURA_ID, etherscan
 
 
 
+// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
+const localhostProviderUrl = "http://localhost:8545";
+console.log("🏠 Connecting to localhost:", localhostProviderUrl);
+let localProvider
+try{
+  localProvider = new JsonRpcProvider(localhostProviderUrl);
+}catch(e){}
+
 
 
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
@@ -53,7 +61,7 @@ const kovanProvider = getDefaultProvider("kovan", { infura: INFURA_ID, etherscan
 // 🏠 Your local provider is usually pointed at your local blockchain
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const xdaiProviderUrl = "https://dai.poa.network";
-console.log("🏠 Connecting to xdaiProviderUrl:", xdaiProviderUrl);
+console.log("🏴‍☠️ Connecting to xdaiProviderUrl:", xdaiProviderUrl);
 const xdaiProvider = new JsonRpcProvider(xdaiProviderUrl);
 
 
@@ -82,7 +90,7 @@ function App() {
 
 
   const [ cachedAsset, setCachedAsset ] = useLocalStorage("cachedAsset")
-  console.log("cachedAsset",cachedAsset)
+  //console.log("cachedAsset",cachedAsset)
 
   const [ selectedAsset, setSelectedAsset ] = useState(
     defaultSelected
@@ -131,6 +139,8 @@ function App() {
   const yourKovanBalance = useBalance(kovanProvider, address);
   //console.log("💵 yourKovanBalance",yourKovanBalance)
 
+  //try and keep track of a local network balance if we can find one (so you can use instant wallet on localhost)
+  const yourLocalBalance = useBalance(localProvider&&localProvider._network?localProvider:"", address);
 
   // Load in your local 📝 contract and read a value from it:
   //const readContracts = useContractLoader(localProvider)
@@ -161,7 +171,6 @@ function App() {
 */
 
   const networks = [
-
     {
       name: "xDAI",
       balance: yourXdaiBalance,
@@ -230,6 +239,15 @@ function App() {
       provider: goerliProvider
     },
     {
+      name: "localhost",
+      balance: 0,
+      color1: "#bbbbbb",
+      color2: "#b9b9b9",
+      gasPrice: 1000000000,
+      decimals: 3,
+      provider: localProvider,
+    },
+    {
       name: "xMOON",
       balance: yourXmoonBalance,
       color1: "#666666",
@@ -240,7 +258,6 @@ function App() {
       provider: xdaiProvider,
       tokenContract: readXmoonContract
     },
-
   ]
 /*
   useEffect(()=>{

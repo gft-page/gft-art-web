@@ -20,12 +20,12 @@ export default function QRBlockie(props) {
   return (
     <div style={{marginLeft:"0vw",width:qrWidth,transform:"scale("+scale+")",transformOrigin:"0 0"}}>
 
-    <div style={{position:"absolute",top:0,right:"10vw"}}>
+    <div style={{position:"absolute",top:0,right:"64px"}}>
       <Balance size={"calc(26px + 0.5vw)"} tokenContract={props.tokenContract} address={props.address} provider={props.provider} dollarMultiplier={props.price}/>
     </div>
 
 
-      <div style={{position:"absolute",bottom:0,right:"10vw"}}>
+      <div style={{position:"absolute",bottom:0,right:"64px"}}>
         <Text style={{fontSize:36}} copyable={{text:props.address}}>{props.address?props.address.substr(0,8)+"..."+props.address.substr(-6):" ... "}</Text>
       </div>
 
