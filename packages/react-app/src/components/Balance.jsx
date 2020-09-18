@@ -8,10 +8,17 @@ export default function Balance(props) {
   const [dollarMode, setDollarMode] = useState(true);
   const [balance, setBalance] = useState();
 
+  //console.log("BALANCE COMPONENT",props)
+
   const getBalance = async () => {
     if (props.address && props.provider) {
       try {
-        const newBalance = await props.provider.getBalance(props.address);
+        let newBalance
+        if(props.tokenContract){
+          newBalance = await props.tokenContract.balanceOf(props.address);
+        }else{
+          newBalance = await props.provider.getBalance(props.address);
+        }
         setBalance(newBalance);
       } catch (e) {
         console.log(e);

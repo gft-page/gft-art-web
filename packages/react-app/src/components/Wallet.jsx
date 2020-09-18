@@ -26,7 +26,7 @@ export default function Wallet(props) {
   const providerSend = props.provider ? (
     <Tooltip title="point camera phone at qr code">
 
-      <QRBlockie address={signerAddress} provider={props.asset.provider} price={props.asset.price} />
+      <QRBlockie address={signerAddress} tokenContract={props.asset.tokenContract} provider={props.asset.provider} price={props.asset.price} />
 
       <div style={{
         cursor:"pointer",
@@ -78,6 +78,7 @@ export default function Wallet(props) {
         <EtherInput
           price={props.asset.price}
           value={amount}
+          name={props.asset.name}
           onChange={value => {
             setAmount(value);
           }}
@@ -87,15 +88,17 @@ export default function Wallet(props) {
   );
 
 
-  console.log("props.asset.price",props.asset.price)
+  //console.log("props.asset.price",props.asset.price)
+  //console.log("props.asset.tokenContract",props.asset.tokenContract)
   return (
     <span>
       {providerSend}
       <Modal
+        style={{marginTop:-90}}
         visible={open}
         title={
           <div>
-            {selectedAddress && selectedAddress != "" ? <Address value={selectedAddress} ensProvider={props.ensProvider} /> : <Spin />}
+            {selectedAddress && selectedAddress != "" ? (<span><Address value={selectedAddress} ensProvider={props.ensProvider} /><span style={{paddingLeft:8,color:props.asset.color1}}>{props.asset.name}</span></span>) : <Spin />}
             <div style={{ float: "right", paddingRight: 25 }}>
               <Balance address={selectedAddress} provider={props.provider} dollarMultiplier={props.asset.price} />
             </div>
@@ -116,6 +119,8 @@ export default function Wallet(props) {
             onClick={() => {
               const tx = Transactor(props.userProvider);
 
+
+
               let value;
               try {
                 value = parseEther("" + amount);
@@ -124,10 +129,19 @@ export default function Wallet(props) {
                 value = parseEther("" + parseFloat(amount).toFixed(8));
               }
 
-              tx({
-                to: toAddress,
-                value,
-              });
+              if(props.asset.tokenContract){
+                tx({
+                  to: props.asset.tokenContract.address,
+                  data: props.asset.tokenContract.interface.encodeFunctionData("transfer(address,uint256)",[toAddress,value]),
+                });
+              }else{
+                tx({
+                  to: toAddress,
+                  value,
+                });
+              }
+
+
               setOpen(!open);
             }}
           >

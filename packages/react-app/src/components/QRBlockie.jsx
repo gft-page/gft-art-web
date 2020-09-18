@@ -11,7 +11,7 @@ export default function QRBlockie(props) {
 
   const qrWidth = 600
 
-  let scale = Math.min(size.width,1024)/(qrWidth*1)
+  let scale = Math.min(size.height-130,size.width,1024)/(qrWidth*1)
 
   let offset =  0.42
 
@@ -20,8 +20,8 @@ export default function QRBlockie(props) {
   return (
     <div style={{marginLeft:"0vw",width:qrWidth,transform:"scale("+scale+")",transformOrigin:"0 0"}}>
 
-    <div style={{position:"absolute",top:"-4vw",right:"10vw"}}>
-      <Balance size={"6vw"} address={props.address} provider={props.provider} dollarMultiplier={props.price}/>
+    <div style={{position:"absolute",top:0,right:"10vw"}}>
+      <Balance size={"calc(26px + 0.5vw)"} tokenContract={props.tokenContract} address={props.address} provider={props.provider} dollarMultiplier={props.price}/>
     </div>
 
 

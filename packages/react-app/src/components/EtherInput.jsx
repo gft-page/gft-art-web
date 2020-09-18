@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Input } from "antd";
 
 export default function AddressInput(props) {
-  const [mode, setMode] = useState(props.price ? "USD" : "ETH");
+  const [mode, setMode] = useState(props.price ? "USD" : (props.name?props.name:"ETH"));
   const [display, setDisplay] = useState();
   const [value, setValue] = useState();
 
@@ -15,7 +15,7 @@ export default function AddressInput(props) {
         style={{ cursor: "pointer" }}
         onClick={() => {
           if (mode === "USD") {
-            setMode("ETH");
+            setMode(props.name?props.name:"ETH");
             setDisplay(currentValue);
           } else {
             setMode("USD");
@@ -40,12 +40,17 @@ export default function AddressInput(props) {
     addonAfter = option("USD 🔀");
   } else {
     prefix = "Ξ";
-    addonAfter = option("ETH 🔀");
+    addonAfter = option(props.name?props.name+" 🔀":"ETH 🔀");
+  }
+
+  let extra = ""
+  if(mode=="USD" && props.name){
+    extra = " of "+props.name
   }
 
   return (
     <Input
-      placeholder={props.placeholder ? props.placeholder : "amount in " + mode}
+      placeholder={props.placeholder ? props.placeholder : "amount in " + mode + extra}
       autoFocus={props.autoFocus}
       prefix={prefix}
       value={display}

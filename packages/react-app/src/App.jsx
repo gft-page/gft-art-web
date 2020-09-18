@@ -7,9 +7,9 @@ import { Row, Col, Button, Select} from "antd";
 //import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { formatEther } from "@ethersproject/units";
-import { usePoller, useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
+import { usePoller, useExchangePrice, useGasPrice, useUserProvider, useCustomContractReader, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, QRBlockie, Wallet} from "./components";
-
+import { ethers } from "ethers";
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -45,6 +45,7 @@ const kovanProvider = getDefaultProvider("kovan", { infura: INFURA_ID, etherscan
 
 
 
+
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
@@ -56,27 +57,42 @@ console.log("🏠 Connecting to xdaiProviderUrl:", xdaiProviderUrl);
 const xdaiProvider = new JsonRpcProvider(xdaiProviderUrl);
 
 
+
+//LOAD ERC20 CONTRACTS:
+const ERC20ABI = [{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]
+
+const readDaiContract = new ethers.Contract("0x6B175474E89094C44Da98b954EedeAC495271d0F", ERC20ABI, mainnetProvider);
+console.log("readDaiContract",readDaiContract)
+
+const readXmoonContract = new ethers.Contract("0x1e16aa4Df73d29C029d94CeDa3e3114EC191E25A", ERC20ABI, xdaiProvider);
+console.log("readXmoonContract",readXmoonContract)
+
+
+
 function App() {
   const [ render, setRender ] = useState(1)
   const [injectedProvider, setInjectedProvider] = useState();
 
-  console.log("injectedProvider",injectedProvider)
+  //console.log("injectedProvider",injectedProvider)
 
   const DEFAULTCOLOR = ["#dddddd","#d4d4d4"]
 
 
   const defaultSelected = {provider: xdaiProvider, color1:DEFAULTCOLOR[0],color2:DEFAULTCOLOR[1]}
 
+
+  const [ cachedAsset, setCachedAsset ] = useLocalStorage("cachedAsset")
+  console.log("cachedAsset",cachedAsset)
+
   const [ selectedAsset, setSelectedAsset ] = useState(
     defaultSelected
   );
-  console.log("selectedAsset",selectedAsset)
+  //console.log("selectedAsset",selectedAsset)
 
-
-  const userProvider = useUserProvider(injectedProvider, selectedAsset.provider);
-  console.log("userProvider",userProvider)
+  const userProvider = useUserProvider(injectedProvider, selectedAsset?selectedAsset.provider:selectedAsset);
+  //console.log("userProvider",userProvider)
   const address = useUserAddress(userProvider);
-  console.log("🎫 Address: ",address)
+  //console.log("🎫 Address: ",address)
 
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(mainnetProvider); //1 for xdai
@@ -87,23 +103,33 @@ function App() {
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourXdaiBalance = useBalance(xdaiProvider, address);
-  console.log("💵 yourLocalBalance (xdai)",yourXdaiBalance)
+  //console.log("💵 yourLocalBalance (xdai)",yourXdaiBalance)
 
   // just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
-  console.log("💵 yourMainnetBalance",yourMainnetBalance)
+  //console.log("💵 yourMainnetBalance",yourMainnetBalance)
+
+
+
+  const yourDaiBalance = useCustomContractReader(readDaiContract, "balanceOf", [ address ], 3777);
+  //console.log("yourDaiBalance",yourDaiBalance)
+
+  const yourXmoonBalance = useCustomContractReader(readXmoonContract, "balanceOf", [ address ], 3777);
+  //console.log("yourXmoonBalance",yourXmoonBalance)
+
+
 
   const yourRopstenBalance = useBalance(ropstenProvider, address);
-  console.log("💵 yourRopstenBalance",yourRopstenBalance)
+  //console.log("💵 yourRopstenBalance",yourRopstenBalance)
 
   const yourRinkebyBalance = useBalance(rinkebyProvider, address);
-  console.log("💵 yourRinkebyBalance",yourRinkebyBalance)
+  //console.log("💵 yourRinkebyBalance",yourRinkebyBalance)
 
   const yourGoerliBalance = useBalance(goerliProvider, address);
-  console.log("💵 yourGoerliBalance",yourGoerliBalance)
+  //console.log("💵 yourGoerliBalance",yourGoerliBalance)
 
   const yourKovanBalance = useBalance(kovanProvider, address);
-  console.log("💵 yourKovanBalance",yourKovanBalance)
+  //console.log("💵 yourKovanBalance",yourKovanBalance)
 
 
   // Load in your local 📝 contract and read a value from it:
@@ -135,18 +161,9 @@ function App() {
 */
 
   const networks = [
+
     {
-      name: "eth",
-      balance: yourMainnetBalance,
-      price: price,
-      gasPrice: gasPrice,
-      color1: "#626890",
-      color2: "#5d658d",
-      decimals: 3,
-      provider: mainnetProvider
-    },
-    {
-      name: "xdai",
+      name: "xDAI",
       balance: yourXdaiBalance,
       price: 1,
       gasPrice: 1000000000,
@@ -156,7 +173,28 @@ function App() {
       provider: xdaiProvider
     },
     {
-      name: "rinkeby",
+      name: "ETH",
+      balance: yourMainnetBalance,
+      price: price,
+      gasPrice: gasPrice,
+      color1: "#626890",
+      color2: "#5d658d",
+      decimals: 3,
+      provider: mainnetProvider
+    },
+    {
+      name: "DAI",
+      balance: yourDaiBalance,
+      price: 1,
+      gasPrice: gasPrice,
+      color1: "#e2b85d",
+      color2: "#dbb459",
+      decimals: 3,
+      provider: mainnetProvider,
+      tokenContract: readDaiContract
+    },
+    {
+      name: "Rinkeby",
       balance: yourRinkebyBalance,
       color1: "#f6c343",
       color2: "#f4c141",
@@ -165,8 +203,8 @@ function App() {
       provider: rinkebyProvider
     },
     {
-      name: "ropsten",
-      balance: yourRinkebyBalance,
+      name: "Ropsten",
+      balance: yourRopstenBalance,
       color1: "#ff4a8d",
       color2: "#fd4889",
       gasPrice: 4100000000,
@@ -174,7 +212,7 @@ function App() {
       provider: ropstenProvider
     },
     {
-      name: "kovan",
+      name: "Kovan",
       balance: yourKovanBalance,
       color1: "#7057ff",
       color2: "#6d53fc",
@@ -183,15 +221,25 @@ function App() {
       provider: kovanProvider
     },
     {
-      name: "goerli",
+      name: "Goerli",
       balance: yourGoerliBalance,
       color1: "#3099f2",
       color2: "#2d95ee",
       gasPrice: 4000000000,
-      price: 0.0001,
       decimals: 3,
       provider: goerliProvider
-    }
+    },
+    {
+      name: "xMOON",
+      balance: yourXmoonBalance,
+      color1: "#666666",
+      color2: "#646464",
+      gasPrice: 1000000000,
+      price: 0.003,
+      decimals: 3,
+      provider: xdaiProvider,
+      tokenContract: readXmoonContract
+    },
 
   ]
 /*
@@ -224,30 +272,78 @@ function App() {
   },[setSelectedAsset,setRender,yourMainnetBalance,yourXdaiBalance])*/
   const [options, setOptions] = useState();
   useEffect(()=>{
-    console.log("👀 checking options")
+    //console.log("👀 checking options")
     let newOptions = []
     for(let n in networks){
-      console.log("networks[n]",n,networks[n])
+      //console.log("networks[n]",n,networks[n])
       const etherBalance = formatEther(networks[n].balance?networks[n].balance:0);
-      console.log(etherBalance)
+      //console.log(etherBalance)
       const floatBalance = parseFloat(etherBalance?etherBalance:0).toFixed(networks[n].decimals);
       let dollarDisplay = ""
       if(floatBalance>0 && networks[n].price){
         dollarDisplay = "$"+parseFloat(networks[n].price*floatBalance).toFixed(2)
       }
-      console.log("checking selected",networks[n].name==selectedAsset.name,networks[n].name,selectedAsset.name)
+      //console.log("checking selected",networks[n].name==selectedAsset.name,networks[n].name,selectedAsset.name)
       newOptions.push(
-        <Option key={n} selected={networks[n].name==selectedAsset.name} style={{color:networks[n].color1}}>{floatBalance} {networks[n].name} <span style={{color:"#999999",float:"right"}}>{dollarDisplay}</span></Option>
+        <Option key={n} value={networks[n].name} style={{color:networks[n].color1}}>{floatBalance} {networks[n].name} <span style={{color:"#999999",float:"right"}}>{dollarDisplay}</span></Option>
+        //<Option key={n} value={n} selected={n==selectedAssetIndex} style={{color:networks[n].color1}}>{floatBalance} {networks[n].name} <span style={{color:"#999999",float:"right"}}>{dollarDisplay}</span></Option>
       )
     }
     setOptions(newOptions)
-    if(!selectedAsset.name){
-      console.log("NO NAME FOR ",selectedAsset.name)
-      setSelectedAsset(networks[1])
-    }
+
   },[setOptions,render,yourMainnetBalance,yourXdaiBalance,yourKovanBalance,yourGoerliBalance,yourRinkebyBalance,yourRopstenBalance])
 
+  usePoller(()=>{
+    if(cachedAsset && ( !selectedAsset || cachedAsset!=selectedAsset.name ) ){
+      for(let n in networks){
+        if(networks[n].name == cachedAsset){
+          console.log("💽 SETTING SELECTED ASSET TO CACHED",n,networks[n])
+          setSelectedAsset(networks[n])
+          setRender(render+1)
+        }
+      }
 
+    }else if(!cachedAsset && (!selectedAsset  || !selectedAsset.name || !selectedAsset.balance )){
+      setSelectedAsset(networks[0])
+      setRender(render+1)
+    }else if(!cachedAsset){
+      const floatBalance = parseFloat(formatEther(selectedAsset.balance))
+      let bestSelect = -1
+      let bestValue = 0
+      if(floatBalance<=0){
+        console.log("STILL NO ASSET WITH A BALANCE, KEEP SELECTING DEFAULT?")
+        for(let n in networks){
+          if(!networks[n].price){
+            const thisBalance = parseFloat(formatEther(networks[n].balance))
+            if(thisBalance>0){
+              console.log("FOUND A TEST NET ASSET WITH BALANCE:",n,networks[n])
+              bestSelect = n
+            }
+          }
+        }
+        for(let n in networks){
+          if(networks[n].price && networks[n].balance){
+            const thisBalance = parseFloat(formatEther(networks[n].balance))
+            if(thisBalance>0){
+              console.log("FOUND A VALUED ASSET WITH BALANCE:",networks[n])
+              const thisValue = thisBalance*networks[n].price
+              console.log("THAT PRICES IT AT ",thisValue)
+              if(bestValue<thisValue){
+                bestSelect = n
+                bestValue = thisValue
+              }
+            }
+          }
+        }
+        if(bestSelect!=-1){
+          //FOUND AN ASSET TO STICK TO:
+          setSelectedAsset(networks[bestSelect])
+          setCachedAsset(networks[bestSelect].name)
+          setRender(render+1)
+        }
+      }
+    }
+  },777)
 
 
   return (
@@ -256,14 +352,29 @@ function App() {
       <Header />
 
 
+      <div style={{position:"fixed",bottom:32,left:32,transform:"scale(1.2)",transformOrigin:"0 100%"}}>
 
-      <div style={{position:"fixed",bottom:32,left:32,transform:"scale(1.67)",transformOrigin:"0 100%"}}>
-        <Select size={"large"}
+        <Select
+          size={"large"}
+          labelInValue
           placeholder="select asset..."
+          /* defaultValue={{ value: 'ETH' }} */
+          value={{ value: selectedAsset.name }}
           onChange={(change)=>{
-            console.log(change)
-            setSelectedAsset(networks[change])
-            setRender(render+1)
+            console.log("change",change)
+            //setSelectedAssetIndex(change.value)
+            for(let n in networks){
+              if(networks[n].name == change.value){
+                console.log("SETTING SELECTED ASSET",n)
+                setCachedAsset(networks[n].name)
+                setTimeout(()=>{
+                  setSelectedAsset(networks[n])
+                  setRender(render+1)
+                },1)
+
+              }
+            }
+
           }}
           style={{ width: 200 }}
         >
@@ -274,7 +385,7 @@ function App() {
       <div style={{marginTop:-24}} key={render}>
         <Wallet
           address={address}
-          provider={selectedAsset.provider}
+          provider={selectedAsset?selectedAsset.provider:selectedAsset}
           userProvider={userProvider}
           ensProvider={mainnetProvider}
           asset={selectedAsset}
@@ -408,4 +519,43 @@ const logoutOfWeb3Modal = async () => {
 };
 
 */
+
+
+function useLocalStorage(key, initialValue) {
+  // State to store our value
+  // Pass initial state function to useState so logic is only executed once
+  const [storedValue, setStoredValue] = useState(() => {
+    try {
+      // Get from local storage by key
+      const item = window.localStorage.getItem(key);
+      // Parse stored json or if none return initialValue
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      // If error also return initialValue
+      console.log(error);
+      return initialValue;
+    }
+  });
+
+  // Return a wrapped version of useState's setter function that ...
+  // ... persists the new value to localStorage.
+  const setValue = value => {
+    try {
+      // Allow value to be a function so we have same API as useState
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value;
+      // Save state
+      setStoredValue(valueToStore);
+      // Save to local storage
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      // A more advanced implementation would handle the error case
+      console.log(error);
+    }
+  };
+
+  return [storedValue, setValue];
+}
+
+
 export default App;
