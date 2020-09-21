@@ -2,14 +2,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List } from "antd";
+import { Row, Col, Button, List, Spin, InputNumber, Card, Divider, Select } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance, EtherInput } from "./components";
 import { Transactor } from "./helpers";
-import { parseEther } from "@ethersproject/units";
+import { parseEther, formatEther, hexlify } from "@ethersproject/units";
+import { ethers } from "ethers";
 import Hints from "./Hints";
 /*
     Welcome to 🏗 scaffold-eth !
@@ -25,6 +26,7 @@ import Hints from "./Hints";
     (this is your connection to the main Ethereum network for ENS etc.)
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
+const { Option } = Select;
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -47,6 +49,7 @@ console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 function App() {
+  const [ rerender, setRerender ] = useState(1)
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(mainnetProvider); //1 for xdai
@@ -76,16 +79,72 @@ function App() {
   console.log("📝 readContracts",readContracts)
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  const owner = useContractReader(readContracts,"CLR", "owner")
+  console.log("🗝 owner:",owner)
+
+  // keep track of a variable from the contract in the local React state:
+  const roundStart = useContractReader(readContracts,"CLR", "roundStart")
+  console.log("⏱ roundStart:",roundStart)
+
+  const roundDuration = useContractReader(readContracts,"CLR", "roundDuration")
+  console.log("⏱ roundDuration:",roundDuration)
+
+  const getBlockTimestamp = useContractReader(readContracts,"CLR", "getBlockTimestamp")
+  console.log("⏱ getBlockTimestamp:",getBlockTimestamp)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
   console.log("🔐 writeContracts",writeContracts)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+
+  const donorAllowedEvents = useEventListener(readContracts, "DonorManager", "DonorAllowed", localProvider, 1);
+  console.log("📟 donorAllowedEvents:",donorAllowedEvents)
+
+
+  const roundStartedEvents = useEventListener(readContracts, "CLR", "RoundStarted", localProvider, 1);
+  console.log("📟 roundStartedEvents:",roundStartedEvents)
+
+  const recipientAddedEvents = useEventListener(readContracts, "CLR", "RecipientAdded", localProvider, 1);
+  console.log("📟 recipientAddedEvents:",recipientAddedEvents)
+
+  const donationEvents = useEventListener(readContracts, "CLR", "Donation", localProvider, 1);
+  console.log("📟 donationEvents:", donationEvents)
+
+  const matchingPoolDonationEvents = useEventListener(readContracts, "CLR", "MatchingPoolDonation", localProvider, 1);
+  console.log("📟 matchingPoolDonationEvents:",matchingPoolDonationEvents)
+
+  const withdrawEvents = useEventListener(readContracts, "CLR", "Withdraw", localProvider, 1);
+  console.log("📟 withdrawEvents:",withdrawEvents)
+
+
+
+
+  const [ recipients, setRecipients ] = useState([])
+  const [ recipientOptions, setRecipientOptions ] = useState([])
+  useEffect(()=>{
+    const getRecipients = async ()=>{
+      console.log("Loading up recipient list...")
+      let newRecipients = []
+      let newRecipientOptions = []
+      for(let r in recipientAddedEvents){
+        console.log("recipientAddedEvents r",r,recipientAddedEvents[r])
+        const thisIndex = recipientAddedEvents[r].index.toNumber()
+        const recipientObject = await readContracts.CLR.recipients(thisIndex)
+        let recipient = {}
+        Object.assign(recipient,recipientObject)
+        recipient.index = r
+        newRecipients.push( recipient );
+        newRecipientOptions.push(
+          <Option key={"ro_"+r} value={r}>{recipientAddedEvents[r].data}</Option>
+        )
+      }
+      setRecipients(newRecipients)
+      setRecipientOptions(newRecipientOptions)
+    }
+    getRecipients()
+  },[ recipientAddedEvents, setRecipients, donationEvents, rerender ])
+
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -98,11 +157,297 @@ function App() {
     }
   }, [loadWeb3Modal]);
 
+
+  let mode = "loading..."
+  if(roundStart && roundStart.toNumber()<=0){
+    mode = "Waiting to begin..."
+  }else if(roundStart && roundStart.toNumber()>0 && getBlockTimestamp && roundDuration){
+
+    let timeLeft = roundStart.toNumber() + roundDuration.toNumber() - getBlockTimestamp.toNumber()
+
+    if(timeLeft>=0){
+      mode = "Round open! ("+timeLeft+"s left...)"
+    }else{
+      mode = "Round is over..."
+    }
+
+  }
+
+  const [ donateAmount, setDonateAmount ] = useState()
+  const [ donateIndex, setDonateIndex ] = useState()
+
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
+
+      <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
+
+      <div>
+        {readContracts && readContracts.CLR.address ? <Address value={readContracts?readContracts.CLR.address:readContracts} ensProvider={mainnetProvider} /> : <Spin />}
+        <div style={{ float: "right", paddingRight: 25 }}>
+          <Balance address={readContracts?readContracts.CLR.address:readContracts} provider={localProvider} dollarMultiplier={price} />
+        </div>
+      </div>
+      < Divider / >
+        owner: <Address
+          value={owner}
+          ensProvider={mainnetProvider}
+          blockExplorer={blockExplorer}
+        />
+      < Divider / >
+
+        <h3>roundStart:{roundStart?roundStart.toNumber():<Spin/>}</h3>
+        <h3>roundDuration:{roundDuration?roundDuration.toNumber():<Spin/>}</h3>
+        <h3>getBlockTimestamp:{getBlockTimestamp?getBlockTimestamp.toNumber():<Spin/>}</h3>
+
+        <h2>{mode}</h2>
+
+        <div style={{margin:8}}>
+          <Button onClick={()=>{
+            /* look how you call setPurpose on your contract: */
+            tx( writeContracts.CLR.startRound() )
+            setRerender(rerender+1)
+          }}>startRound</Button>
+        </div>
+
+        <div style={{margin:8}}>
+          <Button onClick={()=>{
+            /* look how you call setPurpose on your contract: */
+            tx( writeContracts.CLR.calculateMatching(99999999) )
+            setRerender(rerender+1)
+          }}>calculateMatching</Button>
+        </div>
+
+        <div style={{margin:8}}>
+          <Button onClick={()=>{
+            /* look how you call setPurpose on your contract: */
+            tx( writeContracts.CLR.distributeWithdrawal(0,9999999) )
+            setRerender(rerender+1)
+          }}>distributeWithdrawal</Button>
+        </div>
+
+
+      </div>
+
+
+      <div style={{ width:600, margin: "auto", marginTop:32 }}>
+        <List
+          bordered
+          header={(
+            <h1>Recipients</h1>
+          )}
+          dataSource={recipients}
+          renderItem={item => {
+            console.log("RECIPIENTS:",item)
+              ////utils . parseEther (
+            return (
+              <List.Item>
+                <h2>{item.index}</h2>
+                <Address
+                  value={item.addr}
+                  ensProvider={mainnetProvider}
+                  blockExplorer={blockExplorer}
+                />
+                : {item.data}
+                <div>(matchingWeight: { formatEther(item.matchingWeight) })</div>
+                <div>(sumOfSqrtDonation: { formatEther(item.sumOfSqrtDonation) })</div>
+                <div>(totalDonation: { formatEther(item.totalDonation) })</div>
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+
+
+            <div style={{width:500, margin:'auto', marginTop:32}}>
+              <Card title={"Donate"} extra={""}>
+                <Row gutter={4}>
+                  <Col span={11}>
+                    <EtherInput
+                      price={price}
+                      value={donateAmount}
+                      onChange={value => {
+                        setDonateAmount(value);
+                      }}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <Select
+                      placeholder = "recipient..."
+                      onChange={value => {
+                        setDonateIndex(value);
+                      }}
+                    >
+                      {recipientOptions}
+                    </Select>
+                  </Col>
+                  <Col span={4}>
+                    <Button onClick={()=>{
+                      /* you can also just craft a transaction and send it to the tx() transactor */
+                      console.log("DONATE",donateAmount)//ethers.BigNumber.from(
+
+                        const finalTx = {
+                          to: writeContracts.CLR.address,
+                          value: parseEther(""+donateAmount),
+                          data: writeContracts.CLR.interface.encodeFunctionData("donate(uint256)",[ donateIndex ])
+                        }
+
+                        console.log("finalTx",finalTx)
+
+                      tx(finalTx);
+                      /* this should throw an error about "no fallback nor receive function" until you add it */
+                    }}>Donate</Button>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+            <div style={{ width:600, margin: "auto", marginTop:32 }}>
+              <List
+                bordered
+                header={(
+                  <h1>Donors</h1>
+                )}
+                dataSource={donorAllowedEvents}
+                renderItem={item => {
+                  console.log("donorAllowedEvents",item)
+                  return (
+                    <List.Item>
+                    <Address
+                      value={item.donor}
+                      ensProvider={mainnetProvider}
+                      blockExplorer={blockExplorer}
+                    />
+                    {item.allowed}
+
+                    <Balance
+                      address={item.donor}
+                      provider={localProvider}
+                      dollarMultiplier={price}
+                    />
+
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+      <div style={{ width:600, margin: "auto", marginTop:32 }}>
+        <List
+          bordered
+          header={(
+            <h1>Donations</h1>
+          )}
+          dataSource={donationEvents}
+          renderItem={item => {
+            console.log("donationEvents",item)
+            return (
+              <List.Item>
+                <Address
+                  value={item.sender}
+                  ensProvider={mainnetProvider}
+                  blockExplorer={blockExplorer}
+                />
+                {item.index.toNumber()}
+                <Balance
+                  balance={item.value}
+                  dollarMultiplier={price}
+                />
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+
+      <div style={{ width:600, margin: "auto", marginTop:32 }}>
+        <List
+          bordered
+          header={(
+            <h1>Pool Donations</h1>
+          )}
+          dataSource={matchingPoolDonationEvents}
+          renderItem={item => {
+            console.log("matchingPoolDonationEvents",item)
+            return (
+              <List.Item>
+                <Address
+                  value={item.sender}
+                  ensProvider={mainnetProvider}
+                  blockExplorer={blockExplorer}
+                />
+                 (+<Balance
+                  balance={item.value}
+                  dollarMultiplier={price}
+                />)
+                <Balance
+                  balance={item.total}
+                  dollarMultiplier={price}
+                />
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+
+      <div style={{ width:600, margin: "auto", marginTop:32 }}>
+        <List
+          bordered
+          header={(
+            <h1>Withdrawls</h1>
+          )}
+          dataSource={withdrawEvents}
+          renderItem={item => {
+            console.log("withdrawEvents",item)
+            return (
+              <List.Item>
+                <h2>{item.index.toNumber()}</h2>
+                <Address
+                  value={item.to}
+                  ensProvider={mainnetProvider}
+                  blockExplorer={blockExplorer}
+                />
+                <Balance
+                  balance={item.total}
+                  dollarMultiplier={price}
+                />
+                <div style={{opacity:0.5}}>
+                  <Balance
+                    balance={item.matched}
+                    dollarMultiplier={price}
+                  /> matched
+                </div>
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+
+
+
 
       {/*
           🎛 this scaffolding is full of commonly used components
@@ -110,7 +455,15 @@ function App() {
           and give you a form to interact with it locally
       */}
       <Contract
-        name="YourContract"
+        name="CLR"
+        signer={userProvider.getSigner()}
+        provider={localProvider}
+        address={address}
+        blockExplorer={blockExplorer}
+      />
+
+      <Contract
+        name="DonorManager"
         signer={userProvider.getSigner()}
         provider={localProvider}
         address={address}
@@ -118,19 +471,11 @@ function App() {
       />
 
 
+
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
-        <h3>example ui:</h3>
-        <h2>{purpose}</h2>
-
-        <div style={{margin:8}}>
-          <Button onClick={()=>{
-            /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose("🐖 Don't hog the block!") )
-          }}>Set Purpose</Button>
-        </div>
 
         <div style={{margin:8}}>
           <Button onClick={()=>{
@@ -178,17 +523,15 @@ function App() {
       <div style={{ width:600, margin: "auto", marginTop:32 }}>
         <List
           bordered
-          dataSource={setPurposeEvents}
-          renderItem={item => (
-            <List.Item>
-              <Address
-                  value={item[0]}
-                  ensProvider={mainnetProvider}
-                  fontSize={16}
-                /> =>
-              {item[1]}
-            </List.Item>
-          )}
+          dataSource={roundStartedEvents}
+          renderItem={item => {
+            console.log("Render",item)
+            return (
+              <List.Item>
+                ROUND STARTED:
+              </List.Item>
+            )
+          }}
         />
       </div>
 

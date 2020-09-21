@@ -2,6 +2,33 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { config, ethers } = require("@nomiclabs/buidler");
 
+
+
+async function main() {
+  console.log("📡 Deploy \n");
+  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
+  //await autoDeploy();
+  // OR
+  const donorManager = await deploy("DonorManager");
+  const clr = await deploy("CLR", [ donorManager.address, 60 * 1 /* minutes */ ]);
+
+  await clr.addRecipient("0x5016003B84Ae9e1E7fCA20AfbDf56Ee79646D9f0","0xbeef")
+  await clr.addRecipient("0xE562fF185C16b450bb51903f38F90A18665e0e2E","0xdead")
+  await clr.addRecipient("0x66b8b4F9f401540b1921EB5eeD2344e13900a6be","0x1337")
+
+  await donorManager.allowDonor("0xB7B9755DA7119ea45e4C93DD08656b21Ae9aE1bC")
+  await donorManager.allowDonor("0x5016003B84Ae9e1E7fCA20AfbDf56Ee79646D9f0")
+  await donorManager.allowDonor("0xE562fF185C16b450bb51903f38F90A18665e0e2E")
+  await donorManager.allowDonor("0x66b8b4F9f401540b1921EB5eeD2344e13900a6be")
+  await donorManager.allowDonor("0x025645A569b3e60F803bFFC88f0E2e38b7526B3d")
+  await donorManager.allowDonor("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")
+
+  await clr.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1");
+  await donorManager.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")
+}
+
+
+
 async function deploy(name, _args) {
   const args = _args || [];
 
@@ -48,17 +75,6 @@ async function autoDeploy() {
         deploy(contractName, args).then((result) => [...resultArrSoFar, result])
       );
     }, Promise.resolve([]));
-}
-
-async function main() {
-  console.log("📡 Deploy \n");
-  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
-  // OR
-  // custom deploy (to use deployed addresses dynamically for example:)
-  // const exampleToken = await deploy("ExampleToken")
-  // const examplePriceOracle = await deploy("ExamplePriceOracle")
-  // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
 }
 
 main()

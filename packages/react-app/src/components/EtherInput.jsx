@@ -1,7 +1,20 @@
 import React, { useState } from "react";
 import { Input } from "antd";
 
-export default function AddressInput(props) {
+/*
+
+  <EtherInput
+    price={props.price}
+    value={amount}
+    onChange={value => {
+      setAmount(value);
+    }}
+  />
+
+*/
+
+
+export default function EtherInput(props) {
   const [mode, setMode] = useState(props.price ? "USD" : "ETH");
   const [display, setDisplay] = useState();
   const [value, setValue] = useState();
