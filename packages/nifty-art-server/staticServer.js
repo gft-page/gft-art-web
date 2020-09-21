@@ -26,7 +26,9 @@ const readContract = new ethers.Contract(
 );
 
 app.use(cors())
-
+//app.use('/', function (req, res, next) {
+//  res.end("Hello world")
+//})
 app.use(function (req, res, next) {
   console.log("REQ",req.url);
   next();
@@ -35,27 +37,32 @@ app.use(express.static('public'))
 
 app.use(async (req, res, next) => {
   const ipfsHash = req.url.replace("/","").replace(".png","")
-  console.log("FAILED TO FIND",ipfsHash);
-  console.log("Reading NiftyInk.inkInfoByInkUrl from xDAI...",ipfsHash)
-  const newChainInfo = await readContract["inkInfoByInkUrl"](ipfsHash)
-  if(newChainInfo){
-    //console.log("RESULT",newChainInfo)//result[0].content//
-    console.log("LOADING",newChainInfo[2]," FROM IPFS...")
-    let result = await ipfs.get(newChainInfo[2])
-    let obj = JSON.parse(result[0].content)
-    let imagePreviewHash = obj.image.replace("https://ipfs.io/ipfs/","")
+  if(ipfsHash && ipfsHash!="favicon.ico"){
+    console.log("FAILED TO FIND",ipfsHash);
+    console.log("Reading NiftyInk.inkInfoByInkUrl from xDAI...",ipfsHash)
+    const newChainInfo = await readContract["inkInfoByInkUrl"](ipfsHash)
+    if(newChainInfo){
+      //console.log("RESULT",newChainInfo)//result[0].content//
+      console.log("LOADING",newChainInfo[2]," FROM IPFS...")
+      let result = await ipfs.get(newChainInfo[2])
+      let obj = JSON.parse(result[0].content)
+      let imagePreviewHash = obj.image.replace("https://ipfs.io/ipfs/","")
 
-    console.log("NOW LOADING ",imagePreviewHash,"FROM IPFS...")
-    let image = await ipfs.get(imagePreviewHash)
-    fs.writeFileSync("public/"+ipfsHash+".png",image[0].content)
-    res.writeHead(200, {
-        'Content-Type': "image/png",
-        'Content-Length': image[0].content.length
-    });
-    res.end(Buffer.from(image[0].content, 'binary'));
+      console.log("NOW LOADING ",imagePreviewHash,"FROM IPFS...")
+      let image = await ipfs.get(imagePreviewHash)
+      fs.writeFileSync("public/"+ipfsHash+".png",image[0].content)
+      res.writeHead(200, {
+          'Content-Type': "image/png",
+          'Content-Length': image[0].content.length
+      });
+      res.end(Buffer.from(image[0].content, 'binary'));
+    }else{
+      next();
+    }
   }else{
-    next();
+    res.end("Hello world")
   }
+
 });
 
 https.createServer({

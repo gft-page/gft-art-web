@@ -49,6 +49,22 @@ app.post('/api/v0/add', (req, res) => {
     console.log("served!")
 })
 
+
+app.post('/api/v0/pin/ls', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+
+  console.log("POST PIN LS!!!")
+  proxy.web(req, res, {
+      //target: 'http://10.0.0.237:8545'
+      target: 'http://localhost:5001'
+      //target: 'http://10.0.0.188:8545'
+    });
+    console.log("served!")
+})
+
+
 app.get('/api/v0/get', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
