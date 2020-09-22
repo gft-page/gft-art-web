@@ -68,19 +68,25 @@ function App() {
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
-  console.log("💵 yourLocalBalance",yourLocalBalance)
+  //console.log("💵 yourLocalBalance",yourLocalBalance)
 
   // just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
-  console.log("💵 yourMainnetBalance",yourMainnetBalance)
+  //console.log("💵 yourMainnetBalance",yourMainnetBalance)
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider)
-  console.log("📝 readContracts",readContracts)
+  //console.log("📝 readContracts",readContracts)
 
   // keep track of a variable from the contract in the local React state:
   const owner = useContractReader(readContracts,"CLR", "owner")
   console.log("🗝 owner:",owner)
+
+
+  // keep track of a variable from the contract in the local React state:
+  const matchingPool = useContractReader(readContracts,"CLR", "matchingPool")
+  console.log("💰 matchingPool:",matchingPool)
+
 
   // keep track of a variable from the contract in the local React state:
   const roundStart = useContractReader(readContracts,"CLR", "roundStart")
@@ -92,55 +98,78 @@ function App() {
   const getBlockTimestamp = useContractReader(readContracts,"CLR", "getBlockTimestamp")
   console.log("⏱ getBlockTimestamp:",getBlockTimestamp)
 
+  const totalMatchingWeight = useContractReader(readContracts,"CLR", "totalMatchingWeight")
+  console.log("👜 totalMatchingWeight:",totalMatchingWeight)
+
+
+
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
-  console.log("🔐 writeContracts",writeContracts)
+  //console.log("🔐 writeContracts",writeContracts)
 
   //📟 Listen for broadcast events
 
   const donorAllowedEvents = useEventListener(readContracts, "DonorManager", "DonorAllowed", localProvider, 1);
-  console.log("📟 donorAllowedEvents:",donorAllowedEvents)
+  //console.log("📟 donorAllowedEvents:",donorAllowedEvents)
 
 
   const roundStartedEvents = useEventListener(readContracts, "CLR", "RoundStarted", localProvider, 1);
-  console.log("📟 roundStartedEvents:",roundStartedEvents)
+  //console.log("📟 roundStartedEvents:",roundStartedEvents)
 
   const recipientAddedEvents = useEventListener(readContracts, "CLR", "RecipientAdded", localProvider, 1);
-  console.log("📟 recipientAddedEvents:",recipientAddedEvents)
+  //console.log("📟 recipientAddedEvents:",recipientAddedEvents)
 
-  const donationEvents = useEventListener(readContracts, "CLR", "Donation", localProvider, 1);
-  console.log("📟 donationEvents:", donationEvents)
+  const donationEvents = useEventListener(readContracts, "CLR", "Donate", localProvider, 1);
+  //console.log("📟 donationEvents:", donationEvents)
 
   const matchingPoolDonationEvents = useEventListener(readContracts, "CLR", "MatchingPoolDonation", localProvider, 1);
-  console.log("📟 matchingPoolDonationEvents:",matchingPoolDonationEvents)
+  //console.log("📟 matchingPoolDonationEvents:",matchingPoolDonationEvents)
 
   const withdrawEvents = useEventListener(readContracts, "CLR", "Withdraw", localProvider, 1);
-  console.log("📟 withdrawEvents:",withdrawEvents)
+  //console.log("📟 withdrawEvents:",withdrawEvents)
+
 
 
 
 
   const [ recipients, setRecipients ] = useState([])
   const [ recipientOptions, setRecipientOptions ] = useState([])
+
+  const [ currentTotalWeight, setCurrentTotalWeight ] = useState([])
+  console.log("currentTotalWeight",currentTotalWeight)
+
   useEffect(()=>{
     const getRecipients = async ()=>{
       console.log("Loading up recipient list...")
       let newRecipients = []
       let newRecipientOptions = []
-      for(let r in recipientAddedEvents){
-        console.log("recipientAddedEvents r",r,recipientAddedEvents[r])
-        const thisIndex = recipientAddedEvents[r].index.toNumber()
+
+      let totalWeight
+      for(let i=0;i<recipientAddedEvents.length;i++){
+        const thisIndex = recipientAddedEvents[i].index.toNumber()
         const recipientObject = await readContracts.CLR.recipients(thisIndex)
         let recipient = {}
         Object.assign(recipient,recipientObject)
-        recipient.index = r
+        recipient.index = thisIndex
         newRecipients.push( recipient );
         newRecipientOptions.push(
-          <Option key={"ro_"+r} value={r}>{recipientAddedEvents[r].data}</Option>
+          <Option key={"ro_"+i} value={i}>{recipientAddedEvents[i].data}</Option>
         )
+
+        newRecipients[i].totalDonations = await await readContracts.CLR.totalDonations(thisIndex)
+        newRecipients[i].sumOfSqrtDonation = await await readContracts.CLR.sumOfSqrtDonation(thisIndex)
+        newRecipients[i].currentWeight = newRecipients[i].sumOfSqrtDonation.mul(newRecipients[i].sumOfSqrtDonation)
+
+        if(!totalWeight){
+          totalWeight = newRecipients[i].currentWeight
+        } else{
+          totalWeight = totalWeight.add(newRecipients[i].currentWeight)
+        }
       }
+
       setRecipients(newRecipients)
       setRecipientOptions(newRecipientOptions)
+      setCurrentTotalWeight(totalWeight)
     }
     getRecipients()
   },[ recipientAddedEvents, setRecipients, donationEvents, rerender ])
@@ -199,9 +228,7 @@ function App() {
         />
       < Divider / >
 
-        <h3>roundStart:{roundStart?roundStart.toNumber():<Spin/>}</h3>
         <h3>roundDuration:{roundDuration?roundDuration.toNumber():<Spin/>}</h3>
-        <h3>getBlockTimestamp:{getBlockTimestamp?getBlockTimestamp.toNumber():<Spin/>}</h3>
 
         <h2>{mode}</h2>
 
@@ -218,13 +245,19 @@ function App() {
             /* look how you call setPurpose on your contract: */
             tx( writeContracts.CLR.calculateMatching(99999999) )
             setRerender(rerender+1)
+            setTimeout(()=>{
+              setRerender(rerender+2)
+            },1000)
+            setTimeout(()=>{
+              setRerender(rerender+3)
+            },3000)
           }}>calculateMatching</Button>
         </div>
 
         <div style={{margin:8}}>
           <Button onClick={()=>{
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.CLR.distributeWithdrawal(0,9999999) )
+            tx( writeContracts.CLR.distributeWithdrawal() )
             setRerender(rerender+1)
           }}>distributeWithdrawal</Button>
         </div>
@@ -241,20 +274,68 @@ function App() {
           )}
           dataSource={recipients}
           renderItem={item => {
-            console.log("RECIPIENTS:",item)
+            //console.log("RECIPIENTS:",item)
               ////utils . parseEther (
+            //console.log("totalMatchingWeight",totalMatchingWeight)
+            //console.log("item.matchingWeight",item.matchingWeight)
+            //if(totalMatchingWeight>0){
+
+            //}
+            let percent = 0
+            let matchingAmount = 0
+            let opacity = 0.1
+            if(totalMatchingWeight>0){
+              percent = parseFloat(item.matchingWeight.mul(10000).div(totalMatchingWeight).toNumber())/100
+              matchingAmount = item.matchingWeight.mul(matchingPool).div(totalMatchingWeight)
+              opacity = 1
+            }else if(currentTotalWeight&&currentTotalWeight.gt(0)){
+              //it is trying to keep a current guess at weight
+              //console.log("&&CALC",currentTotalWeight,item.currentWeight)
+              percent = parseFloat(item.currentWeight.mul(10000).div(currentTotalWeight).toNumber())/100
+              matchingAmount = item.currentWeight.mul(matchingPool).div(currentTotalWeight)
+              opacity = 0.5
+            }
+
+            let matchDisplay = ""
+            if(percent){
+              matchDisplay = (
+                <div style={{opacity}}>
+                  <div style={{opacity:0.7}}>
+                     <Balance
+                        balance={item.totalDonations}
+                        provider={localProvider}
+                        dollarMultiplier={price}
+                     />+
+                     <Balance
+                       balance={matchingAmount}
+                       dollarMultiplier={price}
+                     />
+                  </div>
+                  <div>
+                    <Balance
+                      balance={item.totalDonations.add(matchingAmount)}
+                      provider={localProvider}
+                      dollarMultiplier={price}
+                      size={32}
+                    />
+                  </div>
+                  ({percent}%)
+                </div>
+              )
+            }
+
+            console.log("item.total",item.total)
+
             return (
               <List.Item>
-                <h2>{item.index}</h2>
+                <span style={{fontSize:24,padding:16}}>{item.index}</span>
                 <Address
                   value={item.addr}
                   ensProvider={mainnetProvider}
                   blockExplorer={blockExplorer}
                 />
                 : {item.data}
-                <div>(matchingWeight: { formatEther(item.matchingWeight) })</div>
-                <div>(sumOfSqrtDonation: { formatEther(item.sumOfSqrtDonation) })</div>
-                <div>(totalDonation: { formatEther(item.totalDonation) })</div>
+                {matchDisplay}
               </List.Item>
             )
           }}
@@ -287,11 +368,10 @@ function App() {
                   <Col span={4}>
                     <Button onClick={()=>{
                       /* you can also just craft a transaction and send it to the tx() transactor */
-                      console.log("DONATE",donateAmount)//ethers.BigNumber.from(
 
                         const finalTx = {
                           to: writeContracts.CLR.address,
-                          value: parseEther(""+donateAmount),
+                          value: parseEther(""+parseFloat(donateAmount).toFixed(6)),
                           data: writeContracts.CLR.interface.encodeFunctionData("donate(uint256)",[ donateIndex ])
                         }
 
@@ -309,7 +389,32 @@ function App() {
 
 
 
-
+            <div style={{ width:600, margin: "auto", marginTop:32 }}>
+              <List
+                bordered
+                header={(
+                  <h1>Donations</h1>
+                )}
+                dataSource={donationEvents}
+                renderItem={item => {
+                  //console.log("donationEvents",item)
+                  return (
+                    <List.Item>
+                      <Address
+                        value={item.sender}
+                        ensProvider={mainnetProvider}
+                        blockExplorer={blockExplorer}
+                      />
+                      {item.index.toNumber()}
+                      <Balance
+                        balance={item.value}
+                        dollarMultiplier={price}
+                      />
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
 
 
 
@@ -324,7 +429,7 @@ function App() {
                 )}
                 dataSource={donorAllowedEvents}
                 renderItem={item => {
-                  console.log("donorAllowedEvents",item)
+                  //console.log("donorAllowedEvents",item)
                   return (
                     <List.Item>
                     <Address
@@ -356,32 +461,7 @@ function App() {
 
 
 
-      <div style={{ width:600, margin: "auto", marginTop:32 }}>
-        <List
-          bordered
-          header={(
-            <h1>Donations</h1>
-          )}
-          dataSource={donationEvents}
-          renderItem={item => {
-            console.log("donationEvents",item)
-            return (
-              <List.Item>
-                <Address
-                  value={item.sender}
-                  ensProvider={mainnetProvider}
-                  blockExplorer={blockExplorer}
-                />
-                {item.index.toNumber()}
-                <Balance
-                  balance={item.value}
-                  dollarMultiplier={price}
-                />
-              </List.Item>
-            )
-          }}
-        />
-      </div>
+
 
       <div style={{ width:600, margin: "auto", marginTop:32 }}>
         <List
@@ -391,7 +471,7 @@ function App() {
           )}
           dataSource={matchingPoolDonationEvents}
           renderItem={item => {
-            console.log("matchingPoolDonationEvents",item)
+            //console.log("matchingPoolDonationEvents",item)
             return (
               <List.Item>
                 <Address
@@ -421,7 +501,7 @@ function App() {
           )}
           dataSource={withdrawEvents}
           renderItem={item => {
-            console.log("withdrawEvents",item)
+            //console.log("withdrawEvents",item)
             return (
               <List.Item>
                 <h2>{item.index.toNumber()}</h2>
@@ -464,6 +544,7 @@ function App() {
 
       <Contract
         name="DonorManager"
+        show={"allowDonor, blockDonor, canDonate"}
         signer={userProvider.getSigner()}
         provider={localProvider}
         address={address}

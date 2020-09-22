@@ -13,20 +13,21 @@ contract CLR is Ownable {
         address payable addr;
         // could be name or hash of other useful information
         string data;
-        uint256 totalDonation;
-        // help with quadratic matching calculation
-        uint256 sumOfSqrtDonation;
+        //track donors so we can iterate through mapping
+        address[] donors;
+        uint256[] amounts;
         // matchingWeight = sumOfSqrtDonation * sumOfSqrtDonation
         // matching = matchingPool * matchingWeight / totalMatchingWeight
         uint256 matchingWeight;
         bool withdrawn;
     }
+    mapping ( uint256 => mapping ( address => uint256 ) ) public donations;
 
     Recipient[] public recipients;
 
-    uint256 public matchingPool;
-
     IDonorManager public donorManager;
+
+    uint256 public matchingPool;
 
     uint256 public roundStart;
     uint256 public roundDuration;
@@ -36,7 +37,7 @@ contract CLR is Ownable {
 
     event RoundStarted(uint256 roundStart, uint256 roundDuration);
     event RecipientAdded(address addr, string data, uint256 index);
-    event Donation(address sender, uint256 value, uint256 index);
+    event Donate(address sender, uint256 value, uint256 index);
     event MatchingPoolDonation(address sender, uint256 value, uint256 total);
     event MatchingCalculated();
     event Withdraw(address to, uint256 index, uint256 matched, uint256 total);
@@ -87,32 +88,59 @@ contract CLR is Ownable {
         beforeRoundOpen
         returns (uint256)
     {
-        Recipient memory r = Recipient({
+        address[] memory emptyDonors;
+        uint256[] memory emptyAmounts;
+
+        Recipient memory recipient = Recipient({
             addr: addr,
             data: data,
-            totalDonation: 0,
-            sumOfSqrtDonation: 0,
+            donors: emptyDonors,
+            amounts: emptyAmounts,
             matchingWeight: 0,
             withdrawn: false
         });
-        recipients.push(r);
+        recipients.push(recipient);
 
         uint256 index = recipients.length - 1;
         emit RecipientAdded(addr, data, index);
         return index;
     }
 
+    function sumOfSqrtDonation(uint256 index) public view returns (uint256){
+      uint256 sum;
+      for(uint256 i=0;i<recipients[index].amounts.length;i++){
+        sum = sum.add(Math.sqrt(recipients[index].amounts[i]));
+      }
+      return sum;
+    }
+
+    function totalDonations(uint256 index) public view returns (uint256){
+      uint256 sum;
+      for(uint256 i=0;i<recipients[index].amounts.length;i++){
+        sum = sum.add(recipients[index].amounts[i]);
+      }
+      return sum;
+    }
+
     function donate(uint256 index) public payable isRoundOpen {
         if (!donorManager.canDonate(_msgSender())) revert("You are not allowed to donate.");
 
-        recipients[index].totalDonation = recipients[index].totalDonation.add(
-            msg.value
-        );
-        recipients[index].sumOfSqrtDonation = recipients[index]
-            .sumOfSqrtDonation
-            .add(Math.sqrt(msg.value));
+        uint256 previousDonor = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        for(uint256 i=0;i<recipients[index].donors.length;i++){
+          if(_msgSender()==recipients[index].donors[i]){
+            previousDonor = i;
+            break;
+          }
+        }
 
-        emit Donation(_msgSender(), msg.value, index);
+        if(previousDonor != 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff){
+          recipients[index].amounts[previousDonor] += msg.value;
+        }else{
+          recipients[index].donors.push(msg.sender);
+          recipients[index].amounts.push(msg.value);
+        }
+
+        emit Donate(_msgSender(), msg.value, index);
     }
 
     // this function could be run in multiple steps paying attention to msg.gas (remaining gas)
@@ -125,13 +153,11 @@ contract CLR is Ownable {
         if (toIndex > recipients.length) {
             toIndex = recipients.length;
         }
+
         for (uint256 i = calculatedToIndex; i < toIndex; i++) {
-            recipients[i].matchingWeight = recipients[i].sumOfSqrtDonation.mul(
-                recipients[i].sumOfSqrtDonation
-            );
-            totalMatchingWeight = totalMatchingWeight.add(
-                recipients[i].matchingWeight
-            );
+            uint256 thisSumOfSqrtDonation = sumOfSqrtDonation(i);
+            recipients[i].matchingWeight = thisSumOfSqrtDonation.mul(thisSumOfSqrtDonation);
+            totalMatchingWeight = totalMatchingWeight.add(recipients[i].matchingWeight);
         }
 
         calculatedToIndex = toIndex;
@@ -151,7 +177,7 @@ contract CLR is Ownable {
     {
         require(
             calculatedToIndex >= recipients.length,
-            "CLR:withdraw haven't finished calculating yet"
+            "CLR:withdraw not finished calculating yet"
         );
         require(!recipients[index].withdrawn, "CLR:withdraw already withdrawn");
 
@@ -159,16 +185,16 @@ contract CLR is Ownable {
 
         // TODO: I'm not sure this adds up to the contract's balance
         uint256 matched = matching(index);
-        uint256 total = recipients[index].totalDonation + matched;
-        recipients[index].addr.transfer(total);
-
+        uint256 total = totalDonations(index).add(matched);
+        if(total>0){
+          recipients[index].addr.transfer(total);
+        }
         emit Withdraw( recipients[index].addr, index, matched, total );
-
         return total;
     }
 
-    function distributeWithdrawal(uint256 start, uint256 finish) external {
-      for(uint256 i=start;i<=finish&&i<recipients.length;i++){
+    function distributeWithdrawal() external {
+      for(uint256 i=0;i<recipients.length;i++){
         recipientWithdraw(i);
       }
     }
@@ -177,7 +203,7 @@ contract CLR is Ownable {
     receive() external payable {
       require(roundStart == 0 || getBlockTimestamp() < roundStart.add(roundDuration), "CLR:receive closed");
       matchingPool = matchingPool.add(msg.value);
-      emit MatchingPoolDonation(_msgSender(), msg.value, matchingPool);
+      emit MatchingPoolDonation(_msgSender(), msg.value, address(this).balance);
       console.log(
           _msgSender(),
           "contributed to the matching pool",
