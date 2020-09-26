@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
+import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Select } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Select } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -10,7 +12,8 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
-import Hints from "./Hints";
+//import Hints from "./Hints";
+import { Hints, ExampleUI } from "./views"
 import { useQuery, gql } from '@apollo/client';
 import {  XYPlot,
   XAxis,
@@ -20,6 +23,7 @@ import {  XYPlot,
   LineSeries,
   Crosshair} from 'react-vis';
 import "./ReactVis.css";
+
 
 /*
     Welcome to 🏗 scaffold-eth !
@@ -35,6 +39,7 @@ import "./ReactVis.css";
     (this is your connection to the main Ethereum network for ENS etc.)
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
+const { TabPane } = Tabs;
 
 const { Option } = Select;
 
@@ -48,15 +53,14 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
-
-
-
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+
+
 
 function App() {
 
@@ -133,17 +137,70 @@ function App() {
     }
   }, [loadWeb3Modal]);
 
+  console.log("Location:",window.location.pathname)
+
+  const [route, setRoute] = useState();
+  useEffect(() => {
+    console.log("SETTING ROUTE",window.location.pathname)
+    setRoute(window.location.pathname)
+  }, [ window.location.pathname ]);
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
-      {/*
-          🎛 this scaffolding is full of commonly used components
-          this <Contract/> component will automatically parse your ABI
-          and give you a form to interact with it locally
-      */}
+      <BrowserRouter>
+
+        <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
+          <Menu.Item key="/">
+            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+          </Menu.Item>
+          <Menu.Item key="/hints">
+            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          </Menu.Item>
+          <Menu.Item key="/exampleui">
+            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+          </Menu.Item>
+        </Menu>
+
+        <Switch>
+          <Route exact path="/">
+            {/*
+                🎛 this scaffolding is full of commonly used components
+                this <Contract/> component will automatically parse your ABI
+                and give you a form to interact with it locally
+            */}
+            <Contract
+              name="YourContract"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+          </Route>
+          <Route path="/hints">
+            <Hints
+              address={address}
+              yourLocalBalance={yourLocalBalance}
+              mainnetProvider={mainnetProvider}
+              price={price}
+            />
+          </Route>
+          <Route path="/exampleui">
+            <ExampleUI
+              mainnetProvider={mainnetProvider}
+              setPurposeEvents={setPurposeEvents}
+              purpose={purpose}
+              yourLocalBalance={yourLocalBalance}
+              tx={tx}
+              writeContracts={writeContracts}
+            />
+          </Route>
+        </Switch>
+      </BrowserRouter>
+
 
       <div style={{ width:600, margin: "auto", marginTop:32 }}>
       <XYPlot xType="time" width={300} height={300} onMouseLeave={onMouseLeave}>
