@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List } from "antd";
+import { Row, Col, Button, List, Select } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -36,6 +36,8 @@ import "./ReactVis.css";
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 
+const { Option } = Select;
+
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
 
@@ -64,6 +66,13 @@ function App() {
       date
       dailyVolumeUSD
     }
+    tokens(orderBy:tradeVolumeUSD, orderDirection: desc) {
+      id
+      symbol
+      name
+      decimals
+      tradeVolumeUSD
+    }
   }
   `;
 
@@ -71,10 +80,34 @@ function App() {
   let transformedData
 
   if (data) {
-    console.log(data)
   transformedData = data['uniswapDayDatas'].map( s => ({x:new Date(s.date * 1000), y: parseFloat(s.dailyVolumeUSD)}) );
-  console.log(transformedData)
 }
+
+  const [crosshairValues, setCrosshairValues] = useState([]);
+
+  const onMouseLeave = () => setCrosshairValues([]);
+  const onNearestX = (value, {index}) => {
+    setCrosshairValues([{x: value.x, y: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 5 }).format(value.y)}])
+  }
+
+  const [tokenFilter, setTokenFilter] = useState([])
+
+  function onChange(value) {
+    console.log(`selected ${value}`);
+  }
+
+  function onBlur() {
+    console.log('blur');
+  }
+
+  function onFocus() {
+    console.log('focus');
+  }
+
+  function onSearch(val) {
+    console.log('search:', val);
+  }
+
 
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
@@ -88,33 +121,6 @@ function App() {
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, localProvider);
   const address = useUserAddress(userProvider);
-
-  // The transactor wraps transactions and provides notificiations
-  const tx = Transactor(userProvider, gasPrice)
-
-  // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
-  console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
-
-  // just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-  console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
-
-  // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider)
-  console.log("📝 readContracts",readContracts)
-
-  // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
-
-  // If you want to make 🔐 write transactions to your contracts, use the userProvider:
-  const writeContracts = useContractLoader(userProvider)
-  console.log("🔐 writeContracts",writeContracts)
-
-  //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -138,101 +144,32 @@ function App() {
           this <Contract/> component will automatically parse your ABI
           and give you a form to interact with it locally
       */}
-      <Contract
-        name="YourContract"
-        signer={userProvider.getSigner()}
-        provider={localProvider}
-        address={address}
-        blockExplorer={blockExplorer}
-      />
-
-
-      {/*
-        ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
-      */}
-      <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
-        <h3>example ui:</h3>
-        <h2>{purpose}</h2>
-
-        {  /* use formatEther to display a BigNumber: */ }
-        <h2>Your Balance: {yourLocalBalance?formatEther(yourLocalBalance):"..."}</h2>
-
-
-        <div style={{margin:8}}>
-          <Button onClick={()=>{
-            /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose("🐖 Don't hog the block!") )
-          }}>Set Purpose</Button>
-        </div>
-
-        <div style={{margin:8}}>
-          <Button onClick={()=>{
-            /*
-              you can also just craft a transaction and send it to the tx() transactor
-              here we are sending value straight to the contract's address:
-            */
-            tx({
-              to: writeContracts.YourContract.address,
-              value: parseEther("0.001")
-            });
-            /* this should throw an error about "no fallback nor receive function" until you add it */
-          }}>Send Value</Button>
-        </div>
-
-        <div style={{margin:8}}>
-          <Button onClick={()=>{
-            /* look how we call setPurpose AND send some value along */
-            tx( writeContracts.YourContract.setPurpose("💵 Paying for this one!",{
-              value: parseEther("0.001")
-            }))
-            /* this will fail until you make the setPurpose function payable */
-          }}>Set Purpose With Value</Button>
-        </div>
-
-
-        <div style={{margin:8}}>
-          <Button onClick={()=>{
-            /* you can also just craft a transaction and send it to the tx() transactor */
-            tx({
-              to: writeContracts.YourContract.address,
-              value: parseEther("0.001"),
-              data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)",["🤓 Whoa so 1337!"])
-            });
-            /* this should throw an error about "no fallback nor receive function" until you add it */
-          }}>Another Example</Button>
-        </div>
-
-      </div>
-
-      {/*
-        📑 Maybe display a list of events?
-          (uncomment the event and emit line in YourContract.sol! )
-      */}
-      <div style={{ width:600, margin: "auto", marginTop:32 }}>
-        <List
-          bordered
-          dataSource={setPurposeEvents}
-          renderItem={item => (
-            <List.Item>
-              <Address
-                  value={item[0]}
-                  ensProvider={mainnetProvider}
-                  fontSize={16}
-                /> =>
-              {item[1]}
-            </List.Item>
-          )}
-        />
-      </div>
 
       <div style={{ width:600, margin: "auto", marginTop:32 }}>
-      <XYPlot xType="time" width={300} height={300}>
+      <XYPlot xType="time" width={300} height={300} onMouseLeave={onMouseLeave}>
             <HorizontalGridLines />
             <VerticalGridLines />
             <LineSeries
               data={transformedData}
+              onNearestX={onNearestX}
             />
+            <Crosshair values={crosshairValues}/>
       </XYPlot>
+      <Select
+        showSearch
+        style={{ width: 200 }}
+        placeholder="Select a person"
+        optionFilterProp="children"
+        onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onSearch={onSearch}
+        filterOption={(input, option) =>
+          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+        }
+      >
+      {data['tokens'].map((token) => <Option key={token.id} value={token.id}>{token.name}</Option>)}
+      </Select>
       </div>
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
@@ -249,9 +186,6 @@ function App() {
            blockExplorer={blockExplorer}
          />
       </div>
-
-      {/* 🗑 Throw these away once you have 🏗 scaffold-eth figured out: */}
-      <Hints address={address} yourLocalBalance={yourLocalBalance} price={price} mainnetProvider={mainnetProvider} />
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
