@@ -160,74 +160,41 @@ function App() {
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
+          <div style={{ width:600, margin: "auto", marginTop:32 }}>
+          <XYPlot xType="time" width={300} height={300} onMouseLeave={onMouseLeave}>
+                <HorizontalGridLines />
+                <VerticalGridLines />
+                <LineSeries
+                  data={transformedData}
+                  onNearestX={onNearestX}
+                />
+                <Crosshair values={crosshairValues}/>
+          </XYPlot>
+          <Select
+            showSearch
+            style={{ width: 200 }}
+            placeholder="Select a token"
+            optionFilterProp="children"
+            onChange={onChange}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onSearch={onSearch}
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+          {data?data['tokens'].map((token) => <Option key={token.id} value={token.id}>{token.name}</Option>):<Option key={'loading'} value={'loading'}>Loading</Option>}
+          </Select>
+          </div>
           </Route>
           <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              mainnetProvider={mainnetProvider}
-              setPurposeEvents={setPurposeEvents}
-              purpose={purpose}
-              yourLocalBalance={yourLocalBalance}
-              tx={tx}
-              writeContracts={writeContracts}
-            />
           </Route>
         </Switch>
       </BrowserRouter>
-
-
-      <div style={{ width:600, margin: "auto", marginTop:32 }}>
-      <XYPlot xType="time" width={300} height={300} onMouseLeave={onMouseLeave}>
-            <HorizontalGridLines />
-            <VerticalGridLines />
-            <LineSeries
-              data={transformedData}
-              onNearestX={onNearestX}
-            />
-            <Crosshair values={crosshairValues}/>
-      </XYPlot>
-      <Select
-        showSearch
-        style={{ width: 200 }}
-        placeholder="Select a person"
-        optionFilterProp="children"
-        onChange={onChange}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        onSearch={onSearch}
-        filterOption={(input, option) =>
-          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-        }
-      >
-      {data['tokens'].map((token) => <Option key={token.id} value={token.id}>{token.name}</Option>)}
-      </Select>
-      </div>
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
