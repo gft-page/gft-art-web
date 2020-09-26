@@ -38,8 +38,8 @@
       "packages/*"
     ],
     "nohoist": [
-      "packages/subgraph/@graphprotocol/graph-ts",
-      "packages/subgraph/@graphprotocol/graph-ts/**"
+      "**/@graphprotocol/graph-ts",
+      "**/@graphprotocol/graph-ts/**"
     ]
   },
   "dependencies": {
