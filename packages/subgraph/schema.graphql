@@ -1,0 +1,22 @@
+type Ink @entity {
+  id: ID!
+  inkNumber: BigInt!
+  jsonUrl: String!
+  artist: Artist!
+  name: String
+  description: String
+  image: String
+  limit: BigInt!
+  count: BigInt
+  createdAt: BigInt
+  mintPrice: BigInt
+  mintPriceSetAt: BigInt
+}
+
+type Artist @entity {
+  id: ID!
+  address: Bytes!
+  inks: [Ink]! @derivedFrom(field: "artist")
+  inkCount: BigInt!
+  earnings: BigInt
+}
