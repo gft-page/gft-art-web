@@ -17,7 +17,7 @@ import CanvasDraw from "react-canvas-draw";
 import LZ from "lz-string";
 var _ = require('lodash');
 
-export default function InkInfo(props) {
+export default function ViewInk(props) {
 
   let { hash } = useParams();
 
@@ -64,7 +64,7 @@ export default function InkInfo(props) {
       let tempMainnetTokens = {}
       for (let i of data.ink.tokens) {
         console.log(i)
-        console.log(props.readKovanContracts['NiftyMediator'].address)
+
         if (i['network'] === 'mainnet') {
           console.log('checking mainnet')
 
@@ -369,7 +369,7 @@ export default function InkInfo(props) {
               injectedGsnSigner={props.injectedGsnSigner}
               signingProvider={props.injectedProvider}
               localProvider={props.kovanProvider}
-              contractAddress={props.readKovanContracts['NiftyInk']['address']}
+              contractAddress={props.readKovanContracts?props.readKovanContracts['NiftyInk']['address']:''}
               targetId={data.ink.id}
               likerAddress={props.address}
               transactionConfig={props.transactionConfig}
