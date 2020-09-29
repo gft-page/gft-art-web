@@ -4,7 +4,7 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Select } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -12,8 +12,8 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
-//import Hints from "./Hints";
-import { Hints, ExampleUI } from "./views"
+import { utils } from "ethers";
+import { Info, Recipients, Donate, Donations, Donors, PoolDonations, Withdrawals } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -29,6 +29,7 @@ import { Hints, ExampleUI } from "./views"
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -86,9 +87,114 @@ function App() {
   const writeContracts = useContractLoader(userProvider)
   console.log("🔐 writeContracts",writeContracts)
 
-  //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+
+  const recipientAddedEvents = useEventListener(readContracts, "CLR", "RecipientAdded", localProvider, 1);
+  console.log("📟 recipientAddedEvents:",recipientAddedEvents)
+
+  const donationEvents = useEventListener(readContracts, "CLR", "Donate", localProvider, 1);
+  console.log("📟 donationEvents:", donationEvents)
+
+  const totalMatchingWeight = useContractReader(readContracts,"CLR", "totalMatchingWeight")
+  console.log("👜 totalMatchingWeight:",totalMatchingWeight)
+
+  const matchingPool = useContractReader(readContracts,"CLR", "matchingPool")
+  console.log("💰 matchingPool:",matchingPool)
+
+  const matchingPoolDonationEvents = useEventListener(readContracts, "CLR", "MatchingPoolDonation", localProvider, 1);
+  console.log("📟 matchingPoolDonationEvents:",matchingPoolDonationEvents)
+
+  const withdrawEvents = useEventListener(readContracts, "CLR", "Withdraw", localProvider, 1);
+  console.log("📟 withdrawEvents:",withdrawEvents)
+
+  const [ recipients, setRecipients ] = useState([])
+  const [ recipientOptions, setRecipientOptions ] = useState([])
+  const [ currentTotalWeight, setCurrentTotalWeight ] = useState([])
+
+
+
+  const donorAllowedEvents = useEventListener(readContracts, "DonorManager", "DonorAllowed", localProvider, 1);
+  //console.log("📟 donorAllowedEvents:",donorAllowedEvents)
+
+
+  const owner = useContractReader(readContracts,"CLR", "owner")
+  console.log("🗝 owner:",owner)
+
+  const roundStart = useContractReader(readContracts,"CLR", "roundStart")
+  console.log("⏱ roundStart:",roundStart)
+
+  const roundDuration = useContractReader(readContracts,"CLR", "roundDuration")
+  console.log("⏱ roundDuration:",roundDuration)
+
+  const getBlockTimestamp = useContractReader(readContracts,"CLR", "getBlockTimestamp")
+  console.log("⏱ getBlockTimestamp:",getBlockTimestamp)
+
+  let mode = "loading..."
+  if(roundStart && roundStart.toNumber()<=0){
+    mode = "Waiting to begin..."
+  }else if(roundStart && roundStart.toNumber()>0 && getBlockTimestamp && roundDuration){
+
+    let timeLeft = roundStart.toNumber() + roundDuration.toNumber() - getBlockTimestamp.toNumber()
+
+    if(timeLeft>=0){
+      mode = "Round open! ("+timeLeft+"s left...)"
+    }else{
+      mode = "Round is over..."
+    }
+
+  }
+
+
+  useEffect(()=>{
+    const getRecipients = async ()=>{
+      console.log("Loading up recipient list...")
+      let newRecipients = []
+      let newRecipientOptions = []
+
+      let totalWeight
+      for(let i=0;i<recipientAddedEvents.length;i++){
+        const thisIndex = recipientAddedEvents[i].index.toNumber()
+        const recipientObject = await readContracts.CLR.recipients(thisIndex)
+        let recipient = {}
+        Object.assign(recipient,recipientObject)
+        recipient.index = thisIndex
+        newRecipients.push( recipient );
+        newRecipientOptions.push(
+          <Option key={"ro_"+i} value={i}>{utils.toUtf8String(recipientAddedEvents[i].title)}</Option>
+        )
+
+        newRecipients[i].totalDonations = await readContracts.CLR.totalDonations(thisIndex)
+        newRecipients[i].sumOfSqrtDonation = await readContracts.CLR.sumOfSqrtDonation(thisIndex)
+        newRecipients[i].currentWeight = newRecipients[i].sumOfSqrtDonation.mul(newRecipients[i].sumOfSqrtDonation)
+
+        if(!totalWeight){
+          totalWeight = newRecipients[i].currentWeight
+        } else{
+          totalWeight = totalWeight.add(newRecipients[i].currentWeight)
+        }
+      }
+
+      setRecipients(newRecipients)
+      setRecipientOptions(newRecipientOptions)
+      setCurrentTotalWeight(totalWeight)
+    }
+    getRecipients()
+  },[ recipientAddedEvents, setRecipients, donationEvents ])
+
+
+
+  const [ donationsByAddress, setDonationsByAddress ] = useState({})
+
+  useEffect(()=>{
+    let newDonationsByAddress = {}
+    for(let d in donationEvents){
+      if(!newDonationsByAddress[donationEvents[d].sender]){
+        newDonationsByAddress[donationEvents[d].sender] = donationEvents[d].value
+      }else{
+        newDonationsByAddress[donationEvents[d].sender] = newDonationsByAddress[donationEvents[d].sender].add(donationEvents[d].value)
+      }
+    }
+    setDonationsByAddress(newDonationsByAddress)
+  },[donationEvents])
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -109,6 +215,7 @@ function App() {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+
   return (
     <div className="App">
 
@@ -119,13 +226,31 @@ function App() {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Campaign</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/recipients">
+            <Link onClick={()=>{setRoute("/recipients")}} to="/recipients">Recipients</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+          <Menu.Item key="/donate">
+            <Link onClick={()=>{setRoute("/donate")}} to="/donate">Donate</Link>
+          </Menu.Item>
+          <Menu.Item key="/donations">
+            <Link onClick={()=>{setRoute("/donations")}} to="/donations">Donations</Link>
+          </Menu.Item>
+          <Menu.Item key="/donors">
+            <Link onClick={()=>{setRoute("/donors")}} to="/donors">Donors</Link>
+          </Menu.Item>
+          <Menu.Item key="/pooldonations">
+            <Link onClick={()=>{setRoute("/pooldonations")}} to="/pooldonations">Pool Donations</Link>
+          </Menu.Item>
+          <Menu.Item key="/withdrawals">
+            <Link onClick={()=>{setRoute("/withdrawals")}} to="/withdrawals">Withdrawals</Link>
+          </Menu.Item>
+          <Menu.Item key="/clr">
+            <Link onClick={()=>{setRoute("/clr")}} to="/clr">CLR Contract</Link>
+          </Menu.Item>
+          <Menu.Item key="/donormanager">
+            <Link onClick={()=>{setRoute("/donormanager")}} to="/donormanager">DonorManager Contract</Link>
           </Menu.Item>
         </Menu>
 
@@ -136,32 +261,93 @@ function App() {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
+            <Info
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              readContracts={readContracts}
+              writeContracts={writeContracts}
+              price={price}
+              blockExplorer={blockExplorer}
+              tx={tx}
+              owner={owner}
+              roundDuration={roundDuration}
+              mode={mode}
+            />
+          </Route>
+          <Route path="/recipients">
+            <Recipients
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              readContracts={readContracts}
+              price={price}
+              blockExplorer={blockExplorer}
+              recipients={recipients}
+              totalMatchingWeight={totalMatchingWeight}
+              matchingPool={matchingPool}
+              currentTotalWeight={currentTotalWeight}
+            />
+          </Route>
+          <Route path="/donate">
+            <Donate
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              recipientOptions={recipientOptions}
+            />
+          </Route>
+          <Route path="/donations">
+            <Donations
+              mainnetProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              price={price}
+              donationEvents={donationEvents}
+            />
+          </Route>
+          <Route path="/donors">
+            <Donors
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              blockExplorer={blockExplorer}
+              price={price}
+              donorAllowedEvents={donorAllowedEvents}
+              donationsByAddress={donationsByAddress}
+            />
+          </Route>
+          <Route path="/pooldonations">
+            <PoolDonations
+              mainnetProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              price={price}
+              matchingPoolDonationEvents={matchingPoolDonationEvents}
+            />
+          </Route>
+          <Route path="/withdrawals">
+            <Withdrawals
+              mainnetProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              price={price}
+              withdrawEvents={withdrawEvents}
+            />
+          </Route>
+          <Route path="/clr">
             <Contract
-              name="YourContract"
+              name="CLR"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
           </Route>
-          <Route path="/hints">
-            <Hints
+          <Route path="/donormanager">
+            <Contract
+              name="DonorManager"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
               address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
+              blockExplorer={blockExplorer}
             />
           </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              mainnetProvider={mainnetProvider}
-              setPurposeEvents={setPurposeEvents}
-              purpose={purpose}
-              yourLocalBalance={yourLocalBalance}
-              tx={tx}
-              writeContracts={writeContracts}
-            />
-          </Route>
+
         </Switch>
       </BrowserRouter>
 
