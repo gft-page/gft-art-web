@@ -78,10 +78,10 @@ export default function MyNiftyInks(props) {
                 try {
                 const inkJson = JSON.parse(jsonContent)
                 const linkUrl = inkJson['drawing']
-                const inkImageHash = inkJson.image.split('/').pop()
-                const imageContent = await getFromIPFS(inkImageHash, props.ipfsConfig)
-                const inkImageURI = 'data:image/png;base64,' + imageContent.toString('base64')
-                return {inkId: inkId.toString(), inkCount: inkCount, url: linkUrl, name: inkJson['name'], limit: inkJson['attributes'][0]['value'], image: inkImageURI, likes: likes.toString()}
+//                const inkImageHash = inkJson.image.split('/').pop()
+//                const imageContent = await getFromIPFS(inkImageHash, props.ipfsConfig)
+//                const inkImageURI = 'data:image/png;base64,' + imageContent.toString('base64')
+                return {inkId: inkId.toString(), inkCount: inkCount, url: linkUrl, name: inkJson['name'], limit: inkJson['attributes'][0]['value'], image: inkJson.image, likes: likes.toString()}
               } catch(e) {
                 console.log(e)
               }

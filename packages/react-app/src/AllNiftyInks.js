@@ -6,7 +6,7 @@ import { getFromIPFS, isBlacklisted } from "./helpers";
 import { Loader } from "./components";
 import StackGrid from "react-stack-grid";
 
-const MAX_FRONT_PAGE_DISPLAY = 512;
+const MAX_FRONT_PAGE_DISPLAY = 100;
 const LOADERS_TO_SHOW = 32;
 const BATCH_DOWNLOAD = 8;
 
@@ -49,15 +49,15 @@ export default function NftyWallet(props) {
         const getInkImages = async (e) => {
           const jsonContent = await getFromIPFS(e["jsonUrl"], props.ipfsConfig);
           const inkJson = JSON.parse(jsonContent);
-          const inkImageHash = inkJson.image.split("/").pop();
-          const imageContent = await getFromIPFS(
-            inkImageHash,
-            props.ipfsConfig
-          );
-          const inkImageURI =
-            "data:image/png;base64," + imageContent.toString("base64");
+//          const inkImageHash = inkJson.image.split("/").pop();
+//          const imageContent = await getFromIPFS(
+//            inkImageHash,
+//            props.ipfsConfig
+//          );
+//          const inkImageURI =
+//            "data:image/png;base64," + imageContent.toString("base64");
           return Object.assign(
-            { image: inkImageURI, name: inkJson.name, url: inkJson.drawing },
+            { image: inkJson.image, name: inkJson.name, url: inkJson.drawing },
             e
           );
         };

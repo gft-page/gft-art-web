@@ -49,11 +49,11 @@ export default function MyNiftyHoldings(props) {
           if(jsonContent){
             const inkJson = JSON.parse(jsonContent)
             const linkUrl = inkJson['drawing']
-            const inkImageHash = inkJson.image.split('/').pop()
-            const imageContent = await getFromIPFS(inkImageHash, props.ipfsConfig)
-            const inkImageURI = 'data:image/png;base64,' + imageContent.toString('base64')
+//            const inkImageHash = inkJson.image.split('/').pop()
+//            const imageContent = await getFromIPFS(inkImageHash, props.ipfsConfig)
+//            const inkImageURI = 'data:image/png;base64,' + imageContent.toString('base64')
 
-            return {tokenId: tokenId.toString(), jsonUrl: jsonUrl, url: linkUrl, name: inkJson['name'], image: inkImageURI, chain: chain}
+            return {tokenId: tokenId.toString(), jsonUrl: jsonUrl, url: linkUrl, name: inkJson['name'], image: inkJson.image, chain: chain}
           }
           return {}
         }
