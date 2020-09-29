@@ -6,7 +6,7 @@ export const ARTISTS_QUERY = gql`
       inkCount
       address
       inks(orderBy: createdAt, orderDirection: desc) {
-        inkId
+        inkNumber
         jsonUrl
         limit
         count
@@ -24,8 +24,31 @@ export const INKS_QUERY = gql`
   query inks {
     inks(first: 5) {
       id
-      inkId
+      inkNumber
       jsonUrl
     }
   }
-`
+`;
+
+export const INK_QUERY = gql`
+query ink($inkUrl: String!) {
+  ink(id: $inkUrl) {
+    id
+    inkNumber
+    jsonUrl
+    artist {
+      id
+    }
+    limit
+    count
+    mintPrice
+    mintPriceNonce
+    tokens {
+      id
+      owner
+      network
+      price
+    }
+  }
+}
+`;
