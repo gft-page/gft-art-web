@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
++import React, { useState, useEffect } from "react";
 import { Switch, Route, Link } from "react-router-dom";
 import { Button, Badge, Tabs, Row, Col } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
@@ -12,6 +12,8 @@ import MyNiftyHoldings from "./MyNiftyHoldings.js";
 import MyNiftyInks from "./MyNiftyInks.js";
 import AllNiftyInks from "./AllNiftyInks.js";
 import Artist from "./Artist.js";
+import CreateInk from "./CreateInk.js";
+import ViewInk from "./ViewInk.js";
 const { TabPane } = Tabs;
 
 const Web3HttpProvider = require("web3-providers-http");
@@ -194,7 +196,7 @@ export default function NftyWallet(props) {
         paymasterAddress
       };
 
-      newGsnConfig.chainId = 100; //31337
+      newGsnConfig.chainId = 100;
       newGsnConfig.relayLookupWindowBlocks = 1e5;
       newGsnConfig.verbose = true;
 
@@ -329,6 +331,9 @@ export default function NftyWallet(props) {
             </span>
             About
           </Button>
+          <Link to="/viewink/QmNYSQPkYF75XaUUAkAzfWquXLgQnbMBxLt8pCAfjJb2se">
+          newInkPage
+          </Link>
         </Col>
       </Row>
     </div>
@@ -366,7 +371,6 @@ export default function NftyWallet(props) {
       <Tabs
         activeKey={tab}
         onChange={(t) => {
-          // window.history.pushState({ id: "draw" }, "draw", "/");
           setTab(t);
         }}
         style={{ marginTop: 0, padding: 8, textAlign: "center" }}
@@ -573,6 +577,70 @@ export default function NftyWallet(props) {
               transactionConfig={transactionConfig}
               />
               {inkInfo}
+            </div>
+        </Route>
+
+        <Route path="/make">
+              <div>
+              <CreateInk {...props}
+              key={renderKey}
+              canvasKey={canvasKey}
+              address={props.address}
+              mainnetProvider={props.mainnetProvider}
+              injectedProvider={props.injectedProvider}
+              metaProvider={props.metaProvider}
+              kovanProvider={props.kovanProvider}
+              readKovanContracts={props.readKovanContracts}
+              mode={mode}
+              ink={ink}
+              ipfsHash={ipfsHash}
+              setMode={setMode}
+              setIpfsHash={setIpfsHash}
+              setInk={setInk}
+              drawing={drawing}
+              setDrawing={setDrawing}
+              viewDrawing={viewDrawing}
+              setViewDrawing={setViewDrawing}
+              ipfsConfig={ipfsConfig}
+              ipfsConfigInfura={ipfsConfigInfura}
+              gasPrice={props.gasPrice}
+              calculatedVmin={calculatedVmin}
+              transactionConfig={transactionConfig}
+              />
+            </div>
+        </Route>
+
+        <Route path="/viewink/:hash">
+              <div>
+              <ViewInk {...props}
+              address={props.address}
+              artist={artist}
+              calculatedVmin={calculatedVmin}
+              canvasKey={canvasKey}
+              drawing={drawing}
+              gasPrice={props.gasPrice}
+              injectedProvider={props.injectedProvider}
+              ink={ink}
+              ipfsConfig={ipfsConfig}
+              ipfsConfigInfura={ipfsConfigInfura}
+              ipfsHash={ipfsHash}
+              key={renderKey}
+              kovanProvider={props.kovanProvider}
+              mainnetProvider={props.mainnetProvider}
+              metaProvider={props.metaProvider}
+              readContracts={props.readContracts}
+              readKovanContracts={props.readKovanContracts}
+              setArtist={setArtist}
+              setDrawing={setDrawing}
+              setInk={setInk}
+              setIpfsHash={setIpfsHash}
+              setMode={setMode}
+              setTab={setTab}
+              setViewDrawing={setViewDrawing}
+              transactionConfig={transactionConfig}
+              upgradePrice={upgradePrice}
+              viewDrawing={viewDrawing}
+              />
             </div>
         </Route>
 
