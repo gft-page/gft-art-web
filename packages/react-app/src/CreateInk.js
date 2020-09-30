@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useHistory } from "react-router-dom";
 import 'antd/dist/antd.css';
 import "./App.css";
 import { UndoOutlined, ClearOutlined, PlaySquareOutlined, HighlightOutlined, BgColorsOutlined, BorderOutlined } from '@ant-design/icons';
@@ -13,6 +14,8 @@ const Hash = require('ipfs-only-hash')
 const pickers = [CirclePicker, TwitterPicker, SketchPicker ]
 
 export default function CreateInk(props) {
+
+  let history = useHistory();
 
   const [picker, setPicker] = useLocalStorage("picker", 0)
   const [color, setColor] = useLocalStorage("color", "#666666")
@@ -138,42 +141,6 @@ export default function CreateInk(props) {
 
     if(mintResult) {
 
-      props.setViewDrawing(LZ.decompress(props.drawing))
-      setDrawingSize(10000)
-      props.setMode("mint")
-      props.setIpfsHash(drawingHash)
-      props.setDrawing("")
-      window.history.pushState({id: drawingHash}, props.ink['name'], '/' + drawingHash)
-
-
-      /*
-      let serverUrl = "https://ipfs.nifty.ink:3001/save"//'http://localhost:3001/save'
-      console.log("SAVING TO SERVER BUFFER:", drawingBuffer)
-      axios.post(serverUrl, {buffer: drawingBuffer})
-      .then(function (response) {
-        console.log(" drawingBuffer SERVER RESPONSE LOCAL:",response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-      console.log("SAVING TO SERVER BUFFER:", imageBuffer)
-      axios.post(serverUrl,  {buffer: imageBuffer})
-      .then(function (response) {
-        console.log(" imageBuffer SERVER RESPONSE LOCAL:",response);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-      console.log("SAVING TO SERVER BUFFER:", inkBuffer)
-      axios.post(serverUrl,  {buffer: inkBuffer})
-      .then(function (response) {
-        console.log("inkBuffer SERVER RESPONSE LOCAL:",response);
-      })
-      .catch(function (error) {
-        console.log(error);
-        setSending(false)
-      });*/
-
   const drawingResult = addToIPFS(drawingBuffer, props.ipfsConfig)
   const imageResult = addToIPFS(imageBuffer, props.ipfsConfig)
   const inkResult = addToIPFS(inkBuffer, props.ipfsConfig)
@@ -182,18 +149,21 @@ export default function CreateInk(props) {
   const imageResultInfura = addToIPFS(imageBuffer, props.ipfsConfigInfura)
   const inkResultInfura = addToIPFS(inkBuffer, props.ipfsConfigInfura)
 
-
-  setSending(false)
-
   Promise.all([drawingResult, imageResult, inkResult]).then((values) => {
     console.log("FINISHED UPLOADING TO PINNER",values);
     message.destroy()
   });
 
+  setSending(false)
+  props.setViewDrawing(LZ.decompress(props.drawing))
+  setDrawingSize(10000)
+  props.setDrawing("")
+  history.push('/viewink/' + drawingHash)
 
   Promise.all([drawingResultInfura, imageResultInfura, inkResultInfura]).then((values) => {
     console.log("INFURA FINISHED UPLOADING!",values);
   });
+
 }
 };
 
@@ -415,11 +385,10 @@ return (
   brushColor={color.hex}
   lazyRadius={4}
   brushRadius={brushRadius}
-  disabled={props.mode !== "edit"}
-  hideGrid={props.mode !== "edit"}
-  hideInterface={props.mode !== "edit"}
-  onChange={props.mode === "edit"?saveDrawing:null}
-  saveData={props.mode === "edit"?null:props.viewDrawing}
+//  disabled={props.mode !== "edit"}
+//  hideGrid={props.mode !== "edit"}
+//  hideInterface={props.mode !== "edit"}
+  onChange={saveDrawing}
   immediateLoading={drawingSize >= 10000}
   loadTimeOffset={3}
   />

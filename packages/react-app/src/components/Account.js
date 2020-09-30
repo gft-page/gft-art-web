@@ -6,9 +6,9 @@ import { Balance, Address, Wallet } from "."
 import { usePoller } from "../hooks"
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { Button } from 'antd';
-import { RelayProvider } from '@opengsn/gsn';
-import Fortmatic from "fortmatic";
-import Portis from "@portis/web3";
+//import { RelayProvider } from '@opengsn/gsn';
+//import Fortmatic from "fortmatic";
+//import Portis from "@portis/web3";
 
 const INFURA_ID = "9ea7e149b122423991f56257b882261c"  // MY INFURA_ID, SWAP IN YOURS!
 
@@ -22,6 +22,7 @@ const web3Modal = new Web3Modal({
         infuraId: INFURA_ID
       }
     },
+    /*
     fortmatic: {
       package: Fortmatic, // required
       options: {
@@ -34,11 +35,19 @@ const web3Modal = new Web3Modal({
       options: {
         id: "5b42dc23-b8b7-494e-a1e0-a32918e4aebe", // required
       }
-    }
+    }*/
   }
 });
 
 export default function Account(props) {
+
+  const getRelayProvider = async () => {
+    const Gsn = await import('@opengsn/gsn');
+    const RelayProvider = Gsn.RelayProvider
+    return RelayProvider
+  }
+
+  const RelayProvider = getRelayProvider()
 
   let relayHubAddress
   let stakeManagerAddress

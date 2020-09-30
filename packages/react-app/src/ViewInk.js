@@ -22,6 +22,7 @@ export default function ViewInk(props) {
   let { hash } = useParams();
 
   const drawingCanvas = useRef(null);
+  const [canvasKey, setCanvasKey] = useState(Date.now());
   const [size, setSize] = useState([0.8 * props.calculatedVmin, 0.8 * props.calculatedVmin])//["70vmin", "70vmin"]) //["50vmin", "50vmin"][750, 500]
   const [drawingSize, setDrawingSize] = useState(0)
 
@@ -59,7 +60,7 @@ export default function ViewInk(props) {
 
     const getInk = async (data) => {
       console.log(data)
-      let newInkJson = await getMetadata(data.ink.jsonUrl);
+      let newInkJson = await getFromIPFS(data.ink.jsonUrl, props.ipfsConfig)
 
       let tempMainnetTokens = {}
       for (let i of data.ink.tokens) {
@@ -75,7 +76,7 @@ export default function ViewInk(props) {
         }
       }
       setMainnetTokens(tempMainnetTokens)
-      setInkJson(newInkJson)
+      setInkJson(JSON.parse(newInkJson))
     };
 
     data ? getInk(data) : console.log("loading");
@@ -165,6 +166,7 @@ export default function ViewInk(props) {
 
   useEffect(()=>{
     console.log('new drawing')
+    setCanvasKey(Date.now());
     const showDrawing = async () => {
     if (hash) {
       let tIpfsConfig = {...props.ipfsConfig}
@@ -195,7 +197,7 @@ export default function ViewInk(props) {
 
   }, [hash])
 
-    if (!inkJson || !data) {
+    if (!inkJson || !inkJson.name || !data) {
       console.log('stuck here', inkJson, data)
       inkChainInfoDisplay = (
         <div style={{marginTop:32}}>
@@ -233,7 +235,7 @@ export default function ViewInk(props) {
       }
 
 
-      if(data.ink.limit === "0") {
+      if(data.ink && data.ink.limit === "0") {
         mintDescription = (data.ink.count + ' minted')
       }
       else {mintDescription = (data.ink.count + '/' + data.ink.limit + ' minted')}
@@ -370,7 +372,7 @@ export default function ViewInk(props) {
               signingProvider={props.injectedProvider}
               localProvider={props.kovanProvider}
               contractAddress={props.readKovanContracts?props.readKovanContracts['NiftyInk']['address']:''}
-              targetId={data.ink.id}
+              targetId={data.ink.inkNumber}
               likerAddress={props.address}
               transactionConfig={props.transactionConfig}
             />
@@ -431,8 +433,8 @@ export default function ViewInk(props) {
       <div>
         <Row style={{ width: "90vmin", margin: "0 auto", marginTop:"1vh", justifyContent:'center'}}>
 
-          <Typography.Text style={{color:"#222222"}} copyable={{ text: inkJson.external_url}} style={{verticalAlign:"middle",paddingLeft:5,fontSize:28}}>
-          <a href={'/' + hash} style={{color:"#222222"}}>{inkJson.name?inkJson.name:<Spin/>}</a>
+          <Typography.Text style={{color:"#222222"}} copyable={{ text: inkJson?inkJson.external_url:''}} style={{verticalAlign:"middle",paddingLeft:5,fontSize:28}}>
+          <a href={'/' + hash} style={{color:"#222222"}}>{inkJson?inkJson.name:<Spin/>}</a>
           </Typography.Text>
 
           <Button style={{marginTop:4,marginLeft:4}} onClick={() => {
@@ -445,8 +447,6 @@ export default function ViewInk(props) {
 
     )
 
-
-
   return (
     <div style={{textAlign:"center"}}  /*onClick={
       () => {
@@ -458,7 +458,7 @@ export default function ViewInk(props) {
     {top}
     <div style={{ backgroundColor: "#666666", width: size[0], margin: "0 auto", border: "1px solid #999999", boxShadow: "2px 2px 8px #AAAAAA" }}>
     <CanvasDraw
-    key={props.mode+""+props.canvasKey}
+    key={canvasKey}
     ref={drawingCanvas}
     canvasWidth={size[0]}
     canvasHeight={size[1]}

@@ -52,3 +52,25 @@ query ink($inkUrl: String!) {
   }
 }
 `;
+
+export const SUMMARY_QUERY = gql`
+query artists($address: Bytes!) {
+    artists(where: { address: $address }) {
+    inkCount
+    address
+    inks(orderBy: createdAt, orderDirection: desc) {
+      inkNumber
+      jsonUrl
+      limit
+      count
+      createdAt
+      sales {
+        price
+      }
+    }
+  }
+  tokens(where: { owner: $address }) {
+    id
+  }
+}
+`;

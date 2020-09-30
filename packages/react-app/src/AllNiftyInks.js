@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Switch, Route, Link } from "react-router-dom";
-import { Avatar, Spin } from "antd";
+import { Avatar, Spin, Button } from "antd";
 import { useEventListener } from "./hooks";
 import { getFromIPFS, isBlacklisted } from "./helpers";
 import { Loader } from "./components";
@@ -15,6 +15,11 @@ export default function NftyWallet(props) {
 
   let allInkView;
   const [lastStreamCount, setLastStreamCount] = useState("0");
+
+  let [inkPage, setInkPage] = useState(0)
+  let [lastInkPage, setLastInkPage] = useState(0)
+  let inksPerPage = 40
+  let [loading, setLoading] = useState(true)
 
   let inkCreations = useEventListener(
     props.readKovanContracts,
@@ -32,19 +37,15 @@ export default function NftyWallet(props) {
       props.totalInks &&
       inkCreations.length
     ) {
-      if (
-        inkCreations.length.toString() === props.totalInks.toString() &&
-        props.totalInks.toString() !== lastStreamCount
-      ) {
+      if(inkCreations.length.toString() === props.totalInks.toString() && (inkPage !== lastInkPage || props.totalInks.toString() !== lastStreamCount)) {
 
-        let inksToShow = Math.min(
-          MAX_FRONT_PAGE_DISPLAY,
-          props.totalInks.toString()
-        );
-        let allInks = new Array(
-          Math.min(LOADERS_TO_SHOW, props.totalInks.toString())
-        ).fill({});
+        setLoading(true)
+        let allInks
+        if(inkPage === 0) {
+          allInks = new Array(Math.min(LOADERS_TO_SHOW, props.totalInks.toString())).fill({})
+        } else { allInks = Array.from(allInksArray) }
         setLastStreamCount(props.totalInks.toString());
+        setLastInkPage(inkPage)
 
         const getInkImages = async (e) => {
           const jsonContent = await getFromIPFS(e["jsonUrl"], props.ipfsConfig);
@@ -64,12 +65,18 @@ export default function NftyWallet(props) {
 
         const loadStream = async () => {
           if (inkCreations) {
-            let mostRecentInks = Array.from(inkCreations).reverse();
+            let allInksToDisplay = ([...Array(props.totalInks.toNumber()).keys()])
+            let pageOfInks = allInksToDisplay.reverse().slice(inkPage * inksPerPage, inkPage * inksPerPage + inksPerPage)
+
+            console.log(pageOfInks)
+
+            let mostRecentInks = inkCreations
             let promises = [];
             let hashesForDebugging = [];
             let skips = 0;
-            let newIndex = 0;
-            for (var i = 0; i < inksToShow; i++) {
+            let newIndex = inkPage===0?0:allInks.length
+            console.log('newIndex', newIndex)
+            for(let i of pageOfInks){
               if (!isBlacklisted(mostRecentInks[i]["jsonUrl"])) {
                 try {
                   promises.push(getInkImages(mostRecentInks[i]));
@@ -102,15 +109,17 @@ export default function NftyWallet(props) {
               }
             }
           }
+          setLoading(false)
         };
 
         loadStream();
       }
     }
-  }, [props.tab, props.totalInks]);
+  }, [props.tab, props.totalInks, inkPage])
 
   if (allInksArray && allInksArray.length > 0) {
     allInkView = (
+      <>
       <StackGrid columnWidth={120} gutterHeight={32} gutterWidth={32}>
         {allInksArray.map((item) => {
           return (
@@ -120,7 +129,7 @@ export default function NftyWallet(props) {
               style={{ cursor: "pointer" }}
             >
               {item["image"] ? (
-                <Link to={`/${item["url"]}`}>
+                <Link to={`viewink/${item["url"]}`}>
                 <img
                   src={item["image"]}
                   alt={item["name"]}
@@ -140,6 +149,14 @@ export default function NftyWallet(props) {
           );
         })}
       </StackGrid>
+      {<Button
+          onClick={() => {setInkPage(inkPage + 1)}}
+          loading={loading}
+          disabled={(inkPage * inksPerPage + inksPerPage).toString() >= inkCreations.length}
+          >
+          {loading?'Loading':(((inkPage * inksPerPage + inksPerPage).toString() < inkCreations.length)?'Show More':allInksArray.length + ' inks')}
+        </Button>}
+        </>
     );
   } else {
     allInkView = <Loader />;

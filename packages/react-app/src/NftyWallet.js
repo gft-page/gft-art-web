@@ -14,6 +14,8 @@ import AllNiftyInks from "./AllNiftyInks.js";
 import Artist from "./Artist.js";
 import CreateInk from "./CreateInk.js";
 import ViewInk from "./ViewInk.js";
+import { useQuery } from "react-apollo";
+import { SUMMARY_QUERY } from "./apollo/queries"
 const { TabPane } = Tabs;
 
 const Web3HttpProvider = require("web3-providers-http");
@@ -51,6 +53,11 @@ export default function NftyWallet(props) {
   const [injectedGsnSigner, setInjectedGsnSigner] = useState();
 
   const [artist, setArtist] = useState();
+
+  const { loading, error, data } = useQuery(SUMMARY_QUERY, {
+    variables: { address: props.address },
+    pollInterval: 4000
+  });
 
   let transactionConfig = {
     address: props.address,
@@ -213,6 +220,15 @@ export default function NftyWallet(props) {
           "http://localhost:8546"
         );
       }
+
+      const getRelayProvider = async () => {
+        const Gsn = await import('@opengsn/gsn');
+        const RelayProvider = Gsn.RelayProvider
+        return RelayProvider
+      }
+
+      const RelayProvider = getRelayProvider()
+
       const gsnProvider = new RelayProvider(origProvider, newGsnConfig);
 
       const account = await gsnProvider.newAccount();
