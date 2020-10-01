@@ -38,9 +38,8 @@ contract Governor {
   }
 
 
-
-
-
+  uint8 quorumNumerator = 2;
+  uint8 quorumDenominator = 3;
 
   struct Vote {
     bytes32 asset;
@@ -55,12 +54,23 @@ contract Governor {
   }
 
   function isPassingVote(bytes32 asset, address update) public view returns (bool) {
+    uint8 passing;
+    for(uint8 s=0;s<signers.length;s++){
+      if(asset == votes[signers[s]].asset && update == votes[signers[s]].update){
+        passing++;
+      }
+    }
+
+    return (passing > ((signers.length * quorumNumerator) / quorumDenominator));
+  }
+
+  /*function isUnanimousVote(bytes32 asset, address update) public view returns (bool) {
     for(uint8 s=0;s<signers.length;s++){
       if(asset != votes[signers[s]].asset || update != votes[signers[s]].update){
         return false;
       }
     }
     return true;
-  }
+  }*/
 
 }
