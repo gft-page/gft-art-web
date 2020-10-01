@@ -5,135 +5,63 @@ import { useEventListener } from "./hooks";
 import { getFromIPFS, isBlacklisted } from "./helpers";
 import { Loader } from "./components";
 import StackGrid from "react-stack-grid";
+import { useQuery } from "react-apollo";
+import { ALL_INKS_QUERY } from "./apollo/queries"
 
-const MAX_FRONT_PAGE_DISPLAY = 100;
-const LOADERS_TO_SHOW = 32;
-const BATCH_DOWNLOAD = 8;
+const INKS_TO_SHOW = 24;
 
 export default function NftyWallet(props) {
-  const [allInksArray, setAllInksArray] = useState([]);
 
-  let allInkView;
-  const [lastStreamCount, setLastStreamCount] = useState("0");
+  const { loading, error, data, fetchMore } = useQuery(ALL_INKS_QUERY, {
+    variables: { first: INKS_TO_SHOW, skip: 0 },
+      fetchPolicy: "cache-and-network"
+  });
 
-  let [inkPage, setInkPage] = useState(0)
-  let [lastInkPage, setLastInkPage] = useState(0)
-  let inksPerPage = 40
-  let [loading, setLoading] = useState(true)
-
-  let inkCreations = useEventListener(
-    props.readKovanContracts,
-    "NiftyInk",
-    "newInk",
-    props.kovanProvider,
-    1
-  );
+  const [inks, setInks] = useState([])
+  const [inkList, setInkList] = useState([])
 
   useEffect(() => {
-    if (
-      props.tab === props.thisTab &&
-      props.readKovanContracts &&
-      inkCreations &&
-      props.totalInks &&
-      inkCreations.length
-    ) {
-      if(inkCreations.length.toString() === props.totalInks.toString() && (inkPage !== lastInkPage || props.totalInks.toString() !== lastStreamCount)) {
 
-        setLoading(true)
-        let allInks
-        if(inkPage === 0) {
-          allInks = new Array(Math.min(LOADERS_TO_SHOW, props.totalInks.toString())).fill({})
-        } else { allInks = Array.from(allInksArray) }
-        setLastStreamCount(props.totalInks.toString());
-        setLastInkPage(inkPage)
+    const getInks = (data) => {
+      data.forEach(async (ink) => {
+        if (isBlacklisted(ink.jsonUrl)) return;
+        if (inkList.includes(ink.id)) return;
+        let _ink = ink;
+        let tIpfsConfig = {...props.ipfsConfig}
+        tIpfsConfig['timeout'] = 10000
+        try {
+          let newInkJson = await getFromIPFS(ink.jsonUrl, tIpfsConfig);
+          _ink.metadata = JSON.parse(newInkJson)
+          console.log(_ink)
+          setInks((inks) => [...inks, _ink]);
+        } catch (e) { console.log(e) }
+        setInkList((inkList) => [...inkList, _ink.id])
+      });
+    };
 
-        const getInkImages = async (e) => {
-          const jsonContent = await getFromIPFS(e["jsonUrl"], props.ipfsConfig);
-          const inkJson = JSON.parse(jsonContent);
-//          const inkImageHash = inkJson.image.split("/").pop();
-//          const imageContent = await getFromIPFS(
-//            inkImageHash,
-//            props.ipfsConfig
-//          );
-//          const inkImageURI =
-//            "data:image/png;base64," + imageContent.toString("base64");
-          return Object.assign(
-            { image: inkJson.image, name: inkJson.name, url: inkJson.drawing },
-            e
-          );
-        };
+    data ? getInks(data.inks) : console.log("loading");
+  }, [data]);
 
-        const loadStream = async () => {
-          if (inkCreations) {
-            let allInksToDisplay = ([...Array(props.totalInks.toNumber()).keys()])
-            let pageOfInks = allInksToDisplay.reverse().slice(inkPage * inksPerPage, inkPage * inksPerPage + inksPerPage)
+  console.log(inks)
 
-            console.log(pageOfInks)
+  let allInkView
 
-            let mostRecentInks = inkCreations
-            let promises = [];
-            let hashesForDebugging = [];
-            let skips = 0;
-            let newIndex = inkPage===0?0:allInks.length
-            console.log('newIndex', newIndex)
-            for(let i of pageOfInks){
-              if (!isBlacklisted(mostRecentInks[i]["jsonUrl"])) {
-                try {
-                  promises.push(getInkImages(mostRecentInks[i]));
-                  hashesForDebugging.push(mostRecentInks[i]["jsonUrl"]);
-                } catch (e) {
-                  console.log("EEEERRRRR", e);
-                }
-              } else {
-                skips++;
-              }
-              if (promises.length >= BATCH_DOWNLOAD) {
-                for (var p = 0; p <= promises.length - skips; p++) {
-                  let result;
-                  try {
-                    result = await promises[p];
-                    if (result) {
-                      allInks[newIndex++] = result;
-                      setAllInksArray(allInks);
-                    }
-                  } catch (e) {
-                    console.log(
-                      "FAILED TO LOAD FROM IPFS =====>",
-                      hashesForDebugging[p]
-                    );
-                  }
-                }
-                promises = [];
-                hashesForDebugging = [];
-                skips = 0;
-              }
-            }
-          }
-          setLoading(false)
-        };
-
-        loadStream();
-      }
-    }
-  }, [props.tab, props.totalInks, inkPage])
-
-  if (allInksArray && allInksArray.length > 0) {
+  if (inks && inks.length > 0) {
     allInkView = (
       <>
       <StackGrid columnWidth={120} gutterHeight={32} gutterWidth={32}>
-        {allInksArray.map((item) => {
+        {inks.map((item) => {
           return (
             <div
               key={item["id"]}
               ipfsHash={item["jsonUrl"]}
               style={{ cursor: "pointer" }}
             >
-              {item["image"] ? (
-                <Link to={`viewink/${item["url"]}`}>
+              {item.metadata ? (
+                <Link to={`viewink/${item.id}`}>
                 <img
-                  src={item["image"]}
-                  alt={item["name"]}
-                  onClick={() => props.showInk(item["url"])}
+                  src={item.metadata.image}
+                  alt={item.metadata.name}
                   width="120"
                   height="120"
                 />
@@ -150,11 +78,26 @@ export default function NftyWallet(props) {
         })}
       </StackGrid>
       {<Button
-          onClick={() => {setInkPage(inkPage + 1)}}
-          loading={loading}
-          disabled={(inkPage * inksPerPage + inksPerPage).toString() >= inkCreations.length}
+          style={{margin:12, justifyContent: 'center'}}
+          onClick={() =>
+        fetchMore({
+          variables: {
+            skip: data.inks.length,
+            first: INKS_TO_SHOW
+          },
+          updateQuery: (prev, { fetchMoreResult }) => {
+            if (!fetchMoreResult) return prev;
+            return Object.assign({}, prev, {
+              inks: [...prev.inks, ...fetchMoreResult.inks]
+            });
+          }
+        })}
+          //loading={xloading}
+          disabled={false}
           >
-          {loading?'Loading':(((inkPage * inksPerPage + inksPerPage).toString() < inkCreations.length)?'Show More':allInksArray.length + ' inks')}
+          Button
+          {//xloading?'Loading':(((inkPage * inksPerPage + inksPerPage).toString() < inkCreations.length)?'Show More':allInksArray.length + ' inks')
+          }
         </Button>}
         </>
     );

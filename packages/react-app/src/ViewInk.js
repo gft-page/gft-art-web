@@ -52,11 +52,6 @@ export default function ViewInk(props) {
 
   useEffect(() => {
     console.log('running')
-    const getMetadata = async (jsonURL) => {
-      const response = await fetch("https://ipfs.io/ipfs/" + jsonURL);
-      const jsonData = await response.json();
-      return jsonData;
-    };
 
     const getInk = async (data) => {
       console.log(data)

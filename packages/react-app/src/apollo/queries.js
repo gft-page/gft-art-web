@@ -74,3 +74,12 @@ query artists($address: Bytes!) {
   }
 }
 `;
+
+export const ALL_INKS_QUERY = gql`
+query allinks($first: Int, $skip: Int)
+{
+  inks(first: $first, skip: $skip, orderBy: inkNumber, orderDirection: desc) {
+    id
+    jsonUrl
+  }
+}`

@@ -227,7 +227,7 @@ export default function NftyWallet(props) {
         return RelayProvider
       }
 
-      const RelayProvider = getRelayProvider()
+      //const RelayProvider = getRelayProvider()
 
       const gsnProvider = new RelayProvider(origProvider, newGsnConfig);
 

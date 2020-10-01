@@ -6,7 +6,7 @@ import { Balance, Address, Wallet } from "."
 import { usePoller } from "../hooks"
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { Button } from 'antd';
-//import { RelayProvider } from '@opengsn/gsn';
+import { RelayProvider } from '@opengsn/gsn';
 //import Fortmatic from "fortmatic";
 //import Portis from "@portis/web3";
 
@@ -47,7 +47,7 @@ export default function Account(props) {
     return RelayProvider
   }
 
-  const RelayProvider = getRelayProvider()
+  //const RelayProvider = getRelayProvider()
 
   let relayHubAddress
   let stakeManagerAddress
