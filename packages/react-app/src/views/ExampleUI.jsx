@@ -63,7 +63,7 @@ export default function ExampleUI({address, mainnetProvider, localProvider, setP
 
         Your Contract Address:
         <Address
-            value={readContracts?readContracts.YourContract.address:readContracts}
+            value={readContracts?readContracts.Registry.address:readContracts}
             ensProvider={mainnetProvider}
             fontSize={16}
         />

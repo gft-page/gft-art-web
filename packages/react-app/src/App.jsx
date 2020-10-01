@@ -119,7 +119,10 @@ function App() {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Registry</Link>
+          </Menu.Item>
+          <Menu.Item key="/gov">
+            <Link onClick={()=>{setRoute("/gov")}} to="/gov">Governor</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -137,7 +140,21 @@ function App() {
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="YourContract"
+              name="Registry"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+          </Route>
+          <Route exact path="/gov">
+            {/*
+                🎛 this scaffolding is full of commonly used components
+                this <Contract/> component will automatically parse your ABI
+                and give you a form to interact with it locally
+            */}
+            <Contract
+              name="Governor"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
