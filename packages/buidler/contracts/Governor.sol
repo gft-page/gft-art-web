@@ -28,6 +28,13 @@ contract Governor {
     signers.push(newSigner);
   }
 
+  function electGovernor(address newGovernor) public {
+    require( isPassingVote( "electGovernor", newGovernor), "NOT PASSING" );
+    registry.electGovernor(newGovernor);
+  }
+
+
+
   function isSigner(address signer) public view returns (bool) {
     for(uint8 s=0;s<signers.length;s++){
       if(signers[s]==signer){
@@ -36,6 +43,8 @@ contract Governor {
     }
     return false;
   }
+
+
 
 
   uint8 quorumNumerator = 2;
@@ -53,6 +62,14 @@ contract Governor {
     votes[msg.sender] = Vote(asset, update);
   }
 
+  function totalSigners() public view returns (uint256) {
+    return signers.length;
+  }
+
+  function signersNeeded() public view returns (uint8) {
+    return uint8((signers.length * quorumNumerator) / quorumDenominator);
+  }
+
   function isPassingVote(bytes32 asset, address update) public view returns (bool) {
     uint8 passing;
     for(uint8 s=0;s<signers.length;s++){
@@ -60,17 +77,7 @@ contract Governor {
         passing++;
       }
     }
-
-    return (passing > ((signers.length * quorumNumerator) / quorumDenominator));
+    return (passing >= signersNeeded());
   }
-
-  /*function isUnanimousVote(bytes32 asset, address update) public view returns (bool) {
-    for(uint8 s=0;s<signers.length;s++){
-      if(asset != votes[signers[s]].asset || update != votes[signers[s]].update){
-        return false;
-      }
-    }
-    return true;
-  }*/
 
 }

@@ -35,7 +35,7 @@ const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.c
 
 // 🛰 providers
 console.log("📡 Connecting to Mainnet Ethereum");
-const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
+const mainnetProvider  = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
@@ -46,7 +46,6 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
-
 
 
 function App() {
@@ -270,5 +269,6 @@ const logoutOfWeb3Modal = async () => {
     window.location.reload();
   }, 1);
 };
+
 
 export default App;

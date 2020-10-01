@@ -13,7 +13,14 @@ async function main() {
    console.log("📄  Deploying Registry \n");
    const registry = await deploy("Registry")
    console.log("👮‍♀️ Deploying Governor \n");
-   const governor = await deploy("Governor",[registry.address,["0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"]])
+   const governor = await deploy("Governor",[
+    registry.address,
+    [
+      "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
+      "0x5Bbfd288cAb63c7770330828A865092af0F17F88",
+      "0x7e35Eaf7e8FBd7887ad538D4A38Df5BbD073814a"
+    ]
+  ])
    console.log("🗳  Electing Governor\n");
    await registry.electGovernor(governor.address)
 }
