@@ -4,7 +4,7 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu, Select, Typography } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Select, Typography, Table } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -47,25 +47,6 @@ const { TabPane } = Tabs;
 
 const { Option } = Select;
 
-// 🔭 block explorer URL
-const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
-
-// 🛰 providers
-console.log("📡 Connecting to Mainnet Ethereum");
-const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-// const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
-// ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
-
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "https://dai.poa.network"
-// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
-
-
-
 function App(props) {
 
   function graphQLFetcher(graphQLParams) {
@@ -81,6 +62,10 @@ function App(props) {
     dayTotals(first: 100, orderBy: id, orderDirection: desc) {
       id
       inks
+    }
+    artists(first: 10, orderBy: inkCount, orderDirection: desc) {
+      id
+      inkCount
     }
   }
   `;
@@ -110,7 +95,7 @@ function App(props) {
               data={transformedData}
               onNearestX={onNearestX}
               curve={'curveMonotoneX'}
-              lineStyle={{stroke: 'red'}}
+              color={'blue'}
             />
             <Crosshair values={crosshairValues}/>
       </XYPlot>
@@ -122,29 +107,18 @@ function App(props) {
       </pre>)
     }
 
-  const [injectedProvider, setInjectedProvider] = useState();
-  /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
-  let price// = useExchangePrice(mainnetProvider); //1 for xdai
-
-  /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice("fast"); //1000000000 for xdai
-
-  // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
-
-  // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
-  const userProvider = useUserProvider(injectedProvider, localProvider);
-  const address = useUserAddress(userProvider);
-
-  const loadWeb3Modal = useCallback(async () => {
-    const provider = await web3Modal.connect();
-    setInjectedProvider(new Web3Provider(provider));
-  }, [setInjectedProvider]);
-
-  useEffect(() => {
-    if (web3Modal.cachedProvider) {
-      loadWeb3Modal();
-    }
-  }, [loadWeb3Modal]);
+    const artistColumns = [
+    {
+      title: 'Address',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Inks Created',
+      dataIndex: 'inkCount',
+      key: 'inkCount',
+    },
+  ];
 
   console.log("Location:",window.location.pathname)
 
@@ -176,11 +150,12 @@ function App(props) {
           <div style={{ width:400, margin: "auto", marginTop:32 }}>
           <Title>Inks per day</Title>
           {inkGraph}
+          {data?<><Title>Most prolific artists</Title><Table dataSource={data.artists} columns={artistColumns} /></>:<></>}
           </div>
           </Route>
           <Route path="/graphiql">
-          <div style={{height:500, marginTop:32 }}>
-          <GraphiQL fetcher={graphQLFetcher} />
+          <div style={{height:500, marginTop:32, textAlign:'left' }}>
+          <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true}/>
           </div>
           </Route>
         </Switch>
@@ -190,9 +165,6 @@ function App(props) {
        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
          <Row align="middle" gutter={[4, 4]}>
 
-           <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-             <GasGauge gasPrice={gasPrice} />
-           </Col>
            <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
              <Button
                onClick={() => {
@@ -201,25 +173,10 @@ function App(props) {
                size="large"
                shape="round"
              >
-               <span style={{ marginRight: 8 }} role="img" aria-label="support">
+             <span style={{ marginRight: 8 }} role="img" aria-label="support">
                  💬
                </span>
-               Support
              </Button>
-           </Col>
-         </Row>
-
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={24}>
-             {
-
-               /*  if the local provider has a signer, let's show the faucet:  */
-               localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
-                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
-               ) : (
-                 ""
-               )
-             }
            </Col>
          </Row>
 
@@ -228,29 +185,5 @@ function App(props) {
     </div>
   );
 }
-
-
-/*
-  Web3 modal helps us "connect" external wallets:
-*/
-const web3Modal = new Web3Modal({
-  // network: "mainnet", // optional
-  cacheProvider: true, // optional
-  providerOptions: {
-    walletconnect: {
-      package: WalletConnectProvider, // required
-      options: {
-        infuraId: INFURA_ID,
-      },
-    },
-  },
-});
-
-const logoutOfWeb3Modal = async () => {
-  await web3Modal.clearCachedProvider();
-  setTimeout(() => {
-    window.location.reload();
-  }, 1);
-};
 
 export default App;
