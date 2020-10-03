@@ -3,7 +3,26 @@ import {
   NiftyInk,
   newInk
 } from "../generated/NiftyInk/NiftyInk"
-import { Ink, Artist } from "../generated/schema"
+import { Ink, Artist, DayTotal } from "../generated/schema"
+
+function incrementTotal(metric: String, timestamp: BigInt): void {
+
+    let day = (timestamp / BigInt.fromI32(86400)) * BigInt.fromI32(86400)
+    let stats = DayTotal.load(day.toString())
+
+    if (stats == null) {
+      stats = new DayTotal(day.toString())
+    }
+
+    if(metric == 'inks') {
+      stats.inks = stats.inks + BigInt.fromI32(1)
+    }
+    else if (metric == 'artists') {
+      stats.artists = stats.artists + BigInt.fromI32(1)
+    }
+
+    stats.save()
+  }
 
 export function handlenewInk(event: newInk): void {
 
@@ -13,6 +32,7 @@ export function handlenewInk(event: newInk): void {
     artist = new Artist(event.params.artist.toHexString())
     artist.address = event.params.artist
     artist.inkCount = BigInt.fromI32(1)
+    incrementTotal('artists',event.block.timestamp)
   }
   else {
     artist.inkCount = artist.inkCount.plus(BigInt.fromI32(1))
@@ -32,5 +52,6 @@ export function handlenewInk(event: newInk): void {
 
   ink.save()
   artist.save()
+  incrementTotal('inks',event.block.timestamp)
 
 }

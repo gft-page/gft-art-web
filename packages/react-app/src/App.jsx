@@ -4,7 +4,7 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu, Select } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Select, Typography } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -23,6 +23,9 @@ import {  XYPlot,
   LineSeries,
   Crosshair} from 'react-vis';
 import "./ReactVis.css";
+import GraphiQL from 'graphiql';
+import 'graphiql/graphiql.min.css';
+import fetch from 'isomorphic-fetch';
 
 
 /*
@@ -39,6 +42,7 @@ import "./ReactVis.css";
     (this is your connection to the main Ethereum network for ENS etc.)
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
+const { Title } = Typography;
 const { TabPane } = Tabs;
 
 const { Option } = Select;
@@ -54,7 +58,7 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
+const localProviderUrl = "https://dai.poa.network"
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
@@ -62,29 +66,30 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
-function App() {
+function App(props) {
 
-  const GET_UNISWAP_DAYDATA = gql`
+  function graphQLFetcher(graphQLParams) {
+    return fetch(props.subgraphUri, {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(graphQLParams),
+    }).then(response => response.json());
+  }
+
+  const GET_NIFTY_DAYDATA = gql`
   {
-    uniswapDayDatas(first: 100, orderBy: date, orderDirection: desc) {
-      date
-      dailyVolumeUSD
-    }
-    tokens(orderBy:tradeVolumeUSD, orderDirection: desc) {
+    dayTotals(first: 100, orderBy: id, orderDirection: desc) {
       id
-      symbol
-      name
-      decimals
-      tradeVolumeUSD
+      inks
     }
   }
   `;
 
-  const { loading, error, data } = useQuery(GET_UNISWAP_DAYDATA);
+  const { loading, error, data } = useQuery(GET_NIFTY_DAYDATA);
   let transformedData
 
   if (data) {
-  transformedData = data['uniswapDayDatas'].map( s => ({x:new Date(s.date * 1000), y: parseFloat(s.dailyVolumeUSD)}) );
+  transformedData = data['dayTotals'].map( s => ({x:new Date(s.id * 1000), y: parseFloat(s.inks)}) );
 }
 
   const [crosshairValues, setCrosshairValues] = useState([]);
@@ -94,28 +99,32 @@ function App() {
     setCrosshairValues([{x: value.x, y: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 5 }).format(value.y)}])
   }
 
-  const [tokenFilter, setTokenFilter] = useState([])
+  let inkGraph
+  console.log(loading, error)
 
-  function onChange(value) {
-    console.log(`selected ${value}`);
-  }
-
-  function onBlur() {
-    console.log('blur');
-  }
-
-  function onFocus() {
-    console.log('focus');
-  }
-
-  function onSearch(val) {
-    console.log('search:', val);
-  }
-
+  if(data) {
+    inkGraph = (
+      <>
+        <XYPlot xType="time" width={400} height={300} onMouseLeave={onMouseLeave}>
+            <LineSeries
+              data={transformedData}
+              onNearestX={onNearestX}
+              curve={'curveMonotoneX'}
+              lineStyle={{stroke: 'red'}}
+            />
+            <Crosshair values={crosshairValues}/>
+      </XYPlot>
+    </>)
+  }  else if (loading) {
+      inkGraph = (<Typography>Loading...</Typography>)
+    } else {
+      inkGraph = (<pre>Bad: {error.message}
+      </pre>)
+    }
 
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(mainnetProvider); //1 for xdai
+  let price// = useExchangePrice(mainnetProvider); //1 for xdai
 
   /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
   const gasPrice = useGasPrice("fast"); //1000000000 for xdai
@@ -155,68 +164,31 @@ function App() {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Nifty</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/graphiql">
+            <Link onClick={()=>{setRoute("/graphiql")}} to="/graphiql">GraphiQL</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-          <div style={{ width:600, margin: "auto", marginTop:32 }}>
-          <XYPlot xType="time" width={300} height={300} onMouseLeave={onMouseLeave}>
-                <HorizontalGridLines />
-                <VerticalGridLines />
-                <LineSeries
-                  data={transformedData}
-                  onNearestX={onNearestX}
-                />
-                <Crosshair values={crosshairValues}/>
-          </XYPlot>
-          <Select
-            showSearch
-            style={{ width: 200 }}
-            placeholder="Select a token"
-            optionFilterProp="children"
-            onChange={onChange}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            onSearch={onSearch}
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-          {data?data['tokens'].map((token) => <Option key={token.id} value={token.id}>{token.name}</Option>):<Option key={'loading'} value={'loading'}>Loading</Option>}
-          </Select>
+          <div style={{ width:400, margin: "auto", marginTop:32 }}>
+          <Title>Inks per day</Title>
+          {inkGraph}
           </div>
           </Route>
-          <Route path="/hints">
+          <Route path="/graphiql">
+          <div style={{height:500, marginTop:32 }}>
+          <GraphiQL fetcher={graphQLFetcher} />
+          </div>
           </Route>
         </Switch>
       </BrowserRouter>
 
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
-         <Account
-           address={address}
-           localProvider={localProvider}
-           userProvider={userProvider}
-           mainnetProvider={mainnetProvider}
-           price={price}
-           web3Modal={web3Modal}
-           loadWeb3Modal={loadWeb3Modal}
-           logoutOfWeb3Modal={logoutOfWeb3Modal}
-           blockExplorer={blockExplorer}
-         />
-      </div>
-
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
        <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
          <Row align="middle" gutter={[4, 4]}>
-           <Col span={8}>
-             <Ramp price={price} address={address} />
-           </Col>
 
            <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
              <GasGauge gasPrice={gasPrice} />
