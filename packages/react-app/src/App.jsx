@@ -57,13 +57,26 @@ function App(props) {
     }).then(response => response.json());
   }
 
+  const EXAMPLE_QUERY = `
+  {
+    inks(first: 25, orderBy: createdAt, orderDirection: desc) {
+      id
+      jsonUrl
+      limit
+      artist {
+        id
+      }
+    }
+  }
+  `
+
   const GET_NIFTY_DAYDATA = gql`
   {
     dayTotals(first: 100, orderBy: id, orderDirection: desc) {
       id
       inks
     }
-    artists(first: 10, orderBy: inkCount, orderDirection: desc) {
+    artists(first: 100, orderBy: inkCount, orderDirection: desc) {
       id
       inkCount
     }
@@ -112,6 +125,7 @@ function App(props) {
       title: 'Address',
       dataIndex: 'id',
       key: 'id',
+      render: text => <a href={'https://nifty.ink/artist/'+text} target="_blank">{text}</a>,
     },
     {
       title: 'Inks Created',
@@ -131,7 +145,6 @@ function App(props) {
   return (
     <div className="App">
 
-      {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
       <BrowserRouter>
@@ -155,7 +168,7 @@ function App(props) {
           </Route>
           <Route path="/graphiql">
           <div style={{height:500, marginTop:32, textAlign:'left' }}>
-          <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true}/>
+          <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true} query={EXAMPLE_QUERY}/>
           </div>
           </Route>
         </Switch>
