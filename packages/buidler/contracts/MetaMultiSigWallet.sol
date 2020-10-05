@@ -56,6 +56,7 @@ contract MetaMultiSigWallet {
         public
     {
         bytes32 _hash =  getTransactionHash(to, value, data);
+        nonce++;
         uint256 validSignatures;
         uint256 duplicateGuard;
         for (uint i = 0; i < signatures.length; i++) {
