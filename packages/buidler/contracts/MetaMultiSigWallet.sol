@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-// https://solidity-by-example.org/0.6/app/multi-sig-wallet/
+// started from https://solidity-by-example.org/0.6/app/multi-sig-wallet/ and cleaned out a bunch of stuff
+// grabbed recover stuff from bouncer-proxy: https://github.com/austintgriffith/bouncer-proxy/blob/master/BouncerProxy/BouncerProxy.sol
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 contract MetaMultiSigWallet {
     event Deposit(address indexed sender, uint amount, uint balance);
-    event ExecuteTransaction( address indexed owner, address payable to, uint256 value, bytes data );
+    event ExecuteTransaction( address indexed owner, address payable to, uint256 value, bytes data, bytes result);
     event Owner( address indexed owner, bool added);
 
     mapping(address => bool) public isOwner;
@@ -16,6 +17,7 @@ contract MetaMultiSigWallet {
         signaturesRequired = _signaturesRequired;
         for (uint i = 0; i < _owners.length; i++) {
             address owner = _owners[i];
+            require(owner!=address(0), "addSigner: zero address");
             require(!isOwner[owner], "constructor: owner not unique");
             isOwner[owner] = true;
             emit Owner(owner,isOwner[owner]);
@@ -63,10 +65,10 @@ contract MetaMultiSigWallet {
 
         require(validSignatures>=signaturesRequired, "executeTransaction: not enough valid signatures");        
 
-        (bool success, ) = to.call{value: value}(data);
+        (bool success, bytes memory result) = to.call{value: value}(data);
         require(success, "executeTransaction: tx failed");
 
-        emit ExecuteTransaction(msg.sender, to, value, data);
+        emit ExecuteTransaction(msg.sender, to, value, data, result);
     }
 
     function recover(bytes32 _hash, bytes memory _signature) public pure returns (address) {
