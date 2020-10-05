@@ -1,2 +1,2 @@
-export { default as Hints } from "./Hints";
-export { default as ExampleUI } from "./ExampleUI";
+export { default as Transactions } from "./Transactions";
+export { default as CreateTransaction } from "./CreateTransaction";

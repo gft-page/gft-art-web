@@ -3,10 +3,25 @@ import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progres
 import { SyncOutlined } from '@ant-design/icons';
 import { Address, AddressInput, Balance } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { useContractReader, useEventListener } from "../hooks";
 
-export default function ExampleUI({address, mainnetProvider, localProvider, setPurposeEvents, purpose, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
-  const [newPurpose, setNewPurpose] = useState("loading...");
+export default function ExampleUI({address, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
+
+  const [to, setTo] = useState();
+  const [value, setValue] = useState("0");
+  const [data, setData] = useState("0x");
+
+  const [hash, setHash] = useState();
+  const [signature, setSignature] = useState();
+
+  // keep track of a variable from the contract in the local React state:
+  const signaturesRequired = useContractReader(readContracts,"MetaMultiSigWallet", "signaturesRequired")
+  console.log("🤗 signaturesRequired:",signaturesRequired)
+
+  //📟 Listen for broadcast events
+  const depositEvents = useEventListener(readContracts, "MetaMultiSigWallet", "Deposit", localProvider, 1);
+  console.log("📟 depositEvents events:",depositEvents)
 
   return (
     <div>
@@ -15,17 +30,56 @@ export default function ExampleUI({address, mainnetProvider, localProvider, setP
       */}
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
         <h3>example ui:</h3>
-        <h2>{purpose}</h2>
+        <h2>signaturesRequired: {signaturesRequired?signaturesRequired.toNumber():<Spin/>}</h2>
 
         <Divider/>
 
         <div style={{margin:8}}>
-          <Input onChange={(e)=>{setNewPurpose(e.target.value)}} />
-          <Button onClick={()=>{
-            console.log("newPurpose",newPurpose)
+          To:<Input value={to} onChange={(e)=>{setTo(e.target.value)}} />
+          Value:<Input value={value}  onChange={(e)=>{setValue(e.target.value)}} />
+          Data:<Input value={data} onChange={(e)=>{setData(e.target.value)}} />
+          <pre>
+          {writeContracts?writeContracts.Example.interface.encodeFunctionData("setStore(string)",["NICE"]):writeContracts}
+          </pre>
+          <pre>
+          {writeContracts?writeContracts.MetaMultiSigWallet.interface.encodeFunctionData("addSigner(address,uint256)",["0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",2]):writeContracts}
+          </pre>
+
+          <Button onClick={async ()=>{
+
+
+            let newHash = await readContracts.MetaMultiSigWallet.getTransactionHash(to,parseEther(value),data)
+            console.log("newHash",newHash)
+
+            setHash(newHash)
+
+          }}>getHash</Button>
+
+          {hash}
+
+          <Button onClick={async ()=>{
+            //console.log("newPurpose",newPurpose)
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose(newPurpose) )
-          }}>Set Purpose</Button>
+            //tx( writeContracts.YourContract.setPurpose(newPurpose) )
+            let signature = await userProvider.send("personal_sign", [hash, address]);
+            console.log("signature",signature)
+
+            let recover = await readContracts.MetaMultiSigWallet.recover(hash,signature)
+            console.log("recover",recover)
+
+            setSignature(signature)
+
+          }}>Sign</Button>
+
+          {signature}
+
+          <Button onClick={async ()=>{
+
+            console.log("EXEC",to, parseEther(value), data, [signature])
+            let result = await writeContracts.MetaMultiSigWallet.executeTransaction(to, parseEther(value), data, ["0xe9a13984c981a0be8426b8ed4a09024d28123f9df831ea237d9dc1dc8093b7dd6dddb33bfd3e867da55cef3d72a0dbde0b1ba918aaec2a34b0817663961ab3661c","0x29c4185a76c691aae38f4e1413335af4f184dd7f66283f2ac51533b3e24a8b7d60e3a130f759ef821b56055750f277d2389bacccad3434d603de48d2dc9811091b"])
+            console.log("result",result)
+            
+          }}>EXEC</Button>
         </div>
 
 
@@ -58,17 +112,6 @@ export default function ExampleUI({address, mainnetProvider, localProvider, setP
         <h2>Your Balance: {yourLocalBalance?formatEther(yourLocalBalance):"..."}</h2>
 
         <Divider/>
-
-
-
-        Your Contract Address:
-        <Address
-            value={readContracts?readContracts.YourContract.address:readContracts}
-            ensProvider={mainnetProvider}
-            fontSize={16}
-        />
-
-        <Divider />
 
         <div style={{margin:8}}>
           <Button onClick={()=>{
@@ -123,15 +166,10 @@ export default function ExampleUI({address, mainnetProvider, localProvider, setP
       <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
         <List
           bordered
-          dataSource={setPurposeEvents}
+          dataSource={depositEvents}
           renderItem={item => (
             <List.Item>
-              <Address
-                  value={item[0]}
-                  ensProvider={mainnetProvider}
-                  fontSize={16}
-                /> =>
-              {item[1]}
+              {JSON.stringify(item)}
             </List.Item>
           )}
         />

@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI } from "./views"
+import { Transactions, CreateTransaction } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -78,17 +78,9 @@ function App() {
   const readContracts = useContractLoader(localProvider)
   console.log("📝 readContracts",readContracts)
 
-  // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
-
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
   console.log("🔐 writeContracts",writeContracts)
-
-  //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -119,13 +111,16 @@ function App() {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">MetaMultiSig</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/transactions">
+            <Link onClick={()=>{setRoute("/transactions")}} to="/transactions">Transactions</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+          <Menu.Item key="/createtransaction">
+            <Link onClick={()=>{setRoute("/createtransaction")}} to="/createtransaction">Create Transaction</Link>
+          </Menu.Item>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug</Link>
           </Menu.Item>
         </Menu>
 
@@ -136,29 +131,51 @@ function App() {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
+            <div>
+              front page
+              <Account
+                address={readContracts?readContracts.MetaMultiSigWallet.address:readContracts}
+                localProvider={localProvider}
+                userProvider={userProvider}
+                mainnetProvider={mainnetProvider}
+                price={price}
+                blockExplorer={blockExplorer}
+              />
+            </div>
+          </Route>
+          <Route exact path="/debug">
+            {/*
+                🎛 this scaffolding is full of commonly used components
+                this <Contract/> component will automatically parse your ABI
+                and give you a form to interact with it locally
+            */}
             <Contract
-              name="YourContract"
+              name="MetaMultiSigWallet"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
           </Route>
-          <Route path="/hints">
-            <Hints
+          <Route path="/transactions">
+            <Transactions
               address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              address={address}
+              userProvider={userProvider}
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              setPurposeEvents={setPurposeEvents}
-              purpose={purpose}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
+          <Route path="/createtransaction">
+            <CreateTransaction
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
               yourLocalBalance={yourLocalBalance}
               price={price}
               tx={tx}

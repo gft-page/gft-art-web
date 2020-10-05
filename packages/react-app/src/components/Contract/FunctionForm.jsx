@@ -3,7 +3,7 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
 import React, { useState } from "react";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Row, Col, Input, Divider, Tooltip, Button } from "antd";
+import { Row, Col, Input, Divider, Tooltip, Button, notification } from "antd";
 import { Transactor } from "../../helpers";
 import tryToDisplay from "./utils";
 const { utils } = require("ethers");
@@ -45,6 +45,75 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
               #️⃣
             </div>
             </Tooltip>
+        )
+      }else if(input.type=="uint256"){
+        buttons = (
+          <>
+            <Tooltip placement="top" title={"* 10 ^ 18"}>
+            <div
+              type="dashed"
+              style={{cursor:"pointer", marginLeft:8}}
+              onClick={async () => {
+                try{
+                  const formUpdate = { ...form };
+                  formUpdate[key] = utils.parseEther(""+form[key]);
+                  setForm(formUpdate);
+                }catch(e){
+                  notification.error({
+                    message: "Format Error",
+                    description: e.message,
+                  });
+                }
+              }}
+            >
+              ✖️
+            </div>
+            </Tooltip>
+            <Tooltip placement="top" style={{margin:16}} title={"/ 10 ^ 18"}>
+            <div
+              type="dashed"
+              style={{cursor:"pointer", marginLeft:8}}
+              onClick={async () => {
+                try{
+                  const formUpdate = { ...form };
+                  formUpdate[key] = utils.formatEther(""+form[key]);
+                  setForm(formUpdate);
+                }catch(e){
+                  notification.error({
+                    message: "Format Error",
+                    description: e.message,
+                  });
+                }
+              }}
+            >
+              ➗
+            </div>
+            </Tooltip>
+          </>
+        )
+      }else if(input.type=="bytes"){
+        buttons = (
+          <>
+            <Tooltip placement="right" title={"to bytes"}>
+            <div
+              type="dashed"
+              style={{cursor:"pointer"}}
+              onClick={async () => {
+                if(utils.isHexString(form[key])){
+                  const formUpdate = { ...form };
+                  formUpdate[key] = utils.toUtf8String(form[key]);
+                  setForm(formUpdate);
+                }else{
+                  const formUpdate = { ...form };
+                  formUpdate[key] = utils.hexlify( utils.toUtf8Bytes(form[key]));
+                  setForm(formUpdate);
+                }
+              }}
+            >
+              #️⃣
+            </div>
+            </Tooltip>
+          </>
         )
       }
 
@@ -139,13 +208,23 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
               }
 
               // console.log("Running with extras",extras)
-              const returned = await tx(contractFunction(...args, overrides));
+              let returned
+              try {
+                returned = await tx(contractFunction(...args, overrides));
+                const result = tryToDisplay(returned);
 
-              const result = tryToDisplay(returned);
-
-              console.log("SETTING RESULT:", result);
-              setReturnValue(result);
-              triggerRefresh(true);
+                console.log("SETTING RESULT:", result);
+                setReturnValue(result);
+                triggerRefresh(true);
+              } catch (e) {
+                console.log(e);
+                console.log("Transaction Error:", e.message);
+                notification.error({
+                  message: "Transaction Error",
+                  description: e.message,
+                });
+              }
+              
             }}
           >
             {buttonIcon}
