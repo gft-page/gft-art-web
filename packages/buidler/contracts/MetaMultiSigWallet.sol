@@ -32,6 +32,7 @@ contract MetaMultiSigWallet {
     function addSigner(address newSigner, uint256 newSignaturesRequired) public onlySelf {
         require(newSigner!=address(0), "addSigner: zero address");
         require(!isOwner[newSigner], "addSigner: owner not unique");
+        require(newSignaturesRequired>0,"updateSignaturesRequired: must be non-zero sigs required");
         isOwner[newSigner] = true;
         signaturesRequired = newSignaturesRequired;
         emit Owner(newSigner,isOwner[newSigner]);
@@ -39,23 +40,26 @@ contract MetaMultiSigWallet {
 
     function removeSigner(address oldSigner, uint256 newSignaturesRequired) public onlySelf {
         require(isOwner[oldSigner], "addSigner: not owner");
+        require(newSignaturesRequired>0,"updateSignaturesRequired: must be non-zero sigs required");
         isOwner[oldSigner] = false;
         signaturesRequired = newSignaturesRequired;
         emit Owner(oldSigner,isOwner[oldSigner]);
     }
 
     function updateSignaturesRequired(uint256 newSignaturesRequired) public onlySelf {
+        require(newSignaturesRequired>0,"updateSignaturesRequired: must be non-zero sigs required");
         signaturesRequired = newSignaturesRequired;
     }
 
-    function getTransactionHash( address to, uint256 value, bytes memory data ) public view returns (bytes32) {
-        return keccak256(abi.encodePacked(address(this),nonce,to,value,data));
+    function getTransactionHash( uint256 _nonce, address to, uint256 value, bytes memory data ) public view returns (bytes32) {
+        return keccak256(abi.encodePacked(address(this),_nonce,to,value,data));
     }
 
     function executeTransaction( address payable to, uint256 value, bytes memory data, bytes[] memory signatures)
         public
+        returns (bytes memory)
     {
-        bytes32 _hash =  getTransactionHash(to, value, data);
+        bytes32 _hash =  getTransactionHash(nonce, to, value, data);
         nonce++;
         uint256 validSignatures;
         address duplicateGuard;
@@ -74,6 +78,7 @@ contract MetaMultiSigWallet {
         require(success, "executeTransaction: tx failed");
 
         emit ExecuteTransaction(msg.sender, to, value, data, result);
+        return result;
     }
 
     function recover(bytes32 _hash, bytes memory _signature) public pure returns (address) {
