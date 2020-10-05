@@ -17,7 +17,7 @@ contract MetaMultiSigWallet {
         signaturesRequired = _signaturesRequired;
         for (uint i = 0; i < _owners.length; i++) {
             address owner = _owners[i];
-            require(owner!=address(0), "addSigner: zero address");
+            require(owner!=address(0), "constructor: zero address");
             require(!isOwner[owner], "constructor: owner not unique");
             isOwner[owner] = true;
             emit Owner(owner,isOwner[owner]);
