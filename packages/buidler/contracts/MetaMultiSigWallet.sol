@@ -57,8 +57,12 @@ contract MetaMultiSigWallet {
     {
         bytes32 _hash =  getTransactionHash(to, value, data);
         uint256 validSignatures;
+        uint256 duplicateGuard;
         for (uint i = 0; i < signatures.length; i++) {
-            if(isOwner[recover(_hash,signatures[i])]){
+            address recovered = recover(_hash,signatures[i]);
+            require(uint256(recovered)>duplicateGuard, "executeTransaction: duplicate or unordered signatures");
+            duplicateGuard = uint256(recovered);
+            if(isOwner[recovered]){
               validSignatures++;
             }
         }
