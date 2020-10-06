@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 // started from https://solidity-by-example.org/0.6/app/multi-sig-wallet/ and cleaned out a bunch of stuff
 // grabbed recover stuff from bouncer-proxy: https://github.com/austintgriffith/bouncer-proxy/blob/master/BouncerProxy/BouncerProxy.sol
+// after building this I found https://github.com/christianlundkvist/simple-multisig/blob/master/contracts/SimpleMultiSig.sol which is amazing and he even has the duplicate guard the same (Scott B schooled me on that!)
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
 contract MetaMultiSigWallet {
     event Deposit(address indexed sender, uint amount, uint balance);
-    event ExecuteTransaction( address indexed owner, address payable to, uint256 value, bytes data, bytes result);
+    event ExecuteTransaction( address indexed owner, address payable to, uint256 value, bytes data, uint256 nonce, bytes32 hash, bytes result);
     event Owner( address indexed owner, bool added);
 
     mapping(address => bool) public isOwner;
@@ -40,7 +41,7 @@ contract MetaMultiSigWallet {
     }
 
     function removeSigner(address oldSigner, uint256 newSignaturesRequired) public onlySelf {
-        require(isOwner[oldSigner], "addSigner: not owner");
+        require(isOwner[oldSigner], "removeSigner: not owner");
         require(newSignaturesRequired>0,"removeSigner: must be non-zero sigs required");
         isOwner[oldSigner] = false;
         signaturesRequired = newSignaturesRequired;
@@ -60,6 +61,7 @@ contract MetaMultiSigWallet {
         public
         returns (bytes memory)
     {
+        require(isOwner[msg.sender], "executeTransaction: only owners can execute");
         bytes32 _hash =  getTransactionHash(nonce, to, value, data);
         nonce++;
         uint256 validSignatures;
@@ -78,7 +80,7 @@ contract MetaMultiSigWallet {
         (bool success, bytes memory result) = to.call{value: value}(data);
         require(success, "executeTransaction: tx failed");
 
-        emit ExecuteTransaction(msg.sender, to, value, data, result);
+        emit ExecuteTransaction(msg.sender, to, value, data, nonce-1, _hash, result);
         return result;
     }
 

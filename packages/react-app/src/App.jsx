@@ -8,12 +8,14 @@ import { Row, Col, Button, List, Tabs, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener, usePoller } from "./hooks";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance, Blockie } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { ethers } from "ethers";
 //import Hints from "./Hints";
-import { Transactions, CreateTransaction } from "./views"
+import QR from "qrcode.react";
+import { Transactions, CreateTransaction, Owners } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -29,6 +31,8 @@ import { Transactions, CreateTransaction } from "./views"
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
+const axios = require('axios');
+
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -82,6 +86,58 @@ function App() {
   const writeContracts = useContractLoader(userProvider)
   console.log("🔐 writeContracts",writeContracts)
 
+
+ //📟 Listen for broadcast events
+  const executeTransactionEvents = useEventListener(readContracts, "MetaMultiSigWallet", "ExecuteTransaction", localProvider, 1);
+  console.log("📟 executeTransactionEvents:",executeTransactionEvents)
+
+    // keep track of a variable from the contract in the local React state:
+    const isOwner = useContractReader(readContracts,"MetaMultiSigWallet", "isOwner", [address])
+    console.log("🤗 isOwner:",isOwner)
+
+  // keep track of a variable from the contract in the local React state:
+  const nonce = useContractReader(readContracts,"MetaMultiSigWallet", "nonce")
+  console.log("🤗 nonce:",nonce)
+  
+
+   //📟 Listen for broadcast events
+   const ownerEvents = useEventListener(readContracts, "MetaMultiSigWallet", "Owner", localProvider, 1);
+   console.log("📟 ownerEvents:",ownerEvents)
+  
+   const signaturesRequired = useContractReader(readContracts, "MetaMultiSigWallet", "signaturesRequired")
+
+
+  const [ transactions, setTransactions ] = useState();
+  usePoller(()=>{
+    const getTransactions = async ()=>{
+      console.log("🛰 Requesting Transaction List")
+      const res = await axios.get('http://localhost:8001/'+readContracts.MetaMultiSigWallet.address)
+      let newTransactions = []
+      for(let i in res.data){
+        //console.log("look through signatures of ",res.data[i])
+        let thisNonce = ethers.BigNumber.from(res.data[i].nonce)
+        if(thisNonce && nonce&& thisNonce.gte(nonce)){
+          let validSignatures = []
+          for(let s in res.data[i].signatures){
+            //console.log("RECOVER:",res.data[i].signatures[s],res.data[i].hash)
+            let signer = await readContracts.MetaMultiSigWallet.recover(res.data[i].hash,res.data[i].signatures[s])
+            let isOwner = await readContracts.MetaMultiSigWallet.isOwner(signer)
+            if(signer&&isOwner){
+              validSignatures.push({signer,signature:res.data[i].signatures[s]})
+            }
+          }
+          let update = { ...res.data[i],validSignatures }
+          //console.log("update",update)
+          newTransactions.push(update)
+        }
+      }
+      setTransactions(newTransactions)
+      //console.log("Loaded",newTransactions.length)
+    }
+    if(readContracts) getTransactions()
+  },3777)
+
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -111,13 +167,16 @@ function App() {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">MetaMultiSig</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Transactions</Link>
           </Menu.Item>
-          <Menu.Item key="/transactions">
-            <Link onClick={()=>{setRoute("/transactions")}} to="/transactions">Transactions</Link>
+          <Menu.Item key="/owners">
+            <Link onClick={()=>{setRoute("/owners")}} to="/owners">Owners</Link>
           </Menu.Item>
-          <Menu.Item key="/createtransaction">
-            <Link onClick={()=>{setRoute("/createtransaction")}} to="/createtransaction">Create Transaction</Link>
+          <Menu.Item key="/pool">
+            <Link onClick={()=>{setRoute("/pool")}} to="/pool">Pool</Link>
+          </Menu.Item>
+          <Menu.Item key="/create">
+            <Link onClick={()=>{setRoute("/create")}} to="/create">Create</Link>
           </Menu.Item>
           <Menu.Item key="/debug">
             <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug</Link>
@@ -131,17 +190,80 @@ function App() {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-            <div>
-              front page
-              <Account
-                address={readContracts?readContracts.MetaMultiSigWallet.address:readContracts}
-                localProvider={localProvider}
-                userProvider={userProvider}
-                mainnetProvider={mainnetProvider}
-                price={price}
-                blockExplorer={blockExplorer}
+            <div style={{padding:32,maxWidth:750,margin:"auto"}}>
+              
+              <div style={{paddingBottom:32}}>
+          
+                <div>
+                  <Balance
+                    address={readContracts?readContracts.MetaMultiSigWallet.address:readContracts}
+                    provider={localProvider}
+                    dollarMultiplier={price}
+                    size={64}
+                  />
+                </div>
+                <div>
+                  <QR value={readContracts?readContracts.MetaMultiSigWallet.address:""} size={"180"} level={"H"} includeMargin={true} renderAs={"svg"} imageSettings={{excavate:false}}/>
+                </div>
+                <div>
+                  <Address
+                    value={readContracts?readContracts.MetaMultiSigWallet.address:readContracts}
+                    ensProvider={mainnetProvider}
+                    blockExplorer={blockExplorer}
+                    fontSize={32}
+                  />
+                </div>
+              </div>
+            
+              <List
+                bordered
+                dataSource={executeTransactionEvents}
+                renderItem={(item) => {
+                  //console.log("executeTransactionEvents ITEM",item)
+                  return (
+                    <List.Item style={{position:"relative"}}>
+                    <div style={{position:"absolute",top:55,fontSize:12,opacity:0.5}}>
+                      {item.data}
+                    </div>
+                    <b style={{padding:16}}>#{item.nonce.toNumber()}</b>
+                    <span>
+                      <Blockie size={4} scale={8} address={item.hash} /> {item.hash.substr(0,6)}
+                    </span>
+                    <Address
+                      value={item.to}
+                      ensProvider={mainnetProvider}
+                      blockExplorer={blockExplorer}
+                      fontSize={16}
+                    />
+                    <Balance
+                      balance={parseEther(""+parseFloat(item.value).toFixed(12))}
+                      dollarMultiplier={price}
+                    />
+                    </List.Item>
+                  )
+                }}
               />
+
             </div>
+          </Route>
+          <Route exact path="/owners">
+            <Owners
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer={blockExplorer}
+              transactions={transactions}
+              nonce={nonce}
+              ownerEvents={ownerEvents}
+              signaturesRequired={signaturesRequired}
+            />
+            
           </Route>
           <Route exact path="/debug">
             {/*
@@ -157,7 +279,7 @@ function App() {
               blockExplorer={blockExplorer}
             />
           </Route>
-          <Route path="/transactions">
+          <Route path="/pool">
             <Transactions
               address={address}
               userProvider={userProvider}
@@ -168,9 +290,13 @@ function App() {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
+              blockExplorer={blockExplorer}
+              transactions={transactions}
+              nonce={nonce}
+              signaturesRequired={signaturesRequired}
             />
           </Route>
-          <Route path="/createtransaction">
+          <Route path="/create">
             <CreateTransaction
               address={address}
               userProvider={userProvider}
@@ -181,6 +307,7 @@ function App() {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
+              setRoute={setRoute}
             />
           </Route>
         </Switch>
