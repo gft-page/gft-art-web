@@ -24,16 +24,14 @@ contract Governor {
 
   function addSigner(address newSigner) public {
     require( !isSigner(newSigner) , "ALREADY A SIGNER");
-    require( isPassingVote( "newSigner", newSigner), "NOT PASSING" );
+    require( isPassingVote( "addSigner", newSigner), "NOT PASSING" );
     signers.push(newSigner);
   }
 
   function electGovernor(address newGovernor) public {
     require( isPassingVote( "electGovernor", newGovernor), "NOT PASSING" );
-    registry.electGovernor(newGovernor);
+    registry.transferOwnership(newGovernor);
   }
-
-
 
   function isSigner(address signer) public view returns (bool) {
     for(uint8 s=0;s<signers.length;s++){

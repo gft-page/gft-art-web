@@ -16,13 +16,13 @@ async function main() {
    const governor = await deploy("Governor",[
     registry.address,
     [
-      "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
-      "0x5Bbfd288cAb63c7770330828A865092af0F17F88",
+      "0x89C479761E39f05374Ec7bB6EC36b255C853A4fd",
+      "0x04B4De0Dc898B1B1c18782f4C02848feCe242BCc",
       "0x7e35Eaf7e8FBd7887ad538D4A38Df5BbD073814a"
     ]
   ])
    console.log("🗳  Electing Governor\n");
-   await registry.electGovernor(governor.address)
+   await registry.transferOwnership(governor.address)
 }
 
 

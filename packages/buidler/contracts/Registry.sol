@@ -1,25 +1,24 @@
 pragma solidity >=0.6.0 <0.7.0;
 
-import "@nomiclabs/buidler/console.sol";
-
 contract Registry {
 
-  address public governor;
+  address public owner;
 
   constructor() public {
-    governor = msg.sender;
+    owner = msg.sender;
+  }
+
+  function transferOwnership(address newOwner) public {
+    require( msg.sender == owner , "NOT ALLOWED");
+    owner = newOwner;
   }
 
   mapping (bytes32 => address) public assets;
 
   function updateAsset(bytes32 asset, address update) public {
-    require( msg.sender == governor , "NOT ALLOWED");
+    require( msg.sender == owner , "NOT ALLOWED");
     assets[asset] = update;
   }
 
-  function electGovernor(address newGovernor) public {
-    require( msg.sender == governor , "NOT ALLOWED");
-    governor = newGovernor;
-  }
 
 }
