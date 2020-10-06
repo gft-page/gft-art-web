@@ -236,7 +236,7 @@ function App() {
                       fontSize={16}
                     />
                     <Balance
-                      balance={parseEther(""+parseFloat(item.value).toFixed(12))}
+                      balance={item.value}
                       dollarMultiplier={price}
                     />
                     </List.Item>
