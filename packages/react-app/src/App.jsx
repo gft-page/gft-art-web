@@ -44,6 +44,8 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
+const txPoolServer = "http://localhost:48224"
+
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
@@ -98,12 +100,12 @@ function App() {
   // keep track of a variable from the contract in the local React state:
   const nonce = useContractReader(readContracts,"MetaMultiSigWallet", "nonce")
   console.log("🤗 nonce:",nonce)
-  
+
 
    //📟 Listen for broadcast events
    const ownerEvents = useEventListener(readContracts, "MetaMultiSigWallet", "Owner", localProvider, 1);
    console.log("📟 ownerEvents:",ownerEvents)
-  
+
    const signaturesRequired = useContractReader(readContracts, "MetaMultiSigWallet", "signaturesRequired")
 
 
@@ -111,7 +113,7 @@ function App() {
   usePoller(()=>{
     const getTransactions = async ()=>{
       console.log("🛰 Requesting Transaction List")
-      const res = await axios.get('http://localhost:8001/'+readContracts.MetaMultiSigWallet.address)
+      const res = await axios.get(""+txPoolServer+'/'+readContracts.MetaMultiSigWallet.address)
       let newTransactions = []
       for(let i in res.data){
         //console.log("look through signatures of ",res.data[i])
@@ -191,9 +193,9 @@ function App() {
                 and give you a form to interact with it locally
             */}
             <div style={{padding:32,maxWidth:750,margin:"auto"}}>
-              
+
               <div style={{paddingBottom:32}}>
-          
+
                 <div>
                   <Balance
                     address={readContracts?readContracts.MetaMultiSigWallet.address:readContracts}
@@ -214,7 +216,7 @@ function App() {
                   />
                 </div>
               </div>
-            
+
               <List
                 bordered
                 dataSource={executeTransactionEvents}
@@ -263,7 +265,7 @@ function App() {
               ownerEvents={ownerEvents}
               signaturesRequired={signaturesRequired}
             />
-            
+
           </Route>
           <Route exact path="/debug">
             {/*
