@@ -36,4 +36,4 @@ const invalidation = {
   awsInvalidationPath: "/*"
 }
 
-s3FolderUpload(directoryName, credentials, options /* , invalidation */);
+s3FolderUpload(directoryName, credentials, options, invalidation );
