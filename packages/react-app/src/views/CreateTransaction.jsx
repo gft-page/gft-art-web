@@ -4,7 +4,7 @@ import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progres
 import { SyncOutlined } from '@ant-design/icons';
 import { Address, AddressInput, Balance, EtherInput, Blockie } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
-import { useContractReader, useEventListener } from "../hooks";
+import { useContractReader, useEventListener, useLocalStorage } from "../hooks";
 const axios = require('axios');
 
 
@@ -84,7 +84,11 @@ export default function ExampleUI({chainId, txPoolServer, address, setRoute, use
             />
           </div>
 
-          Data:<Input value={data} onChange={(e)=>{setData(e.target.value)}} />
+          <div style={inputStyle}>
+          <Input value={data} onChange={(e)=>{setData(e.target.value)}} suffix={(
+            <a href="https://eth.build/build#91d847049e9023df50e75c49767f3ad36eac9381b31b56be623598be7f4703a4" target="_blank">🛠</a>
+          )}/>
+          </div>
 
           <Button style={{marginTop:32}} onClick={async ()=>{
 
@@ -138,40 +142,4 @@ export default function ExampleUI({chainId, txPoolServer, address, setRoute, use
 
     </div>
   );
-}
-
-function useLocalStorage(key, initialValue) {
-  // State to store our value
-  // Pass initial state function to useState so logic is only executed once
-  const [storedValue, setStoredValue] = useState(() => {
-    try {
-      // Get from local storage by key
-      const item = window.localStorage.getItem(key);
-      // Parse stored json or if none return initialValue
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      // If error also return initialValue
-      console.log(error);
-      return initialValue;
-    }
-  });
-
-  // Return a wrapped version of useState's setter function that ...
-  // ... persists the new value to localStorage.
-  const setValue = value => {
-    try {
-      // Allow value to be a function so we have same API as useState
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value;
-      // Save state
-      setStoredValue(valueToStore);
-      // Save to local storage
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
-    } catch (error) {
-      // A more advanced implementation would handle the error case
-      console.log(error);
-    }
-  };
-
-  return [storedValue, setValue];
 }

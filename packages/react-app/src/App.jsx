@@ -32,13 +32,13 @@ import { Transactions, CreateTransaction, Owners } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
 const axios = require('axios');
-
+const DEBUG = false
 
 // 🔭 block explorer URL
 const blockExplorer = "https://blockscout.com/poa/xdai/" // for xdai: "https://blockscout.com/poa/xdai/"
 
 // 🛰 providers
-console.log("📡 Connecting to Mainnet Ethereum");
+if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
@@ -51,7 +51,7 @@ const txPoolServer = "https://txpool.bank.buidlguidl.com:48224"
 const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
+if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 
@@ -75,40 +75,40 @@ function App() {
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
-  console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
+  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
 
   // just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
-  console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
+  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider)
-  console.log("📝 readContracts",readContracts)
+  if(DEBUG) console.log("📝 readContracts",readContracts)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
-  console.log("🔐 writeContracts",writeContracts)
+  if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
 
  //📟 Listen for broadcast events
   const executeTransactionEvents = useEventListener(readContracts, "MetaMultiSigWallet", "ExecuteTransaction", localProvider, 1);
-  console.log("📟 executeTransactionEvents:",executeTransactionEvents)
+  if(DEBUG) console.log("📟 executeTransactionEvents:",executeTransactionEvents)
 
     // keep track of a variable from the contract in the local React state:
     const isOwner = useContractReader(readContracts,"MetaMultiSigWallet", "isOwner", [address])
-    console.log("🤗 isOwner:",isOwner)
+    if(DEBUG) console.log("🤗 isOwner:",isOwner)
 
   // keep track of a variable from the contract in the local React state:
   const nonce = useContractReader(readContracts,"MetaMultiSigWallet", "nonce")
-  console.log("🤗 nonce:",nonce)
+  if(DEBUG) console.log("🤗 nonce:",nonce)
 
   const chainId = useContractReader(readContracts,"MetaMultiSigWallet", "chainId")
-  console.log("🤗 chainId:",chainId)
+  if(DEBUG) console.log("🤗 chainId:",chainId)
 
 
    //📟 Listen for broadcast events
    const ownerEvents = useEventListener(readContracts, "MetaMultiSigWallet", "Owner", localProvider, 1);
-   console.log("📟 ownerEvents:",ownerEvents)
+   if(DEBUG) console.log("📟 ownerEvents:",ownerEvents)
 
    const signaturesRequired = useContractReader(readContracts, "MetaMultiSigWallet", "signaturesRequired")
 
@@ -117,7 +117,7 @@ function App() {
   const [ transactions, setTransactions ] = useState();
   usePoller(()=>{
     const getTransactions = async ()=>{
-      console.log("🛰 Requesting Transaction List")
+      if(DEBUG) console.log("🛰 Requesting Transaction List")
       const key = readContracts.MetaMultiSigWallet.address+"_"+(chainId?chainId.toNumber():"")
       //console.log("key",key)
       const res = await axios.get(""+txPoolServer+'/'+key)
@@ -158,7 +158,7 @@ function App() {
     }
   }, [loadWeb3Modal]);
 
-  console.log("Location:",window.location.pathname)
+  if(DEBUG) console.log("Location:",window.location.pathname)
 
   const [route, setRoute] = useState();
   useEffect(() => {
