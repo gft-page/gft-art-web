@@ -35,7 +35,7 @@ const axios = require('axios');
 
 
 // 🔭 block explorer URL
-const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
+const blockExplorer = "https://blockscout.com/poa/xdai/" // for xdai: "https://blockscout.com/poa/xdai/"
 
 // 🛰 providers
 console.log("📡 Connecting to Mainnet Ethereum");
@@ -44,9 +44,8 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
-//const txPoolServer = "https://txpool.bank.buidlguidl.com:48224"
-
-const txPoolServer = "http://localhost:48224"
+const txPoolServer = "https://txpool.bank.buidlguidl.com:48224"
+//const txPoolServer = "http://localhost:48224"
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
@@ -60,10 +59,10 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 function App() {
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(mainnetProvider); //1 for xdai
+  const price = 1 // useExchangePrice(mainnetProvider); //1 for xdai
 
   /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice("fast"); //1000000000 for xdai
+  const gasPrice = 1000000000// useGasPrice("fast"); //1000000000 for xdai
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
