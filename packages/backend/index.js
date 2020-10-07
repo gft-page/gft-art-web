@@ -1,4 +1,6 @@
 var express = require("express");
+var fs = require("fs");
+const https = require('https')
 var cors = require('cors')
 var bodyParser = require("body-parser");
 var app = express();
@@ -14,23 +16,35 @@ app.get("/", function(req, res) {
     console.log("/")
     res.status(200).send("hello world");
 });
-app.get("/:address", function(req, res) {
-    let address = req.params.address
-    console.log("/",address)
-    res.status(200).send(transactions[address]);
+app.get("/:key", function(req, res) {
+    let key = req.params.key
+    console.log("/",key)
+    res.status(200).send(transactions[key]);
 });
 
 
 app.post('/', function(request, response){
     console.log("POOOOST!!!!",request.body);      // your JSON
     response.send(request.body);    // echo the result back
-    if(!transactions[request.body.address]){
-        transactions[request.body.address] = {}
+    const key = request.body.address+"_"+request.body.chainId
+    console.log("key:",key)
+    if(!transactions[key]){
+        transactions[key] = {}
     }
-    transactions[request.body.address][request.body.hash] = request.body
+    transactions[key][request.body.hash] = request.body
     console.log("transactions",transactions)
 });
 
-var server = app.listen(48224, function () {
-    console.log("app running on port.", server.address().port);
-});
+
+if(fs.existsSync('server.key')&&fs.existsSync('server.cert')){
+  https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+  }, app).listen(48224, () => {
+    console.log('HTTPS Listening: 48224')
+  })
+}else{
+  var server = app.listen(48224, function () {
+      console.log("HTTP Listening on port:", server.address().port);
+  });
+}

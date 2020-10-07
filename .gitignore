@@ -1,3 +1,5 @@
+packages/backend/*.key
+packages/backend/*.cert
 packages/buidler/*.txt
 **/aws.json
 

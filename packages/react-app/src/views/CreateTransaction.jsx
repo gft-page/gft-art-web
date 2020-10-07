@@ -8,14 +8,14 @@ import { useContractReader, useEventListener } from "../hooks";
 const axios = require('axios');
 
 
-export default function ExampleUI({address, setRoute, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
+export default function ExampleUI({chainId, txPoolServer, address, setRoute, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
   const history = useHistory();
 
   // keep track of a variable from the contract in the local React state:
   const nonce = useContractReader(readContracts,"MetaMultiSigWallet", "nonce")
   console.log("🤗 nonce:",nonce)
-  
+
   console.log("price",price)
 
   const [customNonce, setCustomNonce] = useState();
@@ -41,15 +41,15 @@ export default function ExampleUI({address, setRoute, userProvider, mainnetProvi
       resultDisplay = (
         <div style={{margin:16,padding:8}}>
           <Blockie size={4} scale={8} address={result} /> Tx {result.substr(0,6)} Created!
-  
+
           <div style={{margin:8,padding:4}}>
             <Spin />
           </div>
         </div>
       )
-    
+
     }
-    
+
   }
 
 
@@ -74,7 +74,7 @@ export default function ExampleUI({address, setRoute, userProvider, mainnetProvi
               onChange={setTo}
             />
           </div>
-          
+
           <div style={inputStyle}>
             <EtherInput
               price={price}
@@ -105,36 +105,36 @@ export default function ExampleUI({address, setRoute, userProvider, mainnetProvi
             console.log("isOwner",isOwner)
 
             if(isOwner){
-              const res = await axios.post('http://localhost:8001', { address: readContracts.MetaMultiSigWallet.address, nonce: nonce.toNumber(), to, amount, data, hash:newHash, signatures:[signature], signers: [ recover ] });
+              const res = await axios.post(txPoolServer, { chainId: chainId.toNumber(), address: readContracts.MetaMultiSigWallet.address, nonce: nonce.toNumber(), to, amount, data, hash:newHash, signatures:[signature], signers: [ recover ] });
               // IF SIG IS VALUE ETC END TO SERVER AND SERVER VERIFIES SIG IS RIGHT AND IS SIGNER BEFORE ADDING TY
-              
+
               console.log("RESULT",res.data)
-  
+
               setTimeout(()=>{
                 history.push('/pool')
               },2777)
-  
+
               setResult(res.data.hash)
               setTo()
               setAmount("0")
               setData("0x")
-              
+
             }else{
               console.log("ERROR, NOT OWNER.")
               setResult("ERROR, NOT OWNER.")
             }
-            
+
 
           }}>Create</Button>
 
         </div>
 
-          
+
         {resultDisplay}
 
       </div>
 
-       
+
 
     </div>
   );

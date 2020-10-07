@@ -57,7 +57,7 @@ export default function Transactions({signaturesRequired, address, nonce, transa
       bordered
       dataSource={transactions}
       renderItem={(item) => {
-        console.log("ITE88888M",item)
+        //console.log("ITE88888M",item)
 
         const hasSigned = (item.signers.indexOf(address)>=0)
         const hasEnoughSignatures = (item.signatures.length<=signaturesRequired.toNumber())
@@ -83,7 +83,7 @@ export default function Transactions({signaturesRequired, address, nonce, transa
             />
 
             <span>
-              {item.signatures.length}/{signaturesRequired.toNumber()} {hasSigned?"✅":""}
+              {item.signatures.length}/{signaturesRequired.toNumber()}
             </span>
             <Button onClick={async ()=>{
 
@@ -108,7 +108,7 @@ export default function Transactions({signaturesRequired, address, nonce, transa
 
               //tx( writeContracts.MetaMultiSigWallet.executeTransaction(item.to,parseEther(""+parseFloat(item.amount).toFixed(12)), item.data, item.signatures))
             }} type={"secondary"}>
-              Sign
+               {hasSigned?"Signed ✅":"Sign"} 
             </Button>
             <Button onClick={async ()=>{
 

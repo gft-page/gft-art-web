@@ -44,6 +44,8 @@ const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, ether
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
+//const txPoolServer = "https://txpool.bank.buidlguidl.com:48224"
+
 const txPoolServer = "http://localhost:48224"
 
 // 🏠 Your local provider is usually pointed at your local blockchain
@@ -101,6 +103,9 @@ function App() {
   const nonce = useContractReader(readContracts,"MetaMultiSigWallet", "nonce")
   console.log("🤗 nonce:",nonce)
 
+  const chainId = useContractReader(readContracts,"MetaMultiSigWallet", "chainId")
+  console.log("🤗 chainId:",chainId)
+
 
    //📟 Listen for broadcast events
    const ownerEvents = useEventListener(readContracts, "MetaMultiSigWallet", "Owner", localProvider, 1);
@@ -109,11 +114,14 @@ function App() {
    const signaturesRequired = useContractReader(readContracts, "MetaMultiSigWallet", "signaturesRequired")
 
 
+
   const [ transactions, setTransactions ] = useState();
   usePoller(()=>{
     const getTransactions = async ()=>{
       console.log("🛰 Requesting Transaction List")
-      const res = await axios.get(""+txPoolServer+'/'+readContracts.MetaMultiSigWallet.address)
+      const key = readContracts.MetaMultiSigWallet.address+"_"+(chainId?chainId.toNumber():"")
+      //console.log("key",key)
+      const res = await axios.get(""+txPoolServer+'/'+key)
       let newTransactions = []
       for(let i in res.data){
         //console.log("look through signatures of ",res.data[i])
@@ -310,6 +318,8 @@ function App() {
               writeContracts={writeContracts}
               readContracts={readContracts}
               setRoute={setRoute}
+              txPoolServer={txPoolServer}
+              chainId={chainId}
             />
           </Route>
         </Switch>

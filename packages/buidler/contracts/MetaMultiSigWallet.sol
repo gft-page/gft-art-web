@@ -13,8 +13,9 @@ contract MetaMultiSigWallet {
     mapping(address => bool) public isOwner;
     uint public signaturesRequired;
     uint public nonce;
+    uint public chainId;
 
-    constructor(address[] memory _owners, uint _signaturesRequired) public {
+    constructor(address[] memory _owners, uint _signaturesRequired, uint _chainId) public {
         require(_signaturesRequired>0,"constructor: must be non-zero sigs required");
         signaturesRequired = _signaturesRequired;
         for (uint i = 0; i < _owners.length; i++) {
@@ -24,6 +25,7 @@ contract MetaMultiSigWallet {
             isOwner[owner] = true;
             emit Owner(owner,isOwner[owner]);
         }
+        chainId = _chainId;
     }
 
     modifier onlySelf() {
@@ -54,7 +56,7 @@ contract MetaMultiSigWallet {
     }
 
     function getTransactionHash( uint256 _nonce, address to, uint256 value, bytes memory data ) public view returns (bytes32) {
-        return keccak256(abi.encodePacked(address(this),_nonce,to,value,data));
+        return keccak256(abi.encodePacked(chainId,address(this),_nonce,to,value,data));
     }
 
     function executeTransaction( address payable to, uint256 value, bytes memory data, bytes[] memory signatures)
@@ -75,7 +77,7 @@ contract MetaMultiSigWallet {
             }
         }
 
-        require(validSignatures>=signaturesRequired, "executeTransaction: not enough valid signatures");        
+        require(validSignatures>=signaturesRequired, "executeTransaction: not enough valid signatures");
 
         (bool success, bytes memory result) = to.call{value: value}(data);
         require(success, "executeTransaction: tx failed");
