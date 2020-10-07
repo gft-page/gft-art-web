@@ -15,7 +15,7 @@ export default function Owners({ownerEvents, signaturesRequired, address, nonce,
 
   const [to, setTo] = useLocalStorage("to");
   const [amount, setAmount] = useLocalStorage("amount","0");
-  const [method, setMethod] = useLocalStorage("addSigner");
+  const [methodName, setMethodName] = useLocalStorage("addSigner");
   const [newOwner, setNewOwner] = useLocalStorage("newOwner");
   const [newSignaturesRequired, setNewSignaturesRequired] = useLocalStorage("newSignaturesRequired");
   const [data, setData] = useLocalStorage("data","0x");
@@ -49,7 +49,7 @@ export default function Owners({ownerEvents, signaturesRequired, address, nonce,
 
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
         <div style={{margin:8,padding:8}}>
-          <Select defaultValue="addSigner" value={method} style={{ width: "100%" }} onChange={ setMethod }>
+          <Select value={methodName} style={{ width: "100%" }} onChange={ setMethodName }>
             <Option key="addSigner">addSigner()</Option>
             <Option key="removeSigner">removeSigner()</Option>
           </Select>
@@ -73,8 +73,8 @@ export default function Owners({ownerEvents, signaturesRequired, address, nonce,
         </div>
         <div style={{margin:8,padding:8}}>
           <Button onClick={()=>{
-            console.log("METHOD",setMethod)
-            let calldata = readContracts.MetaMultiSigWallet.interface.encodeFunctionData(method,[newOwner,newSignaturesRequired])
+            //console.log("METHOD",setMethodName)
+            let calldata = readContracts.MetaMultiSigWallet.interface.encodeFunctionData(methodName,[newOwner,newSignaturesRequired])
             console.log("calldata",calldata)
             setData(calldata)
             setAmount("0")

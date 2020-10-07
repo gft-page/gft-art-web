@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 import { useContractReader, useEventListener } from "../hooks";
 const axios = require('axios');
 
-export default function Transactions({signaturesRequired, address, nonce, transactions, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
+export default function Transactions({txPoolServer, signaturesRequired, address, nonce, transactions, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
 
 
   const getSortedSigList = async (allSigs,newHash)=>{
@@ -60,7 +60,7 @@ export default function Transactions({signaturesRequired, address, nonce, transa
         //console.log("ITE88888M",item)
 
         const hasSigned = (item.signers.indexOf(address)>=0)
-        const hasEnoughSignatures = (item.signatures.length<=signaturesRequired.toNumber())
+        const hasEnoughSignatures = (item.signatures.length>=signaturesRequired.toNumber())
 
         return (
           <List.Item style={{position:"relative"}}>
@@ -103,12 +103,12 @@ export default function Transactions({signaturesRequired, address, nonce, transa
 
               if(isOwner){
                 let [ finalSigList, finalSigners ] = await getSortedSigList([...item.signatures,signature], newHash)
-                const res = await axios.post('http://localhost:8001', { ...item, signatures: finalSigList, signers: finalSigners});
+                const res = await axios.post(txPoolServer, { ...item, signatures: finalSigList, signers: finalSigners});
               }
 
               //tx( writeContracts.MetaMultiSigWallet.executeTransaction(item.to,parseEther(""+parseFloat(item.amount).toFixed(12)), item.data, item.signatures))
             }} type={"secondary"}>
-               {hasSigned?"Signed ✅":"Sign"} 
+               {hasSigned?"Signed ✅":"Sign"}
             </Button>
             <Button onClick={async ()=>{
 
@@ -118,7 +118,6 @@ export default function Transactions({signaturesRequired, address, nonce, transa
               console.log("item.signatures",item.signatures)
 
               let [ finalSigList, finalSigners ] = await getSortedSigList(item.signatures, newHash)
-
 
               tx( writeContracts.MetaMultiSigWallet.executeTransaction(item.to,parseEther(""+parseFloat(item.amount).toFixed(12)), item.data, finalSigList))
             }} type={hasEnoughSignatures?"primary":"secondary"}>

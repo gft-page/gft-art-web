@@ -303,6 +303,7 @@ function App() {
               transactions={transactions}
               nonce={nonce}
               signaturesRequired={signaturesRequired}
+              txPoolServer={txPoolServer}
             />
           </Route>
           <Route path="/create">
