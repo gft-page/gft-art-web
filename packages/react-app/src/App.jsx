@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI } from "./views"
+import { Hints, ExampleUI, Owners } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -35,7 +35,8 @@ const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.c
 
 // 🛰 providers
 console.log("📡 Connecting to Mainnet Ethereum");
-const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
+const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
+ //getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 // const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
@@ -112,7 +113,10 @@ function App() {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">List</Link>
+          </Menu.Item>
+          <Menu.Item key="/edit">
+            <Link onClick={()=>{setRoute("/edit")}} to="/edit">Edit</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -124,18 +128,21 @@ function App() {
 
         <Switch>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
+            <Owners
+              readContracts={readContracts}
+              localProvider={localProvider}
+              mainnetProvider={mainnetProvider}
               blockExplorer={blockExplorer}
             />
+          </Route>
+          <Route path="/edit">
+          <Contract
+            name="YourContract"
+            signer={userProvider.getSigner()}
+            provider={localProvider}
+            address={address}
+            blockExplorer={blockExplorer}
+          />
           </Route>
           <Route path="/hints">
             <Hints

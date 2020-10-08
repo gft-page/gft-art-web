@@ -4,14 +4,14 @@ import "@nomiclabs/buidler/console.sol";
 
 contract YourContract {
 
-  event SetPurpose(address sender, string purpose);
+  event Owner( address indexed owner, bool added);
 
-  string public purpose = "🛠 Programming Unstoppable Money";
+  function addOwner(address newOwner) public {
+      emit Owner(newOwner,true);
+  }
 
-  function setPurpose(string memory newPurpose) public {
-    purpose = newPurpose;
-    console.log(msg.sender,"set purpose to",purpose);
-    emit SetPurpose(msg.sender, purpose);
+  function removeOwner(address oldOwner) public {
+      emit Owner(oldOwner,false);
   }
 
 }
