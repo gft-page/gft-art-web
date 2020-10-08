@@ -1,11 +1,7 @@
 # The Graph <> scaffold-eth
 
 ## Introduction
-Today we are talking about [The Graph](https://thegraph.com/). The Graph Dot Com is a horrible choice from an SEO perspective, but that is pretty much the only criticism that I have for this wonderful piece of blockchain middleware. Today we are going to be firing up [scaffold-eth](https://github.com/austintgriffith/scaffold-eth) to run through what it takes to build your OWN DARN SUBGRAPH (based on nifty.ink data) and then have that subgraph show up nicely in a fresh new React App
-
-BUT FIRST! What are we even talking about here? If you've ever wandered wide-eyed through Web3, I am sure you will have been peppered with permission requests to view your Metamask, peep your Argent or some-such, often before you even load the page when you're checking out what this hot-new defi thing is (NOT INVESTMENT ADVICE). That is because to even breathe up in here you need to connect to a blockchain. While blockchains are great in lots of ways (not now Dad), one thing they are not so good at is returning nice structured data for your user interface. Extracting data from our dear friend Ethereum can be EXCEPTIONALLY CONVOLUTED, which means that as much time is spent massaging eth_call as is spent actually creating a good user experience (if you see where I am going with this).
-
-The smart-brains at The Graph identified this as a problem, and what they have built is a really quite excellent way to aggregate the events that happen on a blockchain into easily accessible graphQL so your data is a single graphQL API call away, and up to date with the chain. If you're not excited, you've never iterated through a mapping in a smart contract (that was a joke because you can't!) TO THE CODE!
+This is a [scaffold-eth](https://github.com/austintgriffith/scaffold-eth) branch demonstrating [The Graph](https://thegraph.com/)'s subgraph functionality. The Graph aggregates contract events into structured data accessible via graphQL, reducing the need for complicated on-chain eth_calls in your frontend Dapp. In this example, we will spin up a new subgraph from scratch using nifty.ink contract data.
 
 ## Set up
 NOTE that you need to have Docker set up to run the local Graph node. Go [install Docker](https://www.docker.com/products/docker-desktop) now if you haven't got it already.
@@ -19,7 +15,7 @@ This is the repository for a Graph Node. We're going to be running the docker im
 ```
 ethereum: 'xdai:https://dai.poa.network'
 ```
-Then you just need to get it starte
+Then you just need to get it started
 ```
 cd graph-node/docker
 docker-compose up
