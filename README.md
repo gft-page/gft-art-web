@@ -1,48 +1,38 @@
 # The Graph <> scaffold-eth
 
 ## Introduction
-This is a [scaffold-eth](https://github.com/austintgriffith/scaffold-eth) branch demonstrating [The Graph](https://thegraph.com/)'s subgraph functionality. The Graph aggregates contract events into structured data accessible via graphQL, reducing the need for complicated on-chain eth_calls in your frontend Dapp. In this example, we will spin up a new subgraph from scratch using nifty.ink contract data.
+This is a [scaffold-eth](https://github.com/austintgriffith/scaffold-eth) branch demonstrating [The Graph](https://thegraph.com/)'s subgraph functionality. The Graph aggregates contract events into structured data accessible via graphQL, reducing the need for complicated on-chain eth_calls in your frontend Dapp. In this example, we will spin up a new subgraph from scratch using [nifty.ink](https://nifty.ink) contract data.
 
 ## Set up
 NOTE that you need to have Docker set up to run the local Graph node. Go [install Docker](https://www.docker.com/products/docker-desktop) now if you haven't got it already.
 
-You will be needing a local graph node to deploy onto.
-Open up a new terminal window and go to your documents or wherever:
-```
-git clone https://github.com/graphprotocol/graph-node/
-```
-This is the repository for a Graph Node. We're going to be running the docker image - before we start it, we need to make one change to the config file docker/docker-compose.yml, update the "ethereum" line to point at xDai (where nifty.ink is deployed!)
-```
-ethereum: 'xdai:https://dai.poa.network'
-```
-Then you just need to get it started
-```
-cd graph-node/docker
-docker-compose up
-```
-You should see a bunch of logs in the terminal as this node gets going!
-
-Leave it alone, and open up a fresh new terminal…
 First step you're going to want to clone to the [graph-dev branch of scaffold-eth](https://github.com/austintgriffith/scaffold-eth/tree/graph-dev):
 ```
 git clone -b graph-dev https://github.com/austintgriffith/scaffold-eth.git
+cd graph-dev
 ```
-install all of the relevant Node modules (make sure you are on Node > 0:
+Install all of the relevant Node modules (make sure you are on Node > 0:
 ```
 yarn install
 ```
-Then fire up the frontend:
+Then you want to get a local graph node up and running. We're going to be running the docker image (this is what you need Docker for!)
 ```
+cd docker/graph-node
+docker-compose up
+```
+You should see a bunch of logs in the terminal as this node gets going!
+_Note: if you want to look at a different EVM chain, you can update docker-compose.yml file. For example you can swap out https://dai.poa.network for http://host.docker.internal:8545 to look at a local chain running on port 8545_
+
+Then fire up the frontend in a new terminal:
+```
+cd graph-dev
 yarn start
 ```
-
-## Tour guide
-Let me show you round:
-So you've got the usual react-app, that's what is running on localhost://3000. There are two tabs:
-- Nifty: here there will be some data from our subgraph when we make it
+So you've got the usual `packages/react-app`, that's what is running on localhost://3000. There are two tabs:
+- Nifty: here there will be some data from our subgraph when we make it (don't worry if there is an error for now, that is expected - you don't have a graph to get data from!)
 - GraphiQL: this is an interface for writing custom queries against your subgraph
 
-The hot new thing is in the packages/subgraph. This is where you define the configuration for your subgraph. You can then take that configuration and deploy it onto a Graph Node, and the Graph Node will give you back a fully functional graphQL endpoint.
+The hot new thing is in the `packages/subgraph`. This is where you define the configuration for your subgraph. You can then take that configuration and deploy it onto a Graph Node, and the Graph Node will give you back a fully functional graphQL endpoint.
 
 ## Creating a subgraph
 So let's get to it! As an example, we'll be creating a subgraph that captures data from nifty.ink
@@ -59,6 +49,7 @@ Let's start with the schema. We are interested in knowing about all the inks tha
 
 With our schema defined, in packages/subgraph we can run:
 ```
+cd packages/subgraph
 yarn codegen
 ```
 This combines the ABIs with our schema to create some of the auto-generated files that we need.
@@ -151,5 +142,7 @@ artists(first: 10, orderBy:inkCount, orderDirection: desc) {
 
 ## What next?
 Once you are happy with your subgraph, you can follow the instructions [here](https://thegraph.com/docs/deploy-a-subgraph) to deploy it to The Graph's hosted service.
+
+You can see what we added to our full nifty.ink graph [here](https://github.com/ososco/scaffold-eth/tree/nifty-ink-dev/packages/niftygraph).
 
 Happy graphing!

@@ -116,7 +116,7 @@ function App(props) {
   }  else if (loading) {
       inkGraph = (<Typography>Loading...</Typography>)
     } else {
-      inkGraph = (<pre>Bad: {error.message}
+      inkGraph = (<pre>Error: {error.message}. Is your subgraph ready?
       </pre>)
     }
 
