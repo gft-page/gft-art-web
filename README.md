@@ -9,7 +9,7 @@ NOTE that you need to have Docker set up to run the local Graph node. Go [instal
 First step you're going to want to clone to the [graph-dev branch of scaffold-eth](https://github.com/austintgriffith/scaffold-eth/tree/graph-dev):
 ```
 git clone -b graph-dev https://github.com/austintgriffith/scaffold-eth.git
-cd graph-dev
+cd scaffold-eth
 ```
 Install all of the relevant Node modules (make sure you are on Node > 0:
 ```
