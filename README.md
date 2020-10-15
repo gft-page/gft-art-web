@@ -110,7 +110,7 @@ yarn deploy-local
 If you re-open the app, you should now see two things:
 
 ### Charts on the "Nifty" tab
-You can see the number of inks by day, and a table of the top 10 artists by inks created
+You can see the number of inks by day, and a table of the top 10 artists by inks created. 
 We are using [Apollo](https://www.apollographql.com/docs/react/) to connect to our graphQL endpoint. We set this up in `index.jsx`, and pass it down to `App.jsx`, where we define our query and use the useQuery hook to get our data. Then it's just a matter of handling and formatting that for some little visualisations (we used [react-vis!](https://uber.github.io/react-vis/))
 
 ### Custom queries on the graphiQL tab
