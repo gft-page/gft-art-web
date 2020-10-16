@@ -144,6 +144,11 @@ artists(first: 10, orderBy:inkCount, orderDirection: desc) {
 }
 ```
 
+## Speed Run
+
+[￼![image](https://user-images.githubusercontent.com/2653167/96306430-e5498100-0fbc-11eb-900c-3f58e1697e3b.png)](https://youtu.be/ODSTP5OjG2M)
+
+
 ## What next?
 Once you are happy with your subgraph, you can follow the instructions [here](https://thegraph.com/docs/deploy-a-subgraph) to deploy it to The Graph's hosted service.
 
