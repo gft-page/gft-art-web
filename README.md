@@ -146,7 +146,8 @@ artists(first: 10, orderBy:inkCount, orderDirection: desc) {
 
 ## Speed Run
 
-[￼![image](https://user-images.githubusercontent.com/2653167/96306430-e5498100-0fbc-11eb-900c-3f58e1697e3b.png)](https://youtu.be/ODSTP5OjG2M)
+[![image](https://user-images.githubusercontent.com/2653167/96306619-41aca080-0fbd-11eb-8882-8f6c115863eb.png)
+](https://youtu.be/ODSTP5OjG2M)
 
 
 ## What next?
