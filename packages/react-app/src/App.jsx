@@ -94,7 +94,7 @@ function App(props) {
 
   const onMouseLeave = () => setCrosshairValues([]);
   const onNearestX = (value, {index}) => {
-    setCrosshairValues([{x: value.x, y: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 5 }).format(value.y)}])
+    setCrosshairValues([{x: value.x, y: new Intl.NumberFormat('en-US', { maximumSignificantDigits: 5 }).format(value.y)}])
   }
 
   let inkGraph
