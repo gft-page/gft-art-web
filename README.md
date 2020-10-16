@@ -28,6 +28,9 @@ Then fire up the frontend in a new terminal:
 cd graph-dev
 yarn start
 ```
+You should see an app, with an error message (for now!)
+![](initial_app_state.png)
+_We'll sort that soon enough_
 So you've got the usual `packages/react-app`, that's what is running on localhost://3000. There are two tabs:
 - Nifty: here there will be some data from our subgraph when we make it (don't worry if there is an error for now, that is expected - you don't have a graph to get data from!)
 - GraphiQL: this is an interface for writing custom queries against your subgraph
@@ -110,7 +113,7 @@ yarn deploy-local
 If you re-open the app, you should now see two things:
 
 ### Charts on the "Nifty" tab
-You can see the number of inks by day, and a table of the top 10 artists by inks created. 
+You can see the number of inks by day, and a table of the top 10 artists by inks created.
 We are using [Apollo](https://www.apollographql.com/docs/react/) to connect to our graphQL endpoint. We set this up in `index.jsx`, and pass it down to `App.jsx`, where we define our query and use the useQuery hook to get our data. Then it's just a matter of handling and formatting that for some little visualisations (we used [react-vis!](https://uber.github.io/react-vis/))
 
 ### Custom queries on the graphiQL tab
