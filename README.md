@@ -8,10 +8,10 @@ NOTE that you need to have Docker set up to run the local Graph node. Go [instal
 
 First step you're going to want to clone to the [graph-dev branch of scaffold-eth](https://github.com/austintgriffith/scaffold-eth/tree/graph-dev):
 ```
-git clone -b graph-dev https://github.com/austintgriffith/scaffold-eth.git
+git clone -b graph-dev https://github.com/austintgriffith/scaffold-eth.git graph-dev
 cd graph-dev
 ```
-Install all of the relevant Node modules (make sure you are on Node > 0:
+Install all of the relevant Node modules (make sure you are on Node version "^10.12.0 || >=12.0.0"!)
 ```
 yarn install
 ```
@@ -21,7 +21,7 @@ cd docker/graph-node
 docker-compose up
 ```
 You should see a bunch of logs in the terminal as this node gets going!
-_Note: if you want to look at a different EVM chain, you can update docker-compose.yml file. For example you can swap out https://dai.poa.network for http://host.docker.internal:8545 to look at a local chain running on port 8545_
+_Note: We are looking at the xDai chain, as that is where nifty.ink is deployed. If you want to look at a different EVM chain, you can update docker-compose.yml file. For example you can swap out https://dai.poa.network for http://host.docker.internal:8545 to look at a local chain running on port 8545_
 
 Then fire up the frontend in a new terminal:
 ```
