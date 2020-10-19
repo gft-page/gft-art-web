@@ -6,23 +6,170 @@ const { utils } = require("ethers");
 async function main() {
   console.log("📡 Deploy \n");
 
-  // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
-  //await autoDeploy();
-  // OR
-  // custom deploy (to use deployed addresses dynamically for example:)
+    // auto deploy to read contract directory and deploy them all (add ".args" files for arguments)
+    //await autoDeploy();
+    // OR
+    // custom deploy (to use deployed addresses dynamically for example:)
+
    console.log("📄  Deploying Registry \n");
    const registry = await deploy("Registry")
-   console.log("👮‍♀️ Deploying Governor \n");
-   const governor = await deploy("Governor",[
-    registry.address,
-    [
-      "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
-      "0x5Bbfd288cAb63c7770330828A865092af0F17F88",
-      "0x7e35Eaf7e8FBd7887ad538D4A38Df5BbD073814a"
-    ]
-  ])
-   console.log("🗳  Electing Governor\n");
-   await registry.electGovernor(governor.address)
+
+   console.log("📲  Deploying Projects\n");
+   const projects = await deploy("Projects",[ registry.address ])
+
+   let genesisProjects = [
+     {
+       title: "🎨 Nifty.ink",
+       desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
+       projectOwner: "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
+     },
+     {
+       title: "🧙‍♂️ InstantWallet.io",
+       desc: "Simple and forkable burner wallet made with 🏗 scaffold-eth.",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏗 ScaffoldETH.io",
+       desc: "Forkable Ethereum Dev Stack and Community",
+       repo: "https://github.com/austintgriffith/scaffold-eth",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "👛 Multisig.Holdings",
+       desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🔴 Optimistic.Money",
+       desc: "InstantWallet.io fork for deposit/send on OVM testnet",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏷 FreeNS.io",
+       desc: "Free MVP ENS-like service on L2",
+       repo: "https://github.com/austintgriffith/scaffold-eth",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "⚖️ Backlog.Exchange",
+       desc: "Token-weighted github backlog ordering app",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/backlog-market",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏰 BuidlGuidl.com",
+       desc: "(this) developer coordination experiment centered around 🏗 scaffold-eth",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+
+
+   ]
+
+   for(let g in genesisProjects){
+     console.log("     "+genesisProjects[g].title+" ("+chalk.gray(utils.formatBytes32String(genesisProjects[g].title))+")")
+     const id = await projects.projectId(genesisProjects[g].title)
+     console.log("     "+chalk.gray(id))
+     await projects.updateProject(
+       genesisProjects[g].title,
+       genesisProjects[g].desc,
+       genesisProjects[g].repo,
+       genesisProjects[g].projectOwner
+     )
+   }
+   console.log(" ");
+
+   console.log("🏷 Register Projects Contract")
+   await registry.updateAsset(utils.formatBytes32String("Projects"),projects.address)
+
+   console.log("🛠  Deploying Builders\n");
+   const builders = await deploy("Builders",[ registry.address ])
+
+   console.log("🏷 Register Builders Contract")
+   await registry.updateAsset(utils.formatBytes32String("Builders"),builders.address)
+
+   console.log("🛠  Deploying Quests\n");
+   const quests = await deploy("Quests",[ registry.address ])
+
+   console.log("🏷 Register Quests Contract")
+   await registry.updateAsset(utils.formatBytes32String("Quests"),quests.address)
+
+
+   console.log("🚩 Adding Quests")
+   let genesisQuests = [
+     {
+       project: "🏗 ScaffoldETH.io",
+       title: "📄 The Graph Tutorial",
+       desc: "create a tutorial the explains how to build a subgraph",
+       link: "",
+     },
+     {
+       project: "🏗 ScaffoldETH.io",
+       title: "📚 Possible Refactor",
+       desc: "originally 🏗 scaffold-eth used create-eth-app but it doesn't leverage it",
+       link: "",
+     },
+     {
+       project: "🏗 ScaffoldETH.io",
+       title: "📦 Event Parser for Owner Lists",
+       desc: "list only the active owners in an owner list component by parsing many bool events",
+       link: "",
+     },
+     {
+       project: "🎨 Nifty.ink",
+       title: "📦 Use The Graph for the frontend",
+       desc: "upgrade to using 🛰 The Graph instead of events for a faster fronten",
+       link: "",
+     },
+     {
+       project: "🎨 Nifty.ink",
+       title: "📦 Collabland Telegram Bot access per Ink ownership",
+       desc: "work with Collabland for a system to allow specific inks to control access to a chat",
+       link: "",
+     },
+     {
+       project: "🧙‍♂️ InstantWallet.io",
+       title: "🐛 First click to send button fails",
+       desc: "when the wallet is first loading the send button should look disabled or transparent",
+       link: "",
+     },
+     {
+       project: "🔴 Optimistic.Money",
+       title: "📚 Initial Exploration",
+       desc: "get a private repo set up using the secret OVM RPC to explore how it might work",
+       link: "",
+     },
+     {
+       project: "🏗 ScaffoldETH.io",
+       title: "📄 The Graph Tutorial",
+       desc: "create a tutorial the explains how to build and use a subgraph for 🏗 scaffold-eth",
+       link: "",
+     },
+
+   ]
+
+   for(let g in genesisQuests){
+     console.log("        "+genesisQuests[g].project+" : "+genesisQuests[g].title)
+     const id = await quests.questId(utils.formatBytes32String(genesisQuests[g].project), genesisQuests[g].title)//questId( bytes32 project, string memory title )
+     console.log("        "+chalk.gray(id))
+     await quests.updateQuest(//updateQuest(bytes32 project, string memory title, string memory desc)
+       utils.formatBytes32String(genesisQuests[g].project),
+       genesisQuests[g].title,
+       genesisQuests[g].desc,
+       genesisQuests[g].link
+     )
+   }
+   console.log(" ");
+
+
+
+   console.log("🗳  Electing Owner of Registry\n");
+   await registry.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")//governor.address)
+
 }
 
 

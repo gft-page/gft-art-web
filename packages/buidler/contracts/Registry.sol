@@ -1,25 +1,14 @@
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0 <0.7.0;
 
-import "@nomiclabs/buidler/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Registry {
-
-  address public governor;
-
-  constructor() public {
-    governor = msg.sender;
-  }
+contract Registry is Ownable {
 
   mapping (bytes32 => address) public assets;
 
-  function updateAsset(bytes32 asset, address update) public {
-    require( msg.sender == governor , "NOT ALLOWED");
+  function updateAsset(bytes32 asset, address update) public onlyOwner {
     assets[asset] = update;
-  }
-
-  function electGovernor(address newGovernor) public {
-    require( msg.sender == governor , "NOT ALLOWED");
-    governor = newGovernor;
   }
 
 }

@@ -8,12 +8,12 @@ import { Row, Col, Button, List, Tabs, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener, usePoller } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI } from "./views"
+import { Hints, ExampleUI, Builders, Quests, Projects, Support } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -33,19 +33,26 @@ const { TabPane } = Tabs;
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
 
+
+const DEBUG = false
+
+
 // 🛰 providers
-console.log("📡 Connecting to Mainnet Ethereum");
-const mainnetProvider  = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
+if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
+//const mainnetProvider  = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-// const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/5ce0898319eb4f5c9d4c982c8f78392a")
+const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFURA_ID)
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
+if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+
+
+let pollerBuffer// tracked to buffer full quest update loops
 
 
 function App() {
@@ -67,27 +74,27 @@ function App() {
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
-  console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
+  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
 
   // just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
-  console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
+  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider)
-  console.log("📝 readContracts",readContracts)
+  if(DEBUG) console.log("📝 readContracts",readContracts)
 
   // keep track of a variable from the contract in the local React state:
   const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  if(DEBUG) console.log("🤗 purpose:",purpose)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
-  console.log("🔐 writeContracts",writeContracts)
+  if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
   //📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  if(DEBUG) console.log("📟 SetPurpose events:",setPurposeEvents)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -100,13 +107,80 @@ function App() {
     }
   }, [loadWeb3Modal]);
 
-  console.log("Location:",window.location.pathname)
+  if(DEBUG) console.log("Location:",window.location.pathname)
 
   const [route, setRoute] = useState();
   useEffect(() => {
-    console.log("SETTING ROUTE",window.location.pathname)
+    if(DEBUG) console.log("SETTING ROUTE",window.location.pathname)
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
+
+
+  const projectEvents = useEventListener(readContracts, "Projects", "Project")
+  const [projects, setProjects] = useState({})
+  const [projectList, setProjectList] = useState([])
+
+  useEffect(()=>{
+    let events = projectEvents
+    let newObjects = Object.assign(projects)
+    let newList = []
+    for(let e in events){
+      if(!newObjects[events[e][0]])
+      {
+        newObjects[events[e][0]] = events[e]
+      }else if(events[e].blockNumber>newObjects[events[e][0]].blockNumber) {
+        newObjects[events[e][0]] = events[e]
+      }
+    }
+    for(let o in newObjects){
+      if(newObjects[o][1]){
+        newList.push(newObjects[o])
+      }
+    }
+    setProjects(newObjects)
+    setProjectList(newList)
+  },[projectEvents])
+
+
+
+  //event QuestUpdate( bytes32 indexed id, bytes32 indexed project, string title, string desc, address author);
+  const questUpdateEvents = useEventListener(readContracts, "Quests", "QuestUpdate")
+  const [questFilter, setQuestFilter] = useState("")
+  const [quests, setQuests] = useState({})
+  const [questList, setQuestList] = useState([])
+
+
+  //console.log("questUpdateEvents",questUpdateEvents)
+  useEffect(()=>{
+    let events = questUpdateEvents
+    let newObjects = Object.assign(quests)
+    let newList = []
+    for(let e in events){
+      if(!newObjects[events[e][0]])
+      {
+        newObjects[events[e][0]] = events[e]
+      }else if(events[e].blockNumber>newObjects[events[e][0]].blockNumber) {
+        newObjects[events[e][0]] = events[e]
+      }
+    }
+    for(let o in newObjects){
+      newList.push(newObjects[o])
+    }
+    setQuests(newObjects)
+    setQuestList(newList)
+  },[questUpdateEvents])
+
+  //console.log("quests",quests)
+  usePoller(()=>{
+    if(pollerBuffer){
+      clearTimeout(pollerBuffer)
+    }
+    pollerBuffer = setTimeout(()=>{
+      console.log("🛰 Sync all Quest data...",quests)
+    },3000)
+  },29999,[questUpdateEvents])
+
+
 
   return (
     <div className="App">
@@ -117,27 +191,99 @@ function App() {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Registry</Link>
+          <Menu.Item key="/support">
+            <Link onClick={()=>{setRoute("/support")}} to="/support">Support</Link>
           </Menu.Item>
-          <Menu.Item key="/gov">
-            <Link onClick={()=>{setRoute("/gov")}} to="/gov">Governor</Link>
+          <Menu.Item key="/">
+            <Link onClick={()=>{setRoute("/")}} to="/">Projects</Link>
+          </Menu.Item>
+          <Menu.Item key="/quests">
+            <Link onClick={()=>{setRoute("/quests")}} to="/quests">Quests</Link>
+          </Menu.Item>
+          <Menu.Item key="/builders">
+            <Link onClick={()=>{setRoute("/builders")}} to="/builders">Builders</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+            <Link onClick={()=>{setRoute("/hints")}} to="/hints">...</Link>
           </Menu.Item>
           <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">...</Link>
+          </Menu.Item>
+
+          <Menu.Item key="/admin">
+            <Link onClick={()=>{setRoute("/admin")}} to="/admin">Admin</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
+            <Projects
+              setQuestFilter={setQuestFilter}
+              projects={projects}
+              projectList={projectList}
+              projectEvents={projectEvents}
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              setPurposeEvents={setPurposeEvents}
+              purpose={purpose}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
+
+          <Route exact path="/support/:id?">
+            <Support
+              setQuestFilter={setQuestFilter}
+              projects={projects}
+              projectList={projectList}
+              projectEvents={projectEvents}
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              setPurposeEvents={setPurposeEvents}
+              purpose={purpose}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
+
+          <Route exact path="/quests/:id?"
+            render = {(routerProps) => {
+              return (<Quests
+                questId = {routerProps.match.params.id}
+                questFilter={questFilter}
+                setQuestFilter={setQuestFilter}
+                questList={questList}
+                quests={quests}
+                questUpdateEvents={questUpdateEvents}
+                address={address}
+                userProvider={userProvider}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                setPurposeEvents={setPurposeEvents}
+                purpose={purpose}
+                yourLocalBalance={yourLocalBalance}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+              />)
+            }}
+          />
+
+
+
+          <Route exact path="/admin">
+            <div>
             <Contract
               name="Registry"
               signer={userProvider.getSigner()}
@@ -145,21 +291,47 @@ function App() {
               address={address}
               blockExplorer={blockExplorer}
             />
-          </Route>
-          <Route exact path="/gov">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
             <Contract
-              name="Governor"
+              name="Quests"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
+            <Contract
+              name="Builders"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+            <Contract
+              name="Projects"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+
+
+            </div>
           </Route>
+          <Route exact path="/builders">
+            <Builders
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              setPurposeEvents={setPurposeEvents}
+              purpose={purpose}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
+
           <Route path="/hints">
             <Hints
               address={address}

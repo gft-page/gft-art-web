@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function useEventListener(contracts, contractName, eventName, provider, startBlock, args) {
+export default function useFilteredEventListener(contracts, contractName, filter, provider, startBlock, args, extraWatch) {
   const [updates, setUpdates] = useState([]);
 
   useEffect(() => {
@@ -10,18 +10,20 @@ export default function useEventListener(contracts, contractName, eventName, pro
     }
     if (contracts && contractName && contracts[contractName]) {
       try {
-        contracts[contractName].on(eventName, (...args) => {
+        contracts[contractName].on(filter, async (...args) => {
           let blockNumber = args[args.length-1].blockNumber
-          setUpdates(messages => [Object.assign({blockNumber},args.pop().args), ...messages]);
+          let block = await provider.getBlock(blockNumber)
+          let timestamp = block.timestamp
+          setUpdates(messages => [Object.assign({blockNumber,timestamp},args.pop().args), ...messages]);
         });
         return () => {
-          contracts[contractName].removeListener(eventName);
+          contracts[contractName].removeListener(filter);
         };
       } catch (e) {
         console.log(e);
       }
     }
-  }, [provider, contracts, contractName, eventName]);
+  }, [ provider, contracts, contractName, extraWatch ]);
 
   return updates;
 }
