@@ -1,1 +1,1 @@
-module.exports = ["YourContract"];
+module.exports = ["Builders","Projects","Quests","Registry"];

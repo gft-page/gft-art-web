@@ -6,7 +6,7 @@ dataSources:
     name: Projects
     network: localhost
     source:
-      address: '{{ProjectsAddress}}'
+      address: '0x8565Fb7dfB5D36b2aA00086ffc920cfF20db4F2f'
       abi: Projects
       startBlock: 1
     mapping:
