@@ -26,48 +26,47 @@ function Subgraph(props) {
 
   const EXAMPLE_GRAPHQL = `
   {
-    purposes(first: 25, orderBy: createdAt, orderDirection: desc) {
+    projects {
       id
-      purpose
-      createdAt
-      sender {
-        id
-      }
-    }
-    senders {
-      id
-      address
-      purposeCount
+      title
+      desc
+      owner { id }
+      repo
+      quests { title author { id } }
+      updatedAt
     }
   }
   `
   const EXAMPLE_GQL = gql(EXAMPLE_GRAPHQL)
   const { loading, error, data } = useQuery(EXAMPLE_GQL,{pollInterval: 2500});
 
-  const purposeColumns = [
+  const projectColumns = [
     {
-      title: 'Purpose',
-      dataIndex: 'purpose',
-      key: 'purpose',
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title',
     },
     {
-      title: 'Sender',
+      title: 'Description',
+      dataIndex: 'desc',
+      key: 'desc',
+    },
+    {
+      title: 'Owner',
       key: 'id',
       render: (record) => <Address
-                        value={record.sender.id}
+                        value={record.owner.id}
                         ensProvider={props.mainnetProvider}
                         fontSize={16}
                       />
     },
     {
-      title: 'createdAt',
-      key: 'createdAt',
-      dataIndex: 'createdAt',
+      title: 'updated at',
+      key: 'updatedAt',
+      dataIndex: 'updatedAt',
       render: d => (new Date(d * 1000)).toISOString()
     },
     ];
-
-  const [newPurpose, setNewPurpose] = useState("loading...");
 
 
   const deployWarning = (
@@ -128,16 +127,7 @@ function Subgraph(props) {
 
           <div style={{width:780, margin: "auto", paddingBottom:64}}>
 
-            <div style={{margin:32, textAlign:'right'}}>
-              <Input onChange={(e)=>{setNewPurpose(e.target.value)}} />
-              <Button onClick={()=>{
-                console.log("newPurpose",newPurpose)
-                /* look how you call setPurpose on your contract: */
-                props.tx( props.writeContracts.YourContract.setPurpose(newPurpose) )
-              }}>Set Purpose</Button>
-            </div>
-
-            {data?<Table dataSource={data.purposes} columns={purposeColumns} rowKey={"id"} />:<Typography>{(loading?"Loading...":deployWarning)}</Typography>}
+            {data?<Table dataSource={data.projects} columns={projectColumns} rowKey={"id"} />:<Typography>{(loading?"Loading...":deployWarning)}</Typography>}
 
             <div style={{margin:32, height:400, border:"1px solid #888888", textAlign:'left'}}>
               <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true} query={EXAMPLE_GRAPHQL}/>

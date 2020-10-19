@@ -1,15 +1,31 @@
-type Purpose @entity {
+type Project @entity {
   id: ID!
-  sender: Sender!
-  purpose: String!
-  createdAt: BigInt!
-  transactionHash: String!
+  idBytes: Bytes!
+  title: String!
+  desc: String!
+  repo: String!
+  owner: Owner!
+  updatedAt: BigInt!
+  quests: [Quest!] @derivedFrom(field: "project")
 }
 
-type Sender @entity {
+type Owner @entity {
   id: ID!
-  address: Bytes!
-  purposes: [Purpose!] @derivedFrom(field: "sender")
-  createdAt: BigInt!
-  purposeCount: BigInt!
+  projects: [Project!] @derivedFrom(field: "owner")
+}
+
+type Quest @entity {
+  id: ID!
+  idBytes: Bytes!
+  project: Project
+  title: String!
+  desc: String!
+  link: String!
+  author: Author!
+  updatedAt: BigInt!
+}
+
+type Author @entity {
+  id: ID!
+  quests: [Quest!] @derivedFrom(field: "author")
 }

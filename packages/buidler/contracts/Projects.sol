@@ -12,7 +12,7 @@ contract Projects {
         registry = Registry(registryAddress);
     }
 
-    event Project( bytes32 id, string title, string desc, string repo, address owner );
+    event ProjectUpdate( bytes32 id, string title, string desc, string repo, address owner );
 
     mapping (bytes32 => address) public owner;
 
@@ -34,7 +34,7 @@ contract Projects {
           require( msg.sender == owner[id] || msg.sender == registry.owner(), "updateProject: NOT OWNER");
         }
         owner[id] = projectOwner;
-        emit Project(id, title, desc, repo, owner[id]);
+        emit ProjectUpdate(id, title, desc, repo, owner[id]);
     }
 
 }
