@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects } from "./views"
+import { Hints, ExampleUI, Subgraph, Projects, Quests } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -101,6 +101,8 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+  const [questFilter, setQuestFilter] = useState("")
+
   return (
     <div className="App">
 
@@ -112,6 +114,9 @@ function App(props) {
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">Projects</Link>
+          </Menu.Item>
+          <Menu.Item key="/quests">
+            <Link onClick={()=>{setRoute("/quests")}} to="/quests">Quests</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -131,19 +136,20 @@ function App(props) {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-            <Contract
-              name="Projects"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
+            <Projects
+              subgraphUri={props.subgraphUri}
+              setQuestFilter={setQuestFilter}
               blockExplorer={blockExplorer}
+              mainnetProvider={mainnetProvider}
             />
-            <Contract
-              name="Registry"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
+          </Route>
+          <Route exact path="/quests">
+            <Quests
+              subgraphUri={props.subgraphUri}
+              questFilter={questFilter}
+              setQuestFilter={setQuestFilter}
               blockExplorer={blockExplorer}
+              mainnetProvider={mainnetProvider}
             />
           </Route>
           <Route path="/hints">
@@ -169,10 +175,10 @@ function App(props) {
           </Route>
           <Route path="/subgraph">
             <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
+              subgraphUri={props.subgraphUri}
+              tx={tx}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
             />
           </Route>
         </Switch>

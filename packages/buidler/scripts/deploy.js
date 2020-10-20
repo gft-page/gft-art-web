@@ -62,8 +62,14 @@ async function main() {
      },
      {
        title: "🏰 BuidlGuidl.com",
-       desc: "(this) developer coordination experiment centered around 🏗 scaffold-eth",
+       desc: "(this) developer coordination experiment centered around 🏗 Scaffold-ETH",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🧙‍♂️ InstantWallet.io",
+       desc: "This is an update!",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
 

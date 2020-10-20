@@ -12,7 +12,7 @@ const { Title } = Typography;
 
 const { Option } = Select;
 
-  const highlight = { marginLeft: 4, marginRight: 8, backgroundColor: "#f9f9f9", padding: 4, borderRadius: 4, fontWeight: "bolder" }
+const highlight = { marginLeft: 4, marginRight: 8, backgroundColor: "#f9f9f9", padding: 4, borderRadius: 4, fontWeight: "bolder" }
 
 function Subgraph(props) {
 
@@ -26,13 +26,12 @@ function Subgraph(props) {
 
   const EXAMPLE_GRAPHQL = `
   {
-    projects {
-      id
+    quests (orderBy: updatedAt, orderDirection: desc) {
+      idBytes
       title
       desc
-      owner { id }
-      repo
-      quests { title author { id } }
+      link
+      author { id }
       updatedAt
     }
   }
