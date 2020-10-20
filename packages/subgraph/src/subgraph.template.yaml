@@ -39,6 +39,6 @@ dataSources:
         - name: Quests
           file: ./abis/Quests.json
       eventHandlers:
-        - event: QuestUpdate(bytes32,bytes32,string,string,string,address)
+        - event: QuestUpdate(indexed bytes32,indexed bytes32,string,string,string,address)
           handler: handleQuestUpdate
       file: ./src/mapping.ts

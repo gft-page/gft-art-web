@@ -44,7 +44,7 @@
         "type": "address"
       }
     ],
-    "name": "Project",
+    "name": "ProjectUpdate",
     "type": "event"
   },
   {

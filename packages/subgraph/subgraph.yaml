@@ -6,7 +6,7 @@ dataSources:
     name: Projects
     network: localhost
     source:
-      address: '0x8565Fb7dfB5D36b2aA00086ffc920cfF20db4F2f'
+      address: '0x22474D350EC2dA53D717E30b96e9a2B7628Ede5b'
       abi: Projects
       startBlock: 1
     mapping:
@@ -19,6 +19,26 @@ dataSources:
         - name: Projects
           file: ./abis/Projects.json
       eventHandlers:
-        - event: QuestUpdate(bytes32,bytes32,string,string,string,address)
+         - event: ProjectUpdate(bytes32,string,string,string,address)
+           handler: handleProjectUpdate
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: Quests
+    network: localhost
+    source:
+      address: '0xb682dEEf4f8e298d86bFc3e21f50c675151FB974'
+      abi: Quests
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Quest
+      abis:
+        - name: Quests
+          file: ./abis/Quests.json
+      eventHandlers:
+        - event: QuestUpdate(indexed bytes32,indexed bytes32,string,string,string,address)
           handler: handleQuestUpdate
       file: ./src/mapping.ts
