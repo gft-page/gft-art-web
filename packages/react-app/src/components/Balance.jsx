@@ -10,6 +10,13 @@ import { usePoller } from "eth-hooks";
     dollarMultiplier={props.price}
   />
 
+  OR
+
+  <Balance
+    balance={bigNumber}
+    dollarMultiplier={props.price}
+  />
+
 */
 
 

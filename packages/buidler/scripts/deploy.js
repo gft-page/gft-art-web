@@ -18,36 +18,7 @@ async function main() {
    const projects = await deploy("Projects",[ registry.address ])
 
    let genesisProjects = [
-     {
-       title: "🎨 Nifty.ink",
-       desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
-       projectOwner: "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
-     },
-     {
-       title: "🧙‍♂️ InstantWallet.io",
-       desc: "Simple and forkable burner wallet made with 🏗 scaffold-eth.",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏗 ScaffoldETH.io",
-       desc: "Forkable Ethereum Dev Stack and Community",
-       repo: "https://github.com/austintgriffith/scaffold-eth",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "👛 Multisig.Holdings",
-       desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🔴 Optimistic.Money",
-       desc: "InstantWallet.io fork for deposit/send on OVM testnet",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
+
      {
        title: "🏷 FreeNS.io",
        desc: "Free MVP ENS-like service on L2",
@@ -67,19 +38,86 @@ async function main() {
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
      {
-       title: "🧙‍♂️ InstantWallet.io",
-       desc: "This is an update!",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+       title: "‍👩‍🎤 xNFT.io",
+       desc: "Super clean Nifty.ink fork that is for image uploads instead of inks",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🔥 xdai.io",
+       desc: "OG Burner Wallet rebuild as instant wallet fork",
+       repo: "https://github.com/austintgriffith/burner-wallet",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏴‍☠️  Galleass.io",
+       desc: "Rebuild Galleass.io using 🏗 scaffold-eth as a game build demo",
+       repo: "https://github.com/austintgriffith/galleass",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
 
+     {
+       title: "🔏 signator.io",
+       desc: "Simple signer app rebuild in 🏗 scaffold-eth",
+       repo: "https://github.com/austintgriffith/signatorio",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "⚙️ build.sh",
+       desc: "The 🏗 scaffold-eth dev stack in a single, delightful CLI (maybe even a docker container we can host at first)",
+       repo: "",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
 
+     {
+       title: "🐶 DAOG.io",
+       desc: "Rebuild DAOG.io using 🏗 scaffold-eth as a game build demo",
+       repo: "https://github.com/austintgriffith/galleass",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🍀 nftdao.com",
+       desc: "MVP of a DAO that can control an NFT",
+       repo: "https://github.com/austintgriffith/scaffold-eth",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "👛 Multisig.Holdings",
+       desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🔴 Optimistic.Money",
+       desc: "InstantWallet.io fork for deposit/send on OVM testnet",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏗 ScaffoldETH.io",
+       desc: "Forkable Ethereum Dev Stack and Community",
+       repo: "https://github.com/austintgriffith/scaffold-eth",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+
+     {
+       title: "🧙‍♂️ InstantWallet.io",
+       desc: "Simple and forkable burner wallet made with 🏗 scaffold-eth.",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🎨 Nifty.ink",
+       desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
+       projectOwner: "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
+     },
    ]
 
    for(let g in genesisProjects){
      console.log("     "+genesisProjects[g].title+" ("+chalk.gray(utils.formatBytes32String(genesisProjects[g].title))+")")
      const id = await projects.projectId(genesisProjects[g].title)
-     console.log("     "+chalk.gray(id))
+     console.log("     id:"+chalk.gray(id))
      await projects.updateProject(
        genesisProjects[g].title,
        genesisProjects[g].desc,
@@ -126,9 +164,15 @@ async function main() {
        link: "",
      },
      {
+       project: "🏗 ScaffoldETH.io",
+       title: "📦 Convert Floats to BigNumbers",
+       desc: "Stop tracking things like price and etherInput using floats, use BigNumbers instead",
+       link: "",
+     },
+     {
        project: "🎨 Nifty.ink",
        title: "📦 Use The Graph for the frontend",
-       desc: "upgrade to using 🛰 The Graph instead of events for a faster fronten",
+       desc: "upgrade to using 🛰 The Graph instead of events for a faster frontend",
        link: "",
      },
      {
@@ -142,6 +186,12 @@ async function main() {
        title: "🐛 First click to send button fails",
        desc: "when the wallet is first loading the send button should look disabled or transparent",
        link: "",
+     },
+     {
+       project: "🧙‍♂️ InstantWallet.io",
+       title: "📦 add zksync",
+       desc: "another popular L2 is zksync, add it as an option to send",
+       link: "https://zksync.io/dev/tutorial.html",
      },
      {
        project: "🔴 Optimistic.Money",
@@ -162,16 +212,23 @@ async function main() {
      console.log("        "+genesisQuests[g].project+" : "+genesisQuests[g].title)
      const id = await quests.questId(utils.formatBytes32String(genesisQuests[g].project), genesisQuests[g].title)//questId( bytes32 project, string memory title )
      console.log("        "+chalk.gray(id))
-     await quests.updateQuest(//updateQuest(bytes32 project, string memory title, string memory desc)
-       utils.formatBytes32String(genesisQuests[g].project),
-       genesisQuests[g].title,
-       genesisQuests[g].desc,
-       genesisQuests[g].link
-     )
+     const projectId = await projects.projectId(genesisQuests[g].project)
+     console.log("         project:"+chalk.gray(projectId))
+     const owner = await projects.owner(projectId)
+     console.log("         owner:",chalk.gray(owner))
+     if(owner=="0x0000000000000000000000000000000000000000"){
+       console.log("ERROR QUEST WITH UNKNOWN PROJECT")
+     }else{
+       await quests.updateQuest(//updateQuest(bytes32 project, string memory title, string memory desc)
+         projectId,
+         genesisQuests[g].title,
+         genesisQuests[g].desc,
+         genesisQuests[g].link
+       )
+     }
+
    }
    console.log(" ");
-
-
 
    console.log("🗳  Electing Owner of Registry\n");
    await registry.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")//governor.address)

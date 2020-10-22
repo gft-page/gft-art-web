@@ -5,7 +5,7 @@ type Project @entity {
   desc: String!
   repo: String!
   owner: Owner!
-  updatedAt: BigInt!
+  timestamp: BigInt!
   quests: [Quest!] @derivedFrom(field: "project")
 }
 
@@ -17,15 +17,52 @@ type Owner @entity {
 type Quest @entity {
   id: ID!
   idBytes: Bytes!
-  project: Project
+  project: Project!
   title: String!
   desc: String!
   link: String!
   author: Author!
-  updatedAt: BigInt!
+  timestamp: BigInt!
+  works: [Work!] @derivedFrom(field: "quest")
+  looks: [Look!] @derivedFrom(field: "quest")
+  finished: Boolean
+  recipient: Recipient
+  sender: Sender
+  amount: BigInt
 }
 
 type Author @entity {
   id: ID!
   quests: [Quest!] @derivedFrom(field: "author")
+}
+
+type Recipient @entity {
+  id: ID!
+  quests: [Quest!] @derivedFrom(field: "recipient")
+}
+
+type Sender @entity {
+  id: ID!
+  quests: [Quest!] @derivedFrom(field: "sender")
+}
+
+type Builder @entity {
+  id: ID!
+  looks: [Look!] @derivedFrom(field: "builder")
+  works: [Work!] @derivedFrom(field: "builder")
+}
+
+type Look @entity {
+  id: ID!
+  quest: Quest!
+  builder: Builder!
+  timestamp: BigInt!
+}
+
+type Work @entity {
+  id: ID!
+  quest: Quest!
+  builder: Builder!
+  link: String!
+  timestamp: BigInt!
 }

@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects, Quests } from "./views"
+import { Hints, ExampleUI, Subgraph, Projects, Quests, Support } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -30,7 +30,7 @@ import { Hints, ExampleUI, Subgraph, Projects, Quests } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
 
-const DEBUG = true
+const DEBUG = false
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -112,30 +112,71 @@ function App(props) {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
+          <Menu.Item key="/support">
+            <Link onClick={()=>{setRoute("/support")}} to="/support">Support</Link>
+          </Menu.Item>
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">Projects</Link>
           </Menu.Item>
           <Menu.Item key="/quests">
-            <Link onClick={()=>{setRoute("/quests")}} to="/quests">Quests</Link>
-          </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+            <Link onClick={()=>{
+              setRoute("/quests")
+              setQuestFilter("")
+            }} to="/quests">Quests</Link>
           </Menu.Item>
           <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">DebugSubgraph</Link>
+          </Menu.Item>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">DebugContracts</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
+          <Route exact path="/debug">
+            <Contract
+               name="Projects"
+               signer={userProvider.getSigner()}
+               provider={localProvider}
+               address={address}
+               blockExplorer={blockExplorer}
+            />
+            <Contract
+               name="Quests"
+               signer={userProvider.getSigner()}
+               provider={localProvider}
+               address={address}
+               blockExplorer={blockExplorer}
+            />
+            <Contract
+               name="Builders"
+               signer={userProvider.getSigner()}
+               provider={localProvider}
+               address={address}
+               blockExplorer={blockExplorer}
+            />
+            <Contract
+               name="Registry"
+               signer={userProvider.getSigner()}
+               provider={localProvider}
+               address={address}
+               blockExplorer={blockExplorer}
+            />
+          </Route>
+          <Route exact path="/support/:id?">
+           <Support
+             address={address}
+             userProvider={userProvider}
+             mainnetProvider={mainnetProvider}
+             localProvider={localProvider}
+             yourLocalBalance={yourLocalBalance}
+             price={price}
+             tx={tx}
+             writeContracts={writeContracts}
+             readContracts={readContracts}
+           />
+         </Route>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
             <Projects
               subgraphUri={props.subgraphUri}
               setQuestFilter={setQuestFilter}
@@ -143,14 +184,25 @@ function App(props) {
               mainnetProvider={mainnetProvider}
             />
           </Route>
-          <Route exact path="/quests">
-            <Quests
-              subgraphUri={props.subgraphUri}
-              questFilter={questFilter}
-              setQuestFilter={setQuestFilter}
-              blockExplorer={blockExplorer}
-              mainnetProvider={mainnetProvider}
-            />
+          <Route exact path="/quests/:id?" render = {(routerProps) => {
+              return (<Quests
+                subgraphUri={props.subgraphUri}
+                questId = {routerProps.match.params.id}
+                questFilter={questFilter}
+                setQuestFilter={setQuestFilter}
+                localProvider={localProvider}
+                address={address}
+                userProvider={userProvider}
+                blockExplorer={blockExplorer}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                yourLocalBalance={yourLocalBalance}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+              />)
+            }}>
           </Route>
           <Route path="/hints">
             <Hints

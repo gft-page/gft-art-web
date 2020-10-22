@@ -91,6 +91,7 @@ export default function AddressInput(props) {
     <div>
       {scanner}
       <Input
+        size={props.size}
         id={"0xAddress"}//name it something other than address for auto fill doxxing
         name={"0xAddress"}//name it something other than address for auto fill doxxing
         autoFocus={props.autoFocus}

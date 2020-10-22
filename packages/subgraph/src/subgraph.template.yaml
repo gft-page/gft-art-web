@@ -41,4 +41,10 @@ dataSources:
       eventHandlers:
         - event: QuestUpdate(indexed bytes32,indexed bytes32,string,string,string,address)
           handler: handleQuestUpdate
+        - event: QuestWork(indexed bytes32,address,string)
+          handler: handleQuestWork
+        - event: QuestLook(indexed bytes32,address)
+          handler: handleQuestLook
+        - event: QuestFinished(indexed bytes32,address,uint256,address)
+          handler: handleQuestFinished
       file: ./src/mapping.ts

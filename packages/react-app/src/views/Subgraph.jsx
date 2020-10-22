@@ -33,11 +33,14 @@ function Subgraph(props) {
       link
       author { id }
       updatedAt
+      project { id }
     }
   }
   `
   const EXAMPLE_GQL = gql(EXAMPLE_GRAPHQL)
   const { loading, error, data } = useQuery(EXAMPLE_GQL,{pollInterval: 2500});
+
+  console.log(loading, error, data )
 
   const projectColumns = [
     {

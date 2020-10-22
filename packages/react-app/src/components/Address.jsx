@@ -72,7 +72,7 @@ export default function Address(props) {
   }
 
   return (
-    <span>
+    <span style={{whiteSpace:"nowrap"}}>
       <span style={{ verticalAlign: "middle" }}>
         <Blockies seed={props.value.toLowerCase()} size={8} scale={props.fontSize?props.fontSize/7:4} />
       </span>

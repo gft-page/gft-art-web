@@ -25,14 +25,14 @@ export default function Projects({ subgraphUri, setQuestFilter, blockExplorer, m
 
   const EXAMPLE_GRAPHQL = `
   {
-    projects (orderBy: updatedAt, orderDirection: desc) {
+    projects (orderBy: timestamp, orderDirection: desc) {
       id
       title
       desc
       owner { id }
       repo
       quests { title author { id } }
-      updatedAt
+      timestamp
     }
   }
   `

@@ -25,9 +25,9 @@ export default function useContractReader(contracts, contractName, functionName,
         let newValue;
         if (DEBUG) console.log("CALLING ", contractName, functionName, "with args", args);
         if (args && args.length > 0) {
+          if(typeof args[0] == "undefined") return;
           newValue = await contracts[contractName][functionName](...args);
-          if (DEBUG)
-            console.log("contractName", contractName, "functionName", functionName, "args", args, "RESULT:", newValue);
+          if (DEBUG) console.log("contractName", contractName, "functionName", functionName, "args", args, "RESULT:", newValue);
         } else {
           newValue = await contracts[contractName][functionName]();
         }
