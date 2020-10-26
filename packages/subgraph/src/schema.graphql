@@ -54,6 +54,11 @@ type Builder @entity {
   works: [Work!] @derivedFrom(field: "builder")
 }
 
+type Supporter @entity {
+  id: ID!
+  isActive: Boolean
+}
+
 type Look @entity {
   id: ID!
   quest: Quest!

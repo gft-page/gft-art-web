@@ -1,1 +1,1 @@
-module.exports = ["Bank","Builders","Projects","Quests"];
+module.exports = ["Bank","Builders","Projects","Quests","SupportRound","Supporters"];

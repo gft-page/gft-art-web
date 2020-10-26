@@ -5,3 +5,4 @@ export { default as Projects } from "./Projects";
 export { default as Quests } from "./Quests";
 export { default as Support } from "./Support";
 export { default as Builders } from "./Builders";
+export { default as Supporters } from "./Supporters";

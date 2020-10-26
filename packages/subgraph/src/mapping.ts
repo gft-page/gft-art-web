@@ -8,7 +8,10 @@ import {
 import {
   BuilderUpdate
 } from "../generated/Builders/Builders"
-import { Project, Owner, Quest, Author, Work, Look, Builder, Sender, Recipient } from "../generated/schema"
+import {
+  SupporterUpdate
+} from "../generated/Supporters/Supporters"
+import { Project, Owner, Quest, Author, Work, Look, Builder, Sender, Recipient, Supporter } from "../generated/schema"
 
 
 export function handleProjectUpdate(event: ProjectUpdate): void {
@@ -122,6 +125,14 @@ export function handleBuilderUpdate(event: BuilderUpdate): void {
 
   builder.isActive = event.params.isBuilder
   builder.save()
+}
+
+export function handleSupporterUpdate(event: SupporterUpdate): void {
+  let supporterId = event.params.supporter.toHexString()
+  let supporter = new Supporter(supporterId)
+
+  supporter.isActive = event.params.isSupporter
+  supporter.save()
 }
 
 export function handleQuestSupport(event: QuestSupport): void {

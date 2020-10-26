@@ -11,6 +11,13 @@ async function main() {
     // OR
     // custom deploy (to use deployed addresses dynamically for example:)
 
+    console.log("💵  Deploying Supporters\n");
+    const supporters = await deploy("Supporters")
+    await supporters.supporterUpdate("0x34aA3F359A9D614239015126635CE7732c18fDF3",true);
+    await supporters.supporterUpdate("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",true);
+
+    console.log("🧮  Deploying Support Round\n");
+    const supportRound = await deploy("SupportRound", [ supporters.address, 120 * 1 ]);/// <-- ROUND DURATION
 
     console.log("📲  Deploying Bank\n");
     const guildBank = await deploy("Bank",[
@@ -117,7 +124,7 @@ async function main() {
        title: "🎨 Nifty.ink",
        desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
-       projectOwner: "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
+       projectOwner: "0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc"//adamfuller.eth
      },
    ]
 
@@ -125,13 +132,26 @@ async function main() {
      console.log("     "+genesisProjects[g].title+" ("+chalk.gray(utils.formatBytes32String(genesisProjects[g].title))+")")
      const id = await projects.projectId(genesisProjects[g].title)
 
+     console.log("          🏦 Deploying Project Bank\n");
+     const projectBank = await deploy("Bank",[
+       [
+         genesisProjects[g].projectOwner,
+         "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
+       ],
+       1
+     ])
+
+
      console.log("     id:"+chalk.gray(id))
      await projects.updateProject(
        genesisProjects[g].title,
        genesisProjects[g].desc,
        genesisProjects[g].repo,
-       genesisProjects[g].projectOwner
+       projectBank.address
      )
+
+     console.log("     ---> Adding Project to Support Round ")
+     await supportRound.addRecipient(genesisProjects[g].projectOwner,id)
    }
    console.log(" ");
 

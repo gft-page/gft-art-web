@@ -6,7 +6,7 @@ export default function Header() {
     <a href="/">
       <PageHeader
         title="🏰 Build Guild"
-        subTitle=""
+        subTitle="Round 0"
         style={{ cursor: "pointer" }}
       />
     </a>

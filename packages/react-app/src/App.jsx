@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects, Quests, Support, Builders } from "./views"
+import { Hints, ExampleUI, Subgraph, Projects, Quests, Support, Builders, Supporters } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -129,6 +129,11 @@ function App(props) {
               setRoute("/builders")
             }} to="/builders">Builders</Link>
           </Menu.Item>
+          <Menu.Item key="/supporters">
+            <Link onClick={()=>{
+              setRoute("/supporters")
+            }} to="/supporters">Supporters</Link>
+          </Menu.Item>
 
           <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">DebugSubgraph</Link>
@@ -212,6 +217,13 @@ function App(props) {
                blockExplorer={blockExplorer}
             />
             <Contract
+               name="Supporters"
+               signer={userProvider.getSigner()}
+               provider={localProvider}
+               address={address}
+               blockExplorer={blockExplorer}
+            />
+            <Contract
                name="Registry"
                signer={userProvider.getSigner()}
                provider={localProvider}
@@ -264,6 +276,23 @@ function App(props) {
               return (<Builders
                 subgraphUri={props.subgraphUri}
 
+                localProvider={localProvider}
+                address={address}
+                userProvider={userProvider}
+                blockExplorer={blockExplorer}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                yourLocalBalance={yourLocalBalance}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+              />)
+            }}>
+          </Route>
+          <Route exact path="/supporters/:id?" render = {(routerProps) => {
+              return (<Supporters
+                subgraphUri={props.subgraphUri}
                 localProvider={localProvider}
                 address={address}
                 userProvider={userProvider}
