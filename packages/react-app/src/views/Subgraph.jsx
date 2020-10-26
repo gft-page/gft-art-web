@@ -26,13 +26,13 @@ function Subgraph(props) {
 
   const EXAMPLE_GRAPHQL = `
   {
-    quests (orderBy: updatedAt, orderDirection: desc) {
+    quests (orderBy: timestamp, orderDirection: desc) {
       idBytes
       title
       desc
       link
       author { id }
-      updatedAt
+      timestamp
       project { id }
     }
   }

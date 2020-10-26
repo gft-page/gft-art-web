@@ -26,8 +26,8 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
 
   if(DEBUG) console.log("🏷 questId",questId)
 
-  const support = useContractReader(readContracts,"Quests", "support", [questId])
-  if(DEBUG) console.log("💵 support:",support)
+  //const support = useContractReader(readContracts,"Quests", "support", [questId])
+  //if(DEBUG) console.log("💵 support:",support)
 
   const registryOwner = useContractReader(readContracts,"Registry", "owner")
   if(DEBUG) console.log("👩‍✈️ registryOwner:",registryOwner)
@@ -42,7 +42,7 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
 
   const GET_QUESTS_GRAPHQL = `
   {
-    quests (orderBy: timestamp, orderDirection: desc) {
+    quests (where: {finished: null},orderBy: support, orderDirection: desc, orderBy: timestamp, orderDirection: desc) {
       id
       idBytes
       title
@@ -51,6 +51,8 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
       author { id }
       timestamp
       project { id title }
+      support
+      finished
     }
   }
   `
@@ -73,7 +75,7 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
           id
         }
       }
-      works {
+      works (orderBy: timestamp, orderDirection: asc) {
         id timestamp link builder {
           id
         }
@@ -86,6 +88,7 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
         id
       }
       amount
+      support
     }
   }
 
@@ -211,16 +214,17 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
         </Row>
       )
     }else{
-      submitWorkButton = <div style={{textAlign:"center"}}>{"🏁  Finished!"}</div>
+      submitWorkButton = <div style={{textAlign:"center",padding:8,opacity:0.333,fontSize:32}}>{""}</div>
     }
 
     const workLog = (
       <div>
+      
         <Divider orientation="left">Work Log:</Divider>
 
-        {submitWorkButton}
-
         {works}
+
+        {submitWorkButton}
 
         {ownerDisplay}
 
@@ -262,7 +266,7 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
           <Col span={6}>
             <div style={{marginLeft:16}}>
               <Balance
-                balance={support}
+                balance={getQuestByIdQuery.data.quest.support}
                 dollarMultiplier={price}
               />
             </div>
@@ -368,6 +372,8 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
           )}
         >
 
+
+
           <div>
             {item.desc}
           </div>
@@ -380,13 +386,20 @@ export default function Quests({subgraphUri, questId, questFilter, setQuestFilte
               </Button>
             </div>
 
+            <div style={{marginTop:32,opacity:0.5,width:200}}>
+              <Balance
+                balance={item.support}
+                dollarMultiplier={price}
+              />
+            </div>
+
         </Card>
       )
     }
   }
 
   return (
-    <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:64 }}>
+    <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:256 }}>
 
       <Input size={"large"} placeholder={"search"} style={{marginTop:32,width:538}} value={questFilter} onChange={(e)=>{setQuestFilter(e.target.value)}} />
 

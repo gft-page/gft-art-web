@@ -3,7 +3,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "registryAddress",
+        "name": "projectsAddress",
         "type": "address"
       }
     ],
@@ -215,6 +215,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "projects",
+    "outputs": [
+      {
+        "internalType": "contract Projects",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -236,19 +249,6 @@
       }
     ],
     "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "registry",
-    "outputs": [
-      {
-        "internalType": "contract Registry",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

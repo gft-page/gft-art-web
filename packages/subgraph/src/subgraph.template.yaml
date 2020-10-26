@@ -47,4 +47,27 @@ dataSources:
           handler: handleQuestLook
         - event: QuestFinished(indexed bytes32,address,uint256,address)
           handler: handleQuestFinished
+        - event: QuestSupport(indexed bytes32,address,uint256,uint256)
+          handler: handleQuestSupport
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: Builders
+    network: localhost
+    source:
+      address: '{{BuildersAddress}}'
+      abi: Builders
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Builder
+      abis:
+        - name: Builders
+          file: ./abis/Builders.json
+      eventHandlers:
+        - event: BuilderUpdate(indexed address,bool)
+          handler: handleBuilderUpdate
+
       file: ./src/mapping.ts

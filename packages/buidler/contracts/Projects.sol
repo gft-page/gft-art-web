@@ -2,14 +2,13 @@
 pragma solidity >=0.6.0 <0.7.0;
 
 import "@nomiclabs/buidler/console.sol";
-import "./Registry.sol";
 
 contract Projects {
 
-    Registry public registry;
+    address public controller;
 
-    constructor(address registryAddress) public {
-        registry = Registry(registryAddress);
+    constructor() public {
+      controller = msg.sender;
     }
 
     event ProjectUpdate( bytes32 id, string title, string desc, string repo, address owner );
@@ -29,11 +28,13 @@ contract Projects {
     ) public {
         bytes32 id = projectId(title);
         if( owner[id] == address(0) ){
-          require( msg.sender == registry.owner(), "updateProject: NOT REGISTRY OWNER");
+          require( msg.sender == controller, "updateProject: NOT CONTROLLER");
         }else{
-          require( msg.sender == owner[id] || msg.sender == registry.owner(), "updateProject: NOT OWNER");
+          require( msg.sender == owner[id] || msg.sender == controller, "updateProject: NOT OWNER OR CONTROLLER");
         }
-        owner[id] = projectOwner;
+        if( owner[id] != projectOwner){
+          owner[id] = projectOwner;
+        }
         emit ProjectUpdate(id, title, desc, repo, owner[id]);
     }
 

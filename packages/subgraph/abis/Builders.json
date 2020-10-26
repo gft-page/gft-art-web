@@ -1,12 +1,6 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "registryAddress",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -26,8 +20,39 @@
         "type": "bool"
       }
     ],
-    "name": "Builder",
+    "name": "BuilderUpdate",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "builder",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "update",
+        "type": "bool"
+      }
+    ],
+    "name": "builderUpdate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "controller",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -46,37 +71,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "registry",
-    "outputs": [
-      {
-        "internalType": "contract Registry",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "builder",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "update",
-        "type": "bool"
-      }
-    ],
-    "name": "updateBuilder",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

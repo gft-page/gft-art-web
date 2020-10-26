@@ -42,7 +42,7 @@ export default function Projects({ subgraphUri, setQuestFilter, blockExplorer, m
 
   return (
     <div>
-      <div style={{ width:780, margin: "auto", textAlign:"left", marginTop:32, paddingBottom:32 }}>
+      <div style={{ width:780, margin: "auto", textAlign:"left", marginTop:32, paddingBottom:256 }}>
 
         <List
           loading={loading}

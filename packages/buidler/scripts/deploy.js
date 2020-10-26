@@ -11,11 +11,18 @@ async function main() {
     // OR
     // custom deploy (to use deployed addresses dynamically for example:)
 
-   console.log("📄  Deploying Registry \n");
-   const registry = await deploy("Registry")
+
+    console.log("📲  Deploying Bank\n");
+    const guildBank = await deploy("Bank",[
+      [
+        "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+        "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
+      ],
+      1
+    ])
 
    console.log("📲  Deploying Projects\n");
-   const projects = await deploy("Projects",[ registry.address ])
+   const projects = await deploy("Projects")
 
    let genesisProjects = [
 
@@ -117,6 +124,7 @@ async function main() {
    for(let g in genesisProjects){
      console.log("     "+genesisProjects[g].title+" ("+chalk.gray(utils.formatBytes32String(genesisProjects[g].title))+")")
      const id = await projects.projectId(genesisProjects[g].title)
+
      console.log("     id:"+chalk.gray(id))
      await projects.updateProject(
        genesisProjects[g].title,
@@ -127,21 +135,20 @@ async function main() {
    }
    console.log(" ");
 
-   console.log("🏷 Register Projects Contract")
-   await registry.updateAsset(utils.formatBytes32String("Projects"),projects.address)
-
    console.log("🛠  Deploying Builders\n");
-   const builders = await deploy("Builders",[ registry.address ])
+   const builders = await deploy("Builders")
 
-   console.log("🏷 Register Builders Contract")
-   await registry.updateAsset(utils.formatBytes32String("Builders"),builders.address)
+   await builders.builderUpdate("0x025645A569b3e60F803bFFC88f0E2e38b7526B3d",true);
+   await builders.builderUpdate("0x6361cbe71857ace00996e5fa9b0ad77337ffe619",true);
+   await builders.builderUpdate("0xe353d9aeab38f476517a3f6cfdee28b366a985a2",true);
+   await builders.builderUpdate("0x1c340771b688ab36af177566f187aea25deea546",true);
+   await builders.builderUpdate("0xa0bed8a4e39c3881f71c223588227bb85ed86ff2",true);
+   await builders.builderUpdate("0xb858b4ee278bf53ed51bc1fe9b17f1217dc3e197",true);
+   await builders.builderUpdate("0x6361cbe71857ace00996e5fa9b0ad77337ffe619",false);
+   await builders.builderUpdate("0xe353d9aeab38f476517a3f6cfdee28b366a985a2",false);
 
    console.log("🛠  Deploying Quests\n");
-   const quests = await deploy("Quests",[ registry.address ])
-
-   console.log("🏷 Register Quests Contract")
-   await registry.updateAsset(utils.formatBytes32String("Quests"),quests.address)
-
+   const quests = await deploy("Quests",[ projects.address ])
 
    console.log("🚩 Adding Quests")
    let genesisQuests = [
@@ -154,7 +161,7 @@ async function main() {
      {
        project: "🏗 ScaffoldETH.io",
        title: "📚 Possible Refactor",
-       desc: "originally 🏗 scaffold-eth used create-eth-app but it doesn't leverage it",
+       desc: "originally 🏗 scaffold-eth used create-eth-app but it doesn't leverage it now",
        link: "",
      },
      {
@@ -229,9 +236,6 @@ async function main() {
 
    }
    console.log(" ");
-
-   console.log("🗳  Electing Owner of Registry\n");
-   await registry.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")//governor.address)
 }
 
 

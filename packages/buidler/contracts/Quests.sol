@@ -2,15 +2,14 @@
 pragma solidity >=0.6.0 <0.7.0;
 
 import "@nomiclabs/buidler/console.sol";
-import "./Registry.sol";
 import "./Projects.sol";
 
 contract Quests {
 
-    Registry public registry;
+    Projects public projects;
 
-    constructor( address registryAddress ) public {
-        registry = Registry(registryAddress);
+    constructor( address projectsAddress ) public {
+        projects = Projects(projectsAddress);
     }
 
     event QuestUpdate( bytes32 indexed id, bytes32 indexed project, string title, string desc, string link, address author);
@@ -29,8 +28,7 @@ contract Quests {
     }
 
     function updateQuest(bytes32 project, string memory title, string memory desc, string memory link) public {
-        Projects projects = Projects(registry.assets("Projects"));
-        require( msg.sender == projects.owner(project) || msg.sender == registry.owner(), "updateQuest: NOT OWNER");
+        require( msg.sender == projects.owner(project) || msg.sender == projects.controller() , "updateQuest: NOT OWNER");
         bytes32 id = questId( project, title );
         emit QuestUpdate( id, project, title, desc, link, msg.sender);
     }
@@ -53,8 +51,7 @@ contract Quests {
     }
 
     function finishQuest( bytes32 project, string memory title, address payable recipient ) public {
-      Projects projects = Projects(registry.assets("Projects"));
-      require( msg.sender == projects.owner(project) || msg.sender == registry.owner(), "updateQuest: NOT OWNER");
+      require( msg.sender == projects.owner(project), "updateQuest: NOT OWNER");
       bytes32 id = questId( project, title );
       require( !complete[id], "supportQuest: already complete");
       complete[id] = true;

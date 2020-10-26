@@ -3,8 +3,11 @@ import {
   ProjectUpdate
 } from "../generated/Projects/Projects"
 import {
-  QuestUpdate, QuestWork, QuestLook, QuestFinished
+  QuestUpdate, QuestWork, QuestLook, QuestFinished, QuestSupport
 } from "../generated/Quests/Quests"
+import {
+  BuilderUpdate
+} from "../generated/Builders/Builders"
 import { Project, Owner, Quest, Author, Work, Look, Builder, Sender, Recipient } from "../generated/schema"
 
 
@@ -110,4 +113,20 @@ export function handleQuestFinished(event: QuestFinished): void {
 
   let recipient = new Recipient(recipientId.toString())
   recipient.save()
+}
+
+export function handleBuilderUpdate(event: BuilderUpdate): void {
+  //BuilderUpdate( address indexed builder, bool isBuilder )
+  let builderId = event.params.builder.toHexString()
+  let builder = new Builder(builderId)
+
+  builder.isActive = event.params.isBuilder
+  builder.save()
+}
+
+export function handleQuestSupport(event: QuestSupport): void {
+  let questId = event.params.id.toHexString()
+  let quest = Quest.load(questId)
+  quest.support = event.params.total
+  quest.save()
 }

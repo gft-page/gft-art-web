@@ -6,7 +6,7 @@ dataSources:
     name: Projects
     network: localhost
     source:
-      address: '0x98B40aAC844674B2287556E75b3ef5530DfCfcB7'
+      address: '0xccdf1DECe9c9631081b952Cd51A579E75c33C565'
       abi: Projects
       startBlock: 1
     mapping:
@@ -26,7 +26,7 @@ dataSources:
     name: Quests
     network: localhost
     source:
-      address: '0x78Ee8Fb9fE5abD5e347Fc94c2fb85596d1f60e3c'
+      address: '0xe6688b6Cc79268D2e39f799C08673034a5350F13'
       abi: Quests
       startBlock: 1
     mapping:
@@ -47,4 +47,27 @@ dataSources:
           handler: handleQuestLook
         - event: QuestFinished(indexed bytes32,address,uint256,address)
           handler: handleQuestFinished
+        - event: QuestSupport(indexed bytes32,address,uint256,uint256)
+          handler: handleQuestSupport
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: Builders
+    network: localhost
+    source:
+      address: '0x96cf3831338c19F309121D48C12C3aB489FE7D5A'
+      abi: Builders
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Builder
+      abis:
+        - name: Builders
+          file: ./abis/Builders.json
+      eventHandlers:
+        - event: BuilderUpdate(indexed address,bool)
+          handler: handleBuilderUpdate
+
       file: ./src/mapping.ts

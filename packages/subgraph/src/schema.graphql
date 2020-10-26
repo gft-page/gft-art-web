@@ -29,6 +29,7 @@ type Quest @entity {
   recipient: Recipient
   sender: Sender
   amount: BigInt
+  support: BigInt
 }
 
 type Author @entity {
@@ -48,6 +49,7 @@ type Sender @entity {
 
 type Builder @entity {
   id: ID!
+  isActive: Boolean
   looks: [Look!] @derivedFrom(field: "builder")
   works: [Work!] @derivedFrom(field: "builder")
 }

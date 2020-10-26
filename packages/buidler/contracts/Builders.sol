@@ -2,27 +2,25 @@
 pragma solidity >=0.6.0 <0.7.0;
 
 import "@nomiclabs/buidler/console.sol";
-import "./Registry.sol";
 
 contract Builders {
 
-    Registry public registry;
+    address public controller;
 
-    constructor(address registryAddress) public {
-        registry = Registry(registryAddress);
+    constructor() public {
+      controller = msg.sender;
     }
 
-
-    event Builder( address indexed builder, bool isBuilder );
+    event BuilderUpdate( address indexed builder, bool isBuilder );
 
     mapping(address => bool) public isBuilder;
 
-    function updateBuilder(address builder, bool update) public {
+    function builderUpdate(address builder, bool update) public {
         console.log("UPDATE",builder,update);
-        require( msg.sender == registry.owner(), "updateBuilder: NOT REGISTRY OWNER");
+        require( msg.sender==controller, "updateBuilder: not controller");
         require( builder!=address(0), "updateBuilder: zero address");
         isBuilder[builder] = update;
-        emit Builder(builder,isBuilder[builder]);
+        emit BuilderUpdate(builder,isBuilder[builder]);
     }
 
 }

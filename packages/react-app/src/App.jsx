@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects, Quests, Support } from "./views"
+import { Hints, ExampleUI, Subgraph, Projects, Quests, Support, Builders } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -124,6 +124,12 @@ function App(props) {
               setQuestFilter("")
             }} to="/quests">Quests</Link>
           </Menu.Item>
+          <Menu.Item key="/builders">
+            <Link onClick={()=>{
+              setRoute("/builders")
+            }} to="/builders">Builders</Link>
+          </Menu.Item>
+
           <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">DebugSubgraph</Link>
           </Menu.Item>
@@ -134,6 +140,56 @@ function App(props) {
 
         <Switch>
           <Route exact path="/debug">
+            <Button onClick={async ()=>{
+
+              let nonce = await writeContracts.Bank.nonce()
+              console.log("nonce",nonce)
+
+              let calldata = writeContracts.Bank.interface.encodeFunctionData(
+                "openStream(address,uint256,uint256)",
+                [
+                  "0x025645A569b3e60F803bFFC88f0E2e38b7526B3d",
+                  parseEther("0.01"),
+                  60
+                ]
+              )
+              console.log("calldata",calldata)
+
+              let txHash = await writeContracts.Bank.getTransactionHash(
+                nonce,
+                writeContracts.Bank.address,
+                0,
+                calldata
+              )
+              console.log("txHash",txHash)
+
+              let signature = await userProvider.send("personal_sign", [txHash, address]);
+              console.log("signature",signature)
+
+              let recover = await readContracts.Bank.recover(txHash,signature)
+              console.log("recover",recover)
+
+              let isOwner = await readContracts.Bank.isOwner(recover)
+              console.log("isOwner",isOwner)
+
+              //( address payable to, uint256 value, bytes memory data, bytes[] memory signatures)
+              tx( writeContracts.Bank.executeTransaction(
+                writeContracts.Bank.address,
+                0,
+                calldata,
+                [signature]
+              ) )
+
+            }}>
+              calldata
+            </Button>
+            <Contract
+               name="Bank"
+               signer={userProvider.getSigner()}
+               provider={localProvider}
+               address={address}
+               blockExplorer={blockExplorer}
+            />
             <Contract
                name="Projects"
                signer={userProvider.getSigner()}
@@ -190,6 +246,24 @@ function App(props) {
                 questId = {routerProps.match.params.id}
                 questFilter={questFilter}
                 setQuestFilter={setQuestFilter}
+                localProvider={localProvider}
+                address={address}
+                userProvider={userProvider}
+                blockExplorer={blockExplorer}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                yourLocalBalance={yourLocalBalance}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+              />)
+            }}>
+          </Route>
+          <Route exact path="/builders/:id?" render = {(routerProps) => {
+              return (<Builders
+                subgraphUri={props.subgraphUri}
+
                 localProvider={localProvider}
                 address={address}
                 userProvider={userProvider}
