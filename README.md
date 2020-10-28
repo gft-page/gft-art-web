@@ -49,6 +49,10 @@ yarn graph-run-node
 
 ```
 
+> ⚠️ I have to run `yarn graph-run-node` twice for it to work for some reason
+
+> You are looking for the message "Starting GraphQL WebSocket server at: ws://localhost:8001, component: SubscriptionServer"
+
 > in a fourth terminal (once your docker container is fully up):
 
 
