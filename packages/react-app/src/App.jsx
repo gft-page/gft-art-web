@@ -85,6 +85,21 @@ function App(props) {
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
 
+  //Donate(address sender, uint256 value, uint256 index)
+  const supportEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
+  console.log("📟 supportEvents:",supportEvents)
+
+
+  //Donate(address sender, uint256 value, uint256 index)
+  //const supportEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
+  //console.log("📟 supportEvents:",supportEvents)
+
+
+
+
+
+
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -132,7 +147,14 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="YourContract"
+              name="Supporters"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+            <Contract
+              name="MVPCLR"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
