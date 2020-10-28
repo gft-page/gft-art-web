@@ -76,11 +76,12 @@ yarn deploy-and-graph
 
 > add and remove addresses from the `AllowList`:
 
-
-** todo screen **
-
+![image](https://user-images.githubusercontent.com/2653167/97504414-72d18d00-193c-11eb-8ec7-da27c909b072.png)
 
 
 > only addresses that are in the `AllowList` can update the `purpose` in YourContract:
 
-** todo screen **
+![image](https://user-images.githubusercontent.com/2653167/97504597-ce037f80-193c-11eb-8e22-c886dfdc40ab.png)
+
+
+
