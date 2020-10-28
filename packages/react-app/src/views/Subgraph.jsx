@@ -25,54 +25,16 @@ function Subgraph(props) {
   }
 
   const EXAMPLE_GRAPHQL = `
-  {
-    purposes(first: 25, orderBy: createdAt, orderDirection: desc) {
-      id
-      purpose
-      createdAt
-      sender {
+    {
+      addrs(where:{allowed: true}) {
         id
       }
     }
-    senders {
-      id
-      address
-      purposeCount
-    }
-  }
   `
   const EXAMPLE_GQL = gql(EXAMPLE_GRAPHQL)
   const { loading, error, data } = useQuery(EXAMPLE_GQL,{pollInterval: 2500});
 
-  const purposeColumns = [
-    {
-      title: 'Purpose',
-      dataIndex: 'purpose',
-      key: 'purpose',
-    },
-    {
-      title: 'Sender',
-      key: 'id',
-      render: (record) => <Address
-                        value={record.sender.id}
-                        ensProvider={props.mainnetProvider}
-                        fontSize={16}
-                      />
-    },
-    {
-      title: 'createdAt',
-      key: 'createdAt',
-      dataIndex: 'createdAt',
-      render: d => (new Date(d * 1000)).toISOString()
-    },
-    ];
 
-  const [newPurpose, setNewPurpose] = useState("loading...");
-
-
-  const deployWarning = (
-    <div style={{marginTop:8,padding:8}}>{"Warning: 🤔 Have you deployed your subgraph yet?"}</div>
-  )
 
   return (
       <>
@@ -127,17 +89,6 @@ function Subgraph(props) {
           </div>
 
           <div style={{width:780, margin: "auto", paddingBottom:64}}>
-
-            <div style={{margin:32, textAlign:'right'}}>
-              <Input onChange={(e)=>{setNewPurpose(e.target.value)}} />
-              <Button onClick={()=>{
-                console.log("newPurpose",newPurpose)
-                /* look how you call setPurpose on your contract: */
-                props.tx( props.writeContracts.YourContract.setPurpose(newPurpose) )
-              }}>Set Purpose</Button>
-            </div>
-
-            {data?<Table dataSource={data.purposes} columns={purposeColumns} rowKey={"id"} />:<Typography>{(loading?"Loading...":deployWarning)}</Typography>}
 
             <div style={{margin:32, height:400, border:"1px solid #888888", textAlign:'left'}}>
               <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true} query={EXAMPLE_GRAPHQL}/>
