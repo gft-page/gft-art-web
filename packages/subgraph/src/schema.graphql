@@ -13,3 +13,8 @@ type Sender @entity {
   createdAt: BigInt!
   purposeCount: BigInt!
 }
+
+type Addr @entity {
+  id: ID!
+  allowed: Boolean!
+}

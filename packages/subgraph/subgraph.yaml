@@ -6,7 +6,7 @@ dataSources:
     name: YourContract
     network: localhost
     source:
-      address: '{{YourContractAddress}}'
+      address: '0xd15468525c35BDBC1eD8F2e09A00F8a173437f2f'
       abi: YourContract
       startBlock: 1
     mapping:
@@ -27,7 +27,7 @@ dataSources:
     name: AllowList
     network: localhost
     source:
-      address: '{{AllowListAddress}}'
+      address: '0x52d3b94181f8654db2530b0fEe1B19173f519C52'
       abi: AllowList
       startBlock: 1
     mapping:

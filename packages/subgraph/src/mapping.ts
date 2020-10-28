@@ -3,7 +3,10 @@ import {
   YourContract,
   SetPurpose
 } from "../generated/YourContract/YourContract"
-import { Purpose, Sender } from "../generated/schema"
+import {
+  Update
+} from "../generated/AllowList/AllowList"
+import { Purpose, Sender, Addr } from "../generated/schema"
 
 export function handleSetPurpose(event: SetPurpose): void {
 
@@ -31,4 +34,12 @@ export function handleSetPurpose(event: SetPurpose): void {
   purpose.save()
   sender.save()
 
+}
+
+export function handleUpdate(event: Update): void {
+  //event Update( address indexed addr, bool isAllowed );
+  let addr = new Addr(event.params.addr.toHexString())
+  addr.allowed = event.params.isAllowed
+
+  addr.save()
 }
