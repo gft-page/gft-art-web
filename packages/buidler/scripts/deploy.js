@@ -11,53 +11,22 @@ async function main() {
   // OR
   // custom deploy (to use deployed addresses dynamically for example:)
 
-  const Supporters = await deploy("Supporters")//~300k gas  (40G $380 -> $4.50)
-  const MVPCLR = await deploy("MVPCLR",[Supporters.address, 120])//~1300k gas  (40G $380 -> $20) //<--- we set the round duration here
+  const MVPCLR = await deploy("MVPCLR",[120])// 778111
 
-  await Supporters.supporterUpdate("0x34aA3F359A9D614239015126635CE7732c18fDF3",true)//45k gas ~<$1 40G
-  await Supporters.supporterUpdate("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",true)
-  await Supporters.supporterUpdate("0xB2ac59aE04d0f7310dC3519573BF70387b3b6E3a",true)
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐶 Dog On it Dapps"))// 70-90k gas ~>$1 40G
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐰 Cotton Tailor"))
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🦊 Foxy Optics"))
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐻 Bear Market Liquors"))
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐹 Gerbilnomics Labs"))
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐭 Whiskerific Widgets"))
 
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐶"))// 70-90k gas ~>$1 40G
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐱"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐭"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐹"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐰"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🦊"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐻"))
 
   await MVPCLR.startRound() // 45k gas  ~<$1 40G
 
-  //add deployer as supporter to test
-  await Supporters.supporterUpdate(await Supporters.owner(),true)
-
   //add give support to a project
-  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(2,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(3,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(5,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(6,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(2,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(3,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(2,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(3,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })  // ooof 114k to donate :( ~2 dollars?
+  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // 48212
+  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })
 
-
-  //later, in the ui:
-  //calculateMatching() ~280k and scales up with ^donations^ but can be run in multiple txns by anyone
-                  // 5 bucks and up ?
 
 
   //recipientWithdraw() ~70k per recipient but anyone can run it

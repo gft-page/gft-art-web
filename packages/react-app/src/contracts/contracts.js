@@ -1,1 +1,1 @@
-module.exports = ["MVPCLR","Supporters"];
+module.exports = ["MVPCLR"];
