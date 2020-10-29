@@ -100,6 +100,9 @@ function App(props) {
   const clrBalance = useBalance(localProvider, readContracts?readContracts.MVPCLR.address:readContracts);
   if(DEBUG) console.log("🏦 clrBalance",clrBalance)
 
+  const clrBalance = useBalance(localProvider, readContracts?readContracts.MVPCLR.address:readContracts);
+  console.log("🏦 clrBalance",clrBalance)
+
   const roundFinish = roundStart&&roundDuration?roundStart.add(roundDuration):0
   const roundFinishedIn = roundFinish && (roundFinish.toNumber() - currentTime)
   if(DEBUG) console.log("roundFinishedIn",roundFinishedIn)//
