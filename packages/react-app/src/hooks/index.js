@@ -11,3 +11,5 @@ export { default as useEventListener } from "./EventListener";
 export { default as useLocalStorage } from "./LocalStorage";
 export { default as useLookupAddress } from "./LookupAddress";
 export { default as useResolveName } from "./ResolveName";
+export { default as useTimestamp } from "./Timestamp";
+export { default as useBlockNumber } from "./BlockNumber";

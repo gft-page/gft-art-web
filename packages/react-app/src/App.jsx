@@ -7,13 +7,14 @@ import "./App.css";
 import { Row, Col, Button, List, Tabs, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { useUserAddress } from "eth-hooks";
+import { useUserAddress, useTimestamp } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, EtherInput } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { ethers } from "ethers";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { Activity, ExampleUI, Subgraph } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -28,6 +29,7 @@ import { Hints, ExampleUI, Subgraph } from "./views"
     (this is your connection to the main Ethereum network for ENS etc.)
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
+import humanizeDuration from "humanize-duration";
 const { TabPane } = Tabs;
 
 const DEBUG = true
@@ -84,21 +86,23 @@ function App(props) {
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
+  const roundStart = useContractReader(readContracts, "MVPCLR", "roundStart")
+  console.log("⏰ roundStart",roundStart)
 
-  //Donate(address sender, uint256 value, uint256 index)
-  const supportEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
-  console.log("📟 supportEvents:",supportEvents)
+  const roundDuration = useContractReader(readContracts, "MVPCLR", "roundDuration")
+  console.log("⏰ roundDuration",roundDuration)
 
+  const currentTime = useTimestamp(localProvider)
+  console.log("⏰ currentTime",currentTime)
 
-  //Donate(address sender, uint256 value, uint256 index)
-  //const supportEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
-  //console.log("📟 supportEvents:",supportEvents)
+  const roundFinish = roundStart&&roundDuration?roundStart.add(roundDuration):0
+  const roundFinishedIn = roundFinish && (roundFinish.toNumber() - currentTime)
+  console.log("roundFinishedIn",roundFinishedIn)//
+  const roundFinished = roundFinish && ( roundFinishedIn <= 0 )
 
-
-
-
-
-
+  //RecipientAdded(address addr, bytes32 data, uint256 index);
+  const recipientAddedEvents = useEventListener(readContracts, "MVPCLR", "RecipientAdded", localProvider, 1);
+  console.log("📟 recipientAddedEvents:",recipientAddedEvents)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -116,6 +120,30 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+  const [ supportAmounts, setSupportAmount ] = useState({})
+
+  let status = "loading..."
+  if(roundFinished){
+    status = (
+      <div style={{marginTop:32,marginLeft:64,marginRight:64,marginBottom:16,border:"1px solid #f8f8f8",backgroundColor:"#fbfbfb",padding:16,fontSize:16, fontWeight:"bold"}}>
+        Finished <span style={{color:"#999999"}}>{humanizeDuration(roundFinishedIn*1000)} ago</span>
+      </div>
+    )
+  }else if(roundStart && roundFinish && roundStart.gt(0)){
+    status = (
+      <div style={{marginTop:32,marginLeft:64,marginRight:64,marginBottom:16,border:"1px solid #f8f8f8",backgroundColor:"#fbfbfb",padding:16,fontSize:16, fontWeight:"bold"}}>
+        Funding round is <span style={{color:"#95de64"}}>open</span>,
+        ends in <span style={{color:"#adc6ff"}}>{humanizeDuration(roundFinishedIn*1000)}</span>.
+      </div>
+    )
+  }else{
+    status = (
+      <div style={{marginTop:32,marginLeft:64,marginRight:64,marginBottom:16,border:"1px solid #f8f8f8",backgroundColor:"#fbfbfb",padding:16,fontSize:16, fontWeight:"bold"}}>
+        Waiting to start...
+      </div>
+    )
+  }
+
   return (
     <div className="App">
 
@@ -126,33 +154,82 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Support</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/activity">
+            <Link onClick={()=>{setRoute("/activity")}} to="/activity">Activity</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">debug</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
+            <div style={{width:650,margin:"auto",paddingBottom:128}}>
+
+              {status}
+
+              <List
+                size="large"
+                dataSource={recipientAddedEvents}
+                renderItem={(item)=>{
+                  //console.log("item",item)
+                  const index = item.index.toNumber()
+                  return (
+                    <List.Item>
+                      <div>
+                        <div style={{textAlign:"left",padding:8,fontWeight:'bolder',letterSpacing:"1.5px"}}>
+                          {ethers.utils.parseBytes32String(item.data)}
+                        </div>
+                        <div style={{textAlign:"left",padding:8}}>
+                          <Address
+                            value={item.addr}
+                            ensProvider={mainnetProvider}
+                            blockExplorer={blockExplorer}
+                            fontSize={16}
+                          />
+                        </div>
+                      </div>
+                      <div style={{float:"right"}}>
+                        <Row>
+                          <Col span={16}>
+                            <EtherInput
+                              price={price}
+                              value={supportAmounts[index]}
+                              onChange={value => {
+                                let current = supportAmounts
+                                current[index] = value
+                                setSupportAmount(current)
+                              }}
+                            />
+                          </Col>
+                          <Col span={8}>
+                            <Button onClick={()=>{
+                              tx( writeContracts.MVPCLR.donate(index,{value:parseEther(""+supportAmounts[index].toFixed(8))}) )
+                              let current = supportAmounts
+                              current[index] = ""
+                              setSupportAmount(current)
+                              setRoute("/activity")
+                            }}>
+                              Support
+                            </Button>
+                          </Col>
+                        </Row>
+                      </div>
+
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
+          </Route>
+          <Route exact path="/debug">
             {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-            <Contract
-              name="Supporters"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
             <Contract
               name="MVPCLR"
               signer={userProvider.getSigner()}
@@ -161,33 +238,15 @@ function App(props) {
               blockExplorer={blockExplorer}
             />
           </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
+
+          <Route exact path="/activity">
+            <Activity
+              recipientAddedEvents={recipientAddedEvents}
               readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              mainnetProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              price={price}
             />
           </Route>
         </Switch>
