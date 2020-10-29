@@ -1,16 +1,16 @@
 
 
 
-# MVP CLR
-## 🏗 scaffold-eth
+# Emoji Support
+## 🏗 scaffold-eth MVP CLR Example
 
 
 ```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git mvp-clr
+git clone https://github.com/austintgriffith/scaffold-eth.git emoji-support
 
-cd mvp-clr
+cd emoji-support
 
-git checkout mvp-clr
+git checkout emoji-support
 ```
 
 ```bash
