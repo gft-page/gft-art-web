@@ -10,23 +10,27 @@ async function main() {
   //await autoDeploy();
   // OR
   // custom deploy (to use deployed addresses dynamically for example:)
+  console.log("🛰  deploying MVPCLR")
+  const MVPCLR = await deploy("MVPCLR",[3600*8 /* 8 hrs */])// 778111
 
-  const MVPCLR = await deploy("MVPCLR",[20])// 778111
+  console.log("😺  Recipients...")
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐶 Dog On it Dapps"),"http://localhost:3000")// 70-90k gas ~>$1 40G
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐰 Cotton Tailor"),"http://localhost:3000")
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🦊 Foxy Optics"),"http://localhost:3000")
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐻 Bear Market Liquors"),"http://localhost:3000")
+  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐹 Gerbilnomics Labs"),"http://localhost:3000")
+  await MVPCLR.addRecipient("0xB2ac59aE04d0f7310dC3519573BF70387b3b6E3a",ethers.utils.formatBytes32String("🐭 Whisker's Widgets"),"http://localhost:3000")
 
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐶 Dog On it Dapps"))// 70-90k gas ~>$1 40G
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐰 Cotton Tailor"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🦊 Foxy Optics"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐻 Bear Market Liquors"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐹 Gerbilnomics Labs"))
-  await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐭 Whiskerific Widgets"))
-
-
+  console.log("⏰  Starting round...")
   await MVPCLR.startRound() // 45k gas  ~<$1 40G
 
-  //add give support to a project
-  await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // 48212
-  await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })
+  //EXAMPLE OF HOW TO DONATE HERE:
+  //await MVPCLR.donate(0,{ value: ethers.utils.parseEther("0.01") })  // 48212
+  //await MVPCLR.donate(1,{ value: ethers.utils.parseEther("0.01") })
 
+  console.log("🔑 Sending ownership...")
+  /// TRANSFER THE CLR TO YOU AFTER IT IS DEPLOYED:
+  await MVPCLR.transferOwnership("0x34aA3F359A9D614239015126635CE7732c18fDF3")
 
 
   //recipientWithdraw() ~70k per recipient but anyone can run it

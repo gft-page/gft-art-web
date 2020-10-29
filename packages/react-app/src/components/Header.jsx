@@ -5,8 +5,8 @@ export default function Header() {
   return (
     <a href="/" >
       <PageHeader
-        title="💰emoji.support"
-        subTitle=""
+        title="💰 Emoji.Support"
+        subTitle="mainnet"
         style={{ cursor: "pointer" }}
       />
     </a>
