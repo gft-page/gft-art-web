@@ -14,7 +14,7 @@ import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
 //import Hints from "./Hints";
-import { Activity, ExampleUI, Subgraph } from "./views"
+import { Activity, ExampleUI, Subgraph, Results } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -45,11 +45,11 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFU
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
+//const localProviderUrl = "https://mainnet.infura.io/v3/5b3aa68d82264f59bb6a1874cb3c23ea"; // for xdai: https://dai.poa.network
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+//const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+//if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
+const localProvider = mainnetProvider//new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
@@ -96,6 +96,9 @@ function App(props) {
 
   const currentTime = useTimestamp(localProvider)
   console.log("⏰ currentTime",currentTime)
+
+  const clrBalance = useBalance(localProvider, readContracts?readContracts.MVPCLR.address:readContracts);
+  console.log("🏦 clrBalance",clrBalance)
 
   const roundFinish = roundStart&&roundDuration?roundStart.add(roundDuration):0
   const roundFinishedIn = roundFinish && (roundFinish.toNumber() - currentTime)
@@ -178,14 +181,25 @@ function App(props) {
           <Menu.Item key="/activity">
             <Link onClick={()=>{setRoute("/activity")}} to="/activity">Activity</Link>
           </Menu.Item>
-          <Menu.Item key="/debug">
-            <Link onClick={()=>{setRoute("/debug")}} to="/debug">debug</Link>
+
+          <Menu.Item key="/results">
+            <Link onClick={()=>{setRoute("/results")}} to="/results">Results</Link>
           </Menu.Item>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">🔧</Link>
+          </Menu.Item>
+          <Menu.Item key="/code">
+            <a target="_blank" href="https://github.com/austintgriffith/scaffold-eth/tree/emoji-support">🍴</a>
+          </Menu.Item>
+          <Menu.Item key="/chat">
+            <a target="_blank" href="https://twitter.com/austingriffith">💬</a>
+          </Menu.Item>
+
         </Menu>
 
         <Switch>
           <Route exact path="/">
-            <div style={{width:650,margin:"auto",paddingBottom:128}}>
+            <div style={{width:700,margin:"auto",paddingBottom:128}}>
 
               {status}
 
@@ -199,7 +213,7 @@ function App(props) {
                     <List.Item>
                       <div>
                         <div style={{textAlign:"left",padding:8,fontWeight:'bolder',letterSpacing:"1.5px"}}>
-                          {ethers.utils.parseBytes32String(item.data)}
+                          {ethers.utils.parseBytes32String(item.data)}<a style={{fontSize:8}} href={item.link}>{"🔗"}</a>
                         </div>
                         <div style={{textAlign:"left",padding:8}}>
                           <Address
@@ -210,7 +224,7 @@ function App(props) {
                           />
                         </div>
                       </div>
-                      <div style={{float:"right"}}>
+                      <div style={{float:"right",opacity:roundFinished?0.1:1}}>
                         <Row>
                           <Col span={16}>
                             <EtherInput
@@ -260,6 +274,21 @@ function App(props) {
           <Route exact path="/activity">
             <Activity
               address={address}
+              recipientAddedEvents={recipientAddedEvents}
+              readContracts={readContracts}
+              localProvider={localProvider}
+              mainnetProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              price={price}
+            />
+          </Route>
+          <Route exact path="/results">
+            <Results
+              tx={tx}
+              roundFinish={roundFinish}
+              clrBalance={clrBalance}
+              address={address}
+              writeContracts={writeContracts}
               recipientAddedEvents={recipientAddedEvents}
               readContracts={readContracts}
               localProvider={localProvider}

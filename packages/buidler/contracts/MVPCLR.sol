@@ -9,10 +9,10 @@ contract MVPCLR is Ownable {
   uint256 public recipientCount = 0;
 
   event RoundStarted(uint256 roundStart, uint256 roundDuration);
-  event RecipientAdded(address addr, bytes32 data, uint256 index);
+  event RecipientAdded(address addr, bytes32 data, string link, uint256 index);
   event Donate(address sender, uint256 value, uint256 index);
   event MatchingPoolDonation(address sender, uint256 value, uint256 total);
-  event Withdraw(address to, uint256 index, uint256 donations);
+  event Distribute(address to, uint256 index, uint256 amount);
 
   modifier beforeRoundOpen() {
     require(roundStart == 0, "MVPCLR:beforeRoundOpen - Round already opened");
@@ -53,12 +53,12 @@ contract MVPCLR is Ownable {
     return block.timestamp;
   }
 
-  function addRecipient(address payable addr, bytes32 data)
+  function addRecipient(address payable addr, bytes32 data, string memory link)
   public
   onlyOwner
   beforeRoundOpen
   {
-    emit RecipientAdded(addr, data, recipientCount++);
+    emit RecipientAdded(addr, data, link, recipientCount++);
   }
 
   function donate(uint256 index) public payable isRoundOpen {
@@ -66,12 +66,13 @@ contract MVPCLR is Ownable {
     emit Donate(_msgSender(), msg.value, index);
   }
 
-  function distribute(address payable to,uint256 amount)
+  function distribute(address payable to, uint256 index, uint256 amount)
   external
   onlyOwner
   isRoundClosed
   {
     to.transfer(amount);
+    emit Distribute(to,index,amount);
   }
 
 }

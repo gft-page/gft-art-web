@@ -2,7 +2,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 const { ethers, utils } = require("ethers");
 
-console.log("🧮 Calc")
+console.log("🧮 CalcExample? I think you should do this in the frontend?")
 const run = async () => {
 
   try {
