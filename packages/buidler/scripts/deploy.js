@@ -14,7 +14,7 @@ const main = async () => {
   // OR
   // custom deploy (to use deployed addresses dynamically for example:)
 
-  const MVPCLR = await deploy("MVPCLR",[120])// 778111
+  const MVPCLR = await deploy("MVPCLR",[20])// 778111
 
   await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐶 Dog On it Dapps"))// 70-90k gas ~>$1 40G
   await MVPCLR.addRecipient("0x34aA3F359A9D614239015126635CE7732c18fDF3",ethers.utils.formatBytes32String("🐰 Cotton Tailor"))

@@ -54,6 +54,8 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 function App(props) {
+
+
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(mainnetProvider); //1 for xdai
@@ -104,6 +106,22 @@ function App(props) {
   const recipientAddedEvents = useEventListener(readContracts, "MVPCLR", "RecipientAdded", localProvider, 1);
   console.log("📟 recipientAddedEvents:",recipientAddedEvents)
 
+  const [randomProjectList, setRandomProjectList] = useState([])
+  useEffect(()=>{
+    let newList = []
+    let added = {}
+    for(let r in recipientAddedEvents){
+      console.log(recipientAddedEvents[r])
+      const index = recipientAddedEvents[r].index.toNumber()
+      if(!added[index]){
+        added[index] = true
+        newList.push(recipientAddedEvents[r])
+      }
+    }
+    setRandomProjectList(shuffle(newList))
+  },[recipientAddedEvents])
+
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -121,6 +139,7 @@ function App(props) {
   }, [ window.location.pathname ]);
 
   const [ supportAmounts, setSupportAmount ] = useState({})
+
 
   let status = "loading..."
   if(roundFinished){
@@ -172,7 +191,7 @@ function App(props) {
 
               <List
                 size="large"
-                dataSource={recipientAddedEvents}
+                dataSource={randomProjectList}
                 renderItem={(item)=>{
                   //console.log("item",item)
                   const index = item.index.toNumber()
@@ -210,7 +229,6 @@ function App(props) {
                               let current = supportAmounts
                               current[index] = ""
                               setSupportAmount(current)
-                              setRoute("/activity")
                             }}>
                               Support
                             </Button>
@@ -241,6 +259,7 @@ function App(props) {
 
           <Route exact path="/activity">
             <Activity
+              address={address}
               recipientAddedEvents={recipientAddedEvents}
               readContracts={readContracts}
               localProvider={localProvider}
@@ -313,6 +332,24 @@ function App(props) {
   );
 }
 
+const shuffle = (array) => {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
 
 /*
   Web3 modal helps us "connect" external wallets:
