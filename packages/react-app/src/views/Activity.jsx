@@ -6,7 +6,7 @@ import { Address, Balance } from "../components";
 import { ethers } from "ethers";
 
 
-export default function Activity({ recipientAddedEvents, mainnetProvider, blockExplorer, readContracts, localProvider, price }) {
+export default function Activity({ address, recipientAddedEvents, mainnetProvider, blockExplorer, readContracts, localProvider, price }) {
   //Donate(address sender, uint256 value, uint256 index)
   const supportEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
   console.log("📟 supportEvents:",supportEvents)
@@ -29,7 +29,7 @@ export default function Activity({ recipientAddedEvents, mainnetProvider, blockE
           let project = recipientIndexToData[index]?ethers.utils.parseBytes32String(recipientIndexToData[index]):""
 
           return (
-            <List.Item>
+            <List.Item style={{backgroundColor:item.sender&&address&&address==item.sender?"#f2fff2":"#ffffff"}}>
               <div style={{textAlign:"left"}}>
                 <Balance
                   balance={item.value}
