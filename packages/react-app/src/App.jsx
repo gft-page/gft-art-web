@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects, Quests, Support, Builders, Supporters } from "./views"
+import { Hints, ExampleUI, Subgraph, Projects, Quests, Support, Builders, Supporters, Quest } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -252,19 +252,21 @@ function App(props) {
               mainnetProvider={mainnetProvider}
             />
           </Route>
-          <Route exact path="/quests/:id?" render = {(routerProps) => {
+          <Route exact path="/quests" render = {(routerProps) => {
               return (<Quests
                 subgraphUri={props.subgraphUri}
+                price={price}
+                readContracts={readContracts}
+              />)
+            }}>
+          </Route>
+          <Route exact path="/quests/:id?" render = {(routerProps) => {
+              return (<Quest
+                subgraphUri={props.subgraphUri}
                 questId = {routerProps.match.params.id}
-                questFilter={questFilter}
-                setQuestFilter={setQuestFilter}
-                localProvider={localProvider}
                 address={address}
-                userProvider={userProvider}
                 blockExplorer={blockExplorer}
                 mainnetProvider={mainnetProvider}
-                localProvider={localProvider}
-                yourLocalBalance={yourLocalBalance}
                 price={price}
                 tx={tx}
                 writeContracts={writeContracts}

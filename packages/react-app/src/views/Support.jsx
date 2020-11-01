@@ -7,7 +7,7 @@ import { Address, AddressInput, Balance, Contract } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
 const { utils } = require("ethers");
 
-export default function Support({ setQuestFilter, projects, projectList, projectEvents, address, userProvider, blockExplorer, mainnetProvider, localProvider, setPurposeEvents, purpose, yourLocalBalance, price, tx, readContracts, writeContracts }) {
+export default function Support({ projects, projectList, projectEvents, address, userProvider, blockExplorer, mainnetProvider, localProvider, setPurposeEvents, purpose, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
 
 

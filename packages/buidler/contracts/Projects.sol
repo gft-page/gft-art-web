@@ -2,18 +2,13 @@
 pragma solidity >=0.6.0 <0.7.0;
 
 import "@nomiclabs/buidler/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Projects {
+contract Projects is Ownable {
 
-    address public controller;
+    event ProjectUpdate( bytes32 id, string title, string desc, string repo, address projectOwner );
 
-    constructor() public {
-      controller = msg.sender;
-    }
-
-    event ProjectUpdate( bytes32 id, string title, string desc, string repo, address owner );
-
-    mapping (bytes32 => address) public owner;
+    mapping (bytes32 => address) public projectOwner;
 
     function projectId( string memory title ) public pure returns (bytes32) {
       // purposly don't include address(this)/chainid here so we can keep IDs through deployments?
@@ -24,18 +19,18 @@ contract Projects {
         string memory title,
         string memory desc,
         string memory repo,
-        address projectOwner
+        address _projectOwner
     ) public {
         bytes32 id = projectId(title);
-        if( owner[id] == address(0) ){
-          require( msg.sender == controller, "updateProject: NOT CONTROLLER");
+        if( projectOwner[id] == address(0) ){
+          require( msg.sender == owner(), "updateProject: not owner");
         }else{
-          require( msg.sender == owner[id] || msg.sender == controller, "updateProject: NOT OWNER OR CONTROLLER");
+          require( msg.sender == projectOwner[id] || msg.sender == owner(), "updateProject: not owner or projectOwner");
         }
-        if( owner[id] != projectOwner){
-          owner[id] = projectOwner;
+        if( projectOwner[id] != _projectOwner){
+          projectOwner[id] = _projectOwner;
         }
-        emit ProjectUpdate(id, title, desc, repo, owner[id]);
+        emit ProjectUpdate(id, title, desc, repo, _projectOwner);
     }
 
 }

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import fetch from 'isomorphic-fetch';
 import { useQuery, gql } from '@apollo/client';
 import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progress, Spin, Skeleton } from "antd";
@@ -11,7 +11,7 @@ const { utils } = require("ethers");
 
 
 
-export default function Projects({ subgraphUri, setQuestFilter, blockExplorer, mainnetProvider }) {
+export default function Projects({ subgraphUri, blockExplorer, mainnetProvider }) {
 
   let history = useHistory();
 
@@ -56,10 +56,14 @@ export default function Projects({ subgraphUri, setQuestFilter, blockExplorer, m
             return (
               <List.Item
                 actions={[
-                  <a style={{color:"#000000"}} key="list-quests" onClick={()=>{
-                    history.push("/quests")
-                    setQuestFilter(item.title)
-                  }}>🚩 quest</a>,
+                  <Link key="list-quests" style={{color:"#000000"}}
+                    to={{
+                      pathname: "/quests",
+                      search: `?search=${item.title}`,
+                    }}
+                  >
+                  🚩 quest
+                  </Link>,
                   <a style={{color:"#000000"}} key="list-support" href={"/support/"+item.id} target="_blank">⚡️ support</a>,
                   <a style={{color:"#000000"}} key="list-code" href={item.repo} target="_blank">🍴 fork</a>
                 ]}
