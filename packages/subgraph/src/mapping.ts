@@ -11,7 +11,10 @@ import {
 import {
   SupporterUpdate
 } from "../generated/Supporters/Supporters"
-import { Project, Owner, Quest, Author, Work, Look, Builder, Sender, Recipient, Supporter } from "../generated/schema"
+import {
+  RecipientAdded
+} from "../generated/SupportRound/SupportRound"
+import { Project, Owner, Quest, Author, Work, Look, Builder, Sender, Supporter, Round, Recipient } from "../generated/schema"
 
 
 export function handleProjectUpdate(event: ProjectUpdate): void {
@@ -113,9 +116,6 @@ export function handleQuestFinished(event: QuestFinished): void {
 
   let sender = new Sender(senderId.toString())
   sender.save()
-
-  let recipient = new Recipient(recipientId.toString())
-  recipient.save()
 }
 
 export function handleBuilderUpdate(event: BuilderUpdate): void {
@@ -134,6 +134,19 @@ export function handleSupporterUpdate(event: SupporterUpdate): void {
   supporter.isActive = event.params.isSupporter
   supporter.save()
 }
+
+export function handleRecipientAdded(event: RecipientAdded): void {
+  //RecipientAdded(address,string,uint256)
+  let recipientIndex = event.params.index.toHexString()
+  let recipient = new Recipient(recipientIndex)
+  recipient.index = event.params.index
+  recipient.addr = event.params.addr
+  recipient.project = event.params.data.toHexString()
+
+  recipient.save()
+}
+
+
 
 export function handleQuestSupport(event: QuestSupport): void {
   let questId = event.params.id.toHexString()

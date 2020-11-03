@@ -6,7 +6,7 @@ dataSources:
     name: Projects
     network: localhost
     source:
-      address: '0x3CADfB3f580F805658B747057E2Cf4E570bA378A'
+      address: '0xd73Aa22528C52cf0508198C70cFB04E6345E93eC'
       abi: Projects
       startBlock: 1
     mapping:
@@ -26,7 +26,7 @@ dataSources:
     name: Quests
     network: localhost
     source:
-      address: '0x3597899d1c79b516D724b33c6b5e404dCdD45Da1'
+      address: '0x33958cC3535Fc328369EAC2B2Bebd120D67C7fa1'
       abi: Quests
       startBlock: 1
     mapping:
@@ -54,7 +54,7 @@ dataSources:
     name: Builders
     network: localhost
     source:
-      address: '0x9cbEE5c0A6178F61dcD57C3b21180C8602aBdAc1'
+      address: '0xf89AA2f1397e9A0622c8Fc99aB1947E28b5EF876'
       abi: Builders
       startBlock: 1
     mapping:
@@ -74,7 +74,7 @@ dataSources:
     name: Supporters
     network: localhost
     source:
-      address: '0xc5BeCE9e44E7dE5464f102f6cD4e5b7aBC94B059'
+      address: '0x4931b72A3f074A6c85DC62bBA648D7f4FBd1D0Ff'
       abi: Supporters
       startBlock: 1
     mapping:
@@ -89,4 +89,24 @@ dataSources:
       eventHandlers:
         - event: SupporterUpdate(indexed address,bool)
           handler: handleSupporterUpdate
+      file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: SupportRound
+    network: localhost
+    source:
+      address: '0xE96680e011FE0Bb5c9646f5463Ba3587962Cd952'
+      abi: SupportRound
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - SupportRound
+      abis:
+        - name: SupportRound
+          file: ./abis/SupportRound.json
+      eventHandlers:
+        - event: RecipientAdded(address,bytes32,uint256)
+          handler: handleRecipientAdded
       file: ./src/mapping.ts

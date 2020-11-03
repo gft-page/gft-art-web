@@ -112,6 +112,11 @@ function App(props) {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
+          <Menu.Item key="/supporters">
+            <Link onClick={()=>{
+              setRoute("/supporters")
+            }} to="/supporters">Supporters</Link>
+          </Menu.Item>
           <Menu.Item key="/support">
             <Link onClick={()=>{setRoute("/support")}} to="/support">Support</Link>
           </Menu.Item>
@@ -129,11 +134,7 @@ function App(props) {
               setRoute("/builders")
             }} to="/builders">Builders</Link>
           </Menu.Item>
-          <Menu.Item key="/supporters">
-            <Link onClick={()=>{
-              setRoute("/supporters")
-            }} to="/supporters">Supporters</Link>
-          </Menu.Item>
+
 
           <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">DebugSubgraph</Link>

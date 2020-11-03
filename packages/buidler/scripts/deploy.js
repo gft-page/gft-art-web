@@ -32,35 +32,22 @@ async function main() {
    const projects = await deploy("Projects")
 
    let genesisProjects = [
-
-     {
-       title: "🏷 FreeNS.io",
-       desc: "Free MVP ENS-like service on L2",
-       repo: "https://github.com/austintgriffith/scaffold-eth",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "⚖️ Backlog.Exchange",
-       desc: "Token-weighted github backlog ordering app",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/backlog-market",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏰 BuidlGuidl.com",
-       desc: "(this) developer coordination experiment centered around 🏗 Scaffold-ETH",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "‍👩‍🎤 xNFT.io",
-       desc: "Super clean Nifty.ink fork that is for image uploads instead of inks",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
      {
        title: "🔥 xdai.io",
        desc: "OG Burner Wallet rebuild as instant wallet fork",
        repo: "https://github.com/austintgriffith/burner-wallet",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏰 BuidlGuidl.com - Round 2",
+       desc: "Pass funding on to the Round 1 matching pool.",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🏰 BuidlGuidl.com - Round 1",
+       desc: "Pass funding on to the Round 1 matching pool.",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
      {
@@ -69,20 +56,6 @@ async function main() {
        repo: "https://github.com/austintgriffith/galleass",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
-
-     {
-       title: "🔏 signator.io",
-       desc: "Simple signer app rebuild in 🏗 scaffold-eth",
-       repo: "https://github.com/austintgriffith/signatorio",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "⚙️ build.sh",
-       desc: "The 🏗 scaffold-eth dev stack in a single, delightful CLI (maybe even a docker container we can host at first)",
-       repo: "",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-
      {
        title: "🐶 DAOG.io",
        desc: "Rebuild DAOG.io using 🏗 scaffold-eth as a game build demo",
@@ -90,9 +63,33 @@ async function main() {
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
      {
+       title: "🏷 FreeNS.io",
+       desc: "Free MVP ENS-like service on L2",
+       repo: "https://github.com/austintgriffith/scaffold-eth",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "🔏 signator.io",
+       desc: "Simple signer app rebuild in 🏗 scaffold-eth",
+       repo: "https://github.com/austintgriffith/signatorio",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "⚙️ buidl.sh",
+       desc: "The 🏗 scaffold-eth dev stack in a single, delightful CLI (maybe even a docker container we can host at first)",
+       repo: "",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
        title: "🍀 nftdao.com",
        desc: "MVP of a DAO that can control an NFT",
        repo: "https://github.com/austintgriffith/scaffold-eth",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
+       title: "‍👩‍🎤 xNFT.io",
+       desc: "Super clean Nifty.ink fork that is for image uploads instead of inks",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
      {
@@ -113,7 +110,12 @@ async function main() {
        repo: "https://github.com/austintgriffith/scaffold-eth",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
-
+     {
+       title: "⚖️ Backlog.Exchange",
+       desc: "Token-weighted github backlog ordering app",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/backlog-market",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
      {
        title: "🧙‍♂️ InstantWallet.io",
        desc: "Simple and forkable burner wallet made with 🏗 scaffold-eth.",
@@ -151,7 +153,7 @@ async function main() {
      )
 
      console.log("     ---> Adding Project to Support Round ")
-     await supportRound.addRecipient(genesisProjects[g].projectOwner,id)
+     await supportRound.addRecipient(projectBank.address,id)
    }
    console.log(" ");
 

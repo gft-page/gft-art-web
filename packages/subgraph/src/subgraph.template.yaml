@@ -90,3 +90,23 @@ dataSources:
         - event: SupporterUpdate(indexed address,bool)
           handler: handleSupporterUpdate
       file: ./src/mapping.ts
+  - kind: ethereum/contract
+    name: SupportRound
+    network: localhost
+    source:
+      address: '{{SupportRoundAddress}}'
+      abi: SupportRound
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - SupportRound
+      abis:
+        - name: SupportRound
+          file: ./abis/SupportRound.json
+      eventHandlers:
+        - event: RecipientAdded(address,string,uint256)
+          handler: handleRecipientAdded
+      file: ./src/mapping.ts
