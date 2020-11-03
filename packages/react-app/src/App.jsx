@@ -32,7 +32,7 @@ import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 import humanizeDuration from "humanize-duration";
 const { TabPane } = Tabs;
 
-const DEBUG = true
+const DEBUG = false
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -49,7 +49,7 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFU
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 //const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 //if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = mainnetProvider//new JsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = new JsonRpcProvider("http://localhost:8545");//mainnetProvider//
 
 
 
@@ -89,32 +89,32 @@ function App(props) {
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
   const roundStart = useContractReader(readContracts, "MVPCLR", "roundStart")
-  console.log("⏰ roundStart",roundStart)
+  if(DEBUG) console.log("⏰ roundStart",roundStart)
 
   const roundDuration = useContractReader(readContracts, "MVPCLR", "roundDuration")
-  console.log("⏰ roundDuration",roundDuration)
+  if(DEBUG) console.log("⏰ roundDuration",roundDuration)
 
   const currentTime = useTimestamp(localProvider)
-  console.log("⏰ currentTime",currentTime)
+  if(DEBUG) console.log("⏰ currentTime",currentTime)
 
   const clrBalance = useBalance(localProvider, readContracts?readContracts.MVPCLR.address:readContracts);
-  console.log("🏦 clrBalance",clrBalance)
+  if(DEBUG) console.log("🏦 clrBalance",clrBalance)
 
   const roundFinish = roundStart&&roundDuration?roundStart.add(roundDuration):0
   const roundFinishedIn = roundFinish && (roundFinish.toNumber() - currentTime)
-  console.log("roundFinishedIn",roundFinishedIn)//
+  if(DEBUG) console.log("roundFinishedIn",roundFinishedIn)//
   const roundFinished = roundFinish && ( roundFinishedIn <= 0 )
 
   //RecipientAdded(address addr, bytes32 data, uint256 index);
   const recipientAddedEvents = useEventListener(readContracts, "MVPCLR", "RecipientAdded", localProvider, 1);
-  console.log("📟 recipientAddedEvents:",recipientAddedEvents)
+  if(DEBUG) console.log("📟 recipientAddedEvents:",recipientAddedEvents)
 
   const [randomProjectList, setRandomProjectList] = useState([])
   useEffect(()=>{
     let newList = []
     let added = {}
     for(let r in recipientAddedEvents){
-      console.log(recipientAddedEvents[r])
+      if(DEBUG) console.log("recipientAddedEvents ==>",recipientAddedEvents[r])
       const index = recipientAddedEvents[r].index.toNumber()
       if(!added[index]){
         added[index] = true
@@ -210,7 +210,7 @@ function App(props) {
                   //console.log("item",item)
                   const index = item.index.toNumber()
                   return (
-                    <List.Item>
+                    <List.Item key={index}>
                       <div>
                         <div style={{textAlign:"left",padding:8,fontWeight:'bolder',letterSpacing:"1.5px"}}>
                           {ethers.utils.parseBytes32String(item.data)}<a style={{fontSize:8}} href={item.link}>{"🔗"}</a>

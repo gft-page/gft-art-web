@@ -9,10 +9,15 @@ import { ethers } from "ethers";
 export default function Results({ tx, clrBalance, roundFinish, address, writeContracts, recipientAddedEvents, mainnetProvider, blockExplorer, readContracts, localProvider, price }) {
 
   const [ payouts, setPayouts ] = useState()
+  const [ matches, setMatches ] = useState()
 
+  const currentAmountOfMatchingFunds = 999
 
   const distributeEvents = useEventListener(readContracts, "MVPCLR", "Distribute", localProvider, 1);
-  console.log("📟 distributeEvents:",distributeEvents)
+  //console.log("📟 distributeEvents:",distributeEvents)
+
+  const donateEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
+  //console.log("📟 donateEvents:",donateEvents)
 
 
   let payoutDisplay = []
@@ -29,6 +34,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
         }
       }
       console.log("FOUND",found)
+      console.log("matches",JSON.stringify(matches))
       if(found&&found.length>0){
         payoutDisplay.push(
           <List
@@ -122,6 +128,37 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
             }
             console.log("payoutsByAddress",payoutsByAddress)
             setPayouts(payoutsByAddress)
+
+            let sqrtSumDonationsByIndex = []
+            let totalSqrts = 0
+            console.log("donateEvents",donateEvents)
+            for(let d in donateEvents){
+              console.log("====>donateEvents ",d,donateEvents[d])
+              const index = donateEvents[d].index.toNumber()
+              console.log("index",index)
+              const chrushedUpValueForSqrt = parseFloat(ethers.utils.formatEther(donateEvents[d].value)).toFixed(8)
+              console.log("chrushedUpValueForSqrt",chrushedUpValueForSqrt)
+              const sqrt = Math.sqrt(chrushedUpValueForSqrt)
+              console.log("sqrt",sqrt)
+              if(!sqrtSumDonationsByIndex[index]) sqrtSumDonationsByIndex[index] = 0
+              sqrtSumDonationsByIndex[index] += sqrt
+              totalSqrts += sqrt
+            }
+
+            let newMatches = {}
+
+            console.log("sqrtSumDonationsByIndex>=>=>=",sqrtSumDonationsByIndex)
+            for(let s in sqrtSumDonationsByIndex){
+              const neverTrustAFloat = parseFloat(sqrtSumDonationsByIndex[s]*100/totalSqrts).toFixed(2)
+              console.log("neverTrustAFloat",neverTrustAFloat,"% of matching pool")
+              console.log("recipientByIndex",recipientByIndex[s])
+              newMatches[s]=neverTrustAFloat
+              //console.log("PROJ",sqrtSumDonationsByIndex[s],totalSqrts,neverTrustAFloat)
+            }
+
+            setMatches(newMatches)
+
+
           } catch (e) {
             console.log(e);
           }
@@ -140,6 +177,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
           provider={localProvider}
           dollarMultiplier={price}
         />
+        <div style={{color:"#458895"}}>+${currentAmountOfMatchingFunds}.00 matching</div>
       </div>
 
 
