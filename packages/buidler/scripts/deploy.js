@@ -166,11 +166,13 @@ async function main() {
    await builders.builderUpdate("0x1c340771b688ab36af177566f187aea25deea546",true);
    await builders.builderUpdate("0xa0bed8a4e39c3881f71c223588227bb85ed86ff2",true);
    await builders.builderUpdate("0xb858b4ee278bf53ed51bc1fe9b17f1217dc3e197",true);
+   await builders.builderUpdate("0xE09750abE36beA8B2236E48C84BB9da7Ef5aA07c",true);
    await builders.builderUpdate("0x6361cbe71857ace00996e5fa9b0ad77337ffe619",false);
    await builders.builderUpdate("0xe353d9aeab38f476517a3f6cfdee28b366a985a2",false);
 
    console.log("🛠  Deploying Quests\n");
-   const quests = await deploy("Quests",[ projects.address ])
+   const quests = await deploy("Quests",[ projects.address, builders.address ])
+   console.log(quests.address)
 
    console.log("🚩 Adding Quests")
    let genesisQuests = [
@@ -243,7 +245,7 @@ async function main() {
      console.log("        "+chalk.gray(id))
      const projectId = await projects.projectId(genesisQuests[g].project)
      console.log("         project:"+chalk.gray(projectId))
-     const owner = await projects.owner(projectId)
+     const owner = await projects.projectOwner(projectId)
      console.log("         owner:",chalk.gray(owner))
      if(owner=="0x0000000000000000000000000000000000000000"){
        console.log("ERROR QUEST WITH UNKNOWN PROJECT")

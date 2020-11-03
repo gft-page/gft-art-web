@@ -3,13 +3,16 @@ pragma solidity >=0.6.0 <0.7.0;
 
 import "@nomiclabs/buidler/console.sol";
 import "./Projects.sol";
+import "./Builders.sol";
 
 contract Quests {
 
     Projects public projects;
+    Builders public builders;
 
-    constructor( address projectsAddress ) public {
+    constructor( address projectsAddress, address buildersAddress ) public {
         projects = Projects(projectsAddress);
+        builders = Builders(buildersAddress);
     }
 
     event QuestUpdate( bytes32 indexed id, bytes32 indexed project, string title, string desc, string link, address author);
@@ -28,7 +31,7 @@ contract Quests {
     }
 
     function updateQuest(bytes32 project, string memory title, string memory desc, string memory link) public {
-        require( msg.sender == projects.owner(project) || msg.sender == projects.controller() , "updateQuest: NOT OWNER");
+        require( msg.sender == projects.projectOwner(project) || msg.sender == projects.owner() , "updateQuest: NOT OWNER");
         bytes32 id = questId( project, title );
         emit QuestUpdate( id, project, title, desc, link, msg.sender);
     }
@@ -40,18 +43,20 @@ contract Quests {
     }
 
     function lookingAt( bytes32 id ) public payable {
+      require( builders.isBuilder(msg.sender), "supportQuest: msg.sender is not a builder");
       require( !complete[id], "supportQuest: already complete");
       emit QuestLook( id, msg.sender);
     }
 
     function submitWork( bytes32 id, string memory link ) public payable {
+      require( builders.isBuilder(msg.sender), "supportQuest: msg.sender is not a builder");
       require( !complete[id], "supportQuest: already complete");
       //EVENTUALLY LIMIT THIS OR AT LEAST SORT IT BY WHITELISTED BUILDERS
       emit QuestWork( id, msg.sender, link);
     }
 
     function finishQuest( bytes32 project, string memory title, address payable recipient ) public {
-      require( msg.sender == projects.owner(project), "updateQuest: NOT OWNER");
+      require( msg.sender == projects.projectOwner(project), "updateQuest: NOT OWNER");
       bytes32 id = questId( project, title );
       require( !complete[id], "supportQuest: already complete");
       complete[id] = true;

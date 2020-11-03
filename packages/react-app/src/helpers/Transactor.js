@@ -93,7 +93,7 @@ export default function Transactor(provider, gasPrice, etherscan) {
           console.log("Transaction Error:", e.message);
           notification.error({
             message: "Transaction Error",
-            description: e.message,
+            description: (e.message + e.data.message?e.data.message:""),
           });
         }
       }

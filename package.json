@@ -34,6 +34,7 @@
     "flatten": "cd packages/buidler && npx buidler flatten",
     "graph-run-node": "cd docker/graph-node && docker-compose up",
     "graph-remove-node": "cd docker/graph-node && docker-compose down",
+    "graph-remove-data": "rm -r docker/graph-node/data",
     "graph-prepare": "mustache packages/subgraph/config/config.json packages/subgraph/src/subgraph.template.yaml > packages/subgraph/subgraph.yaml",
     "graph-codegen": "yarn workspace @scaffold-eth/subgraph graph codegen",
     "graph-build": "yarn workspace @scaffold-eth/subgraph graph build",

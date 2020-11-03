@@ -20,7 +20,7 @@ import { Project, Owner, Quest, Author, Work, Look, Builder, Sender, Supporter, 
 export function handleProjectUpdate(event: ProjectUpdate): void {
 
   let projectId = event.params.id.toHexString()
-  let ownerId = event.params.owner.toHexString()
+  let ownerId = event.params.projectOwner.toHexString()
 
   let project = new Project(projectId)
 
