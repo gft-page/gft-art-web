@@ -29,7 +29,10 @@ export default function Activity({ address, recipientAddedEvents, mainnetProvide
           let project = recipientIndexToData[index]?ethers.utils.parseBytes32String(recipientIndexToData[index]):""
 
           return (
-            <List.Item style={{backgroundColor:item.sender&&address&&address==item.sender?"#f2fff2":"#ffffff"}}>
+            <List.Item
+              key={index+"_"+item.sender}
+              style={{backgroundColor:item.sender&&address&&address==item.sender?"#f2fff2":"#ffffff"}}
+            >
               <div style={{textAlign:"left"}}>
                 <Balance
                   balance={item.value}
