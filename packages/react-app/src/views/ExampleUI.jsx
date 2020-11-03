@@ -34,7 +34,7 @@ export default function ExampleUI({address, mainnetProvider, userProvider, local
           <Button onClick={()=>{
             console.log("newPurpose",newPurpose)
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose(newPurpose) )
+            tx( writeContracts.YourContract.anyoneCanMint(address, newPurpose) )
           }}>Set Purpose</Button>
         </div>
 

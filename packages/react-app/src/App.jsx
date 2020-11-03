@@ -4,7 +4,7 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Input } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -14,6 +14,7 @@ import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
+import { HuePicker } from 'react-color';
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -29,7 +30,7 @@ import { Hints, ExampleUI, Subgraph } from "./views"
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
-
+const { TextArea } = Input;
 const DEBUG = true
 
 // 🔭 block explorer URL
@@ -84,6 +85,9 @@ function App(props) {
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
+  const mintEvents = useEventListener(readContracts, "YourContract", "Mint", localProvider, 1);
+  if(DEBUG) console.log("📟 mintEvents:",mintEvents)
+
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -101,11 +105,62 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+  const [ yourInput, setYourInput ] = useState()
+  const [ yourColor, setYourColor ] = useState()
+
+  console.log("yourColor",yourColor)
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
+
+
+        <div style={{width:700, margin:"auto"}}>
+          <TextArea style={{width:700,padding:64, fontSize:32, backgroundColor:yourColor}} rows={3} value={yourInput} onChange={(e)=>{
+            setYourInput(e.target.value)
+          }}/>
+
+          <HuePicker
+           color={ yourColor }
+           onChangeComplete={ (newVal)=>{
+             setYourColor(newVal.hex)
+             console.log("COLOR INCOMING",newVal)
+           } }
+         />
+
+          <Button type={"primary"} onClick={()=>{
+            console.log("yourInput",yourInput)
+            tx( writeContracts.YourContract.anyoneCanMint(address, yourInput) )
+          }}>Mint</Button>
+        </div>
+
+      <div style={{width:780, margin:"auto"}}>
+        <List
+          size="large"
+          dataSource={mintEvents}
+          renderItem={(item)=>{
+            console.log("item",item)
+
+            return (
+              <List.Item>
+
+
+
+                <Address
+                  minimized={true}
+                  value={item.to}
+                  blockExplorer={blockExplorer}
+                />
+                <TextArea style={{padding:64, fontSize:32, backgroundColor:"#9999999"}} rows={4} value={item.tokenURI}/>
+
+              </List.Item>
+            )
+          }}
+      />
+      </div>
+
 
       <BrowserRouter>
 
