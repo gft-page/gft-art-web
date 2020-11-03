@@ -132,7 +132,17 @@ function App(props) {
 
           <Button type={"primary"} onClick={()=>{
             console.log("yourInput",yourInput)
-            tx( writeContracts.YourContract.anyoneCanMint(address, yourInput) )
+
+            //create an object like {color: XXX, haiku: XXX, author: XXX}
+
+            //calculate hash before upload looks like "QmZqi...WRX"
+
+            //upload to ipfs
+
+            //write the hash to the contract while wait:
+            tx( writeContracts.YourContract.anyoneCanMint(address, "QmZqi6tEArtYgCfQaoe8mh7gum3mHKm9yg9KZbmd732WRX",{
+              value: parseEther("0.01")
+            }) )
           }}>Mint</Button>
         </div>
 
