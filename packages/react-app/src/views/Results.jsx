@@ -177,10 +177,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
           provider={localProvider}
           dollarMultiplier={price}
         />
-<<<<<<< HEAD
         <div style={{color:"#458895"}}>+${currentAmountOfMatchingFunds}.00 matching</div>
-=======
->>>>>>> mainnet
       </div>
 
 
