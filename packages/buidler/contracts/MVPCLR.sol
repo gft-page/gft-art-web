@@ -11,7 +11,7 @@ contract MVPCLR is Ownable {
   event RoundStarted(uint256 roundStart, uint256 roundDuration);
   event RecipientAdded(address addr, bytes32 data, string link, uint256 index);
   event Donate(address sender, uint256 value, uint256 index);
-  event MatchingPoolDonation(address sender, uint256 value, uint256 total);
+  event MatchingPoolDonation(address sender, uint256 value);
   event Distribute(address to, uint256 index, uint256 amount);
 
   modifier beforeRoundOpen() {
@@ -80,7 +80,7 @@ contract MVPCLR is Ownable {
   // receive donation for the matching pool
   receive() external payable {
     require(roundStart == 0 || getBlockTimestamp() < roundStart + roundDuration, "CLR:receive closed");
-    emit MatchingPoolDonation(_msgSender(), msg.value, address(this).balance);
+    emit MatchingPoolDonation(_msgSender(), msg.value);
   }
 
 }

@@ -239,10 +239,12 @@ function App(props) {
                           </Col>
                           <Col span={8}>
                             <Button onClick={()=>{
-                              tx( writeContracts.MVPCLR.donate(index,{value:parseEther(""+supportAmounts[index].toFixed(8))}) )
-                              let current = supportAmounts
-                              current[index] = ""
-                              setSupportAmount(current)
+                              if(supportAmounts && supportAmounts[index]){
+                                tx( writeContracts.MVPCLR.donate(index,{value:parseEther(""+supportAmounts[index].toFixed(8))}) )
+                                let current = supportAmounts
+                                current[index] = ""
+                                setSupportAmount(current)
+                              }
                             }}>
                               Support
                             </Button>

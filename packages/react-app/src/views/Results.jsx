@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { formatEther } from "@ethersproject/units";
-import { useEventListener } from "../hooks";
+import { useEventListener, useBalance } from "../hooks";
 import { List, Button, Card } from "antd";
 import { Address, Balance } from "../components";
 import { ethers } from "ethers";
+
+const PRECISION = 8
+const LEAVE_A_LITTLE_DUST_TO_BE_SAFE = 0.00000001
 
 
 export default function Results({ tx, clrBalance, roundFinish, address, writeContracts, recipientAddedEvents, mainnetProvider, blockExplorer, readContracts, localProvider, price }) {
 
   const [ payouts, setPayouts ] = useState()
+
+  const [ totalMatched, setTotalMatched ] = useState()
+  const [ totalDonated, setTotalDonated ] = useState()
+
+  const [ sendButtonLoading, setSendButtonLoading ] = useState({})
 
   const distributeEvents = useEventListener(readContracts, "MVPCLR", "Distribute", localProvider, 1);
   //console.log("📟 distributeEvents:",distributeEvents)
@@ -18,6 +26,8 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
 
   // event MatchingPoolDonation(address sender, uint256 value, uint256 total);
   const matchingPoolEvents = useEventListener(readContracts, "MVPCLR", "MatchingPoolDonation", localProvider, 1);
+
+  const balanceOfContract = useBalance(localProvider,readContracts?readContracts.MVPCLR.address:readContracts)
 
 
   let payoutDisplay = []
@@ -63,7 +73,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
         )
       }else{
         payoutDisplay.push(
-          <div>
+          <div key={"payout"+p}>
             <Card title={payouts[p].title} style={{marginBottom:32}}>
               <Balance
                 balance={payouts[p].payout}
@@ -83,18 +93,27 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
                 fontSize={16}
               />
               <div style={{opacity:roundFinish?1:0.1,marginTop:32}}>
-                <Button type={"primary"} onClick={()=>{
+                <Button type={"primary"} loading={sendButtonLoading[p]} onClick={async ()=>{
                   /* tx({
                     to: payouts[p].address,
                     value: payouts[p].payout,
                   })*/
+                  let newSendButtonLoading = sendButtonLoading
+                  newSendButtonLoading[p] = true
+                  setSendButtonLoading(newSendButtonLoading)
 
                   let total = payouts[p].payout
                   if(payouts[p].matching){
                     total = total.add(payouts[p].matching)
                   }
-
+                  console.log("sending a total of ",payouts[p].payout,payouts[p].matching,total)
                   tx( writeContracts.MVPCLR.distribute(payouts[p].address,p,total) )
+
+                  setTimeout(()=>{
+                    let secondNewSendButtonLoading = sendButtonLoading
+                    secondNewSendButtonLoading[p] = false
+                    setSendButtonLoading(secondNewSendButtonLoading)
+                  },5000)
                 }}>
                   Send
                 </Button>
@@ -109,7 +128,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
   }else{
     payoutDisplay = (
       <Button onClick={async ()=>{
-          try {
+          //try {
             let recipients = await readContracts.MVPCLR.queryFilter(readContracts.MVPCLR.filters.RecipientAdded())
             let recipientByIndex = {}
             let addressByIndex = {}
@@ -119,20 +138,24 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
               recipientByIndex[recipients[r].args.index] = prettyName
               addressByIndex[recipients[r].args.index] = recipients[r].args.addr
             }
+            let totalDonationAmount = ethers.BigNumber.from(0)
             let donations = await readContracts.MVPCLR.queryFilter(readContracts.MVPCLR.filters.Donate())
             console.log("There are a total of "+donations.length+" donations")
             let newPayouts = {}
             for(let d in donations){
               if(!newPayouts[donations[d].args.index]) newPayouts[donations[d].args.index] = ethers.BigNumber.from(0)
               newPayouts[donations[d].args.index] = newPayouts[donations[d].args.index].add(donations[d].args.value)
+              totalDonationAmount = totalDonationAmount.add(donations[d].args.value)
               console.log(donations[d].args.sender+" -> "+donations[d].args.value+" "+recipientByIndex[donations[d].args.index])//value index
             }
+
+            console.log("***** totalDonationAmount",totalDonationAmount,formatEther(totalDonationAmount))
 
             let totalPayoutFunds = ethers.BigNumber.from(0)
             console.log("newPayouts",newPayouts)
 
             for(let p in newPayouts){
-              console.log("newPayout:",p,newPayouts[p],addressByIndex)
+              console.log("adding payout to total===> ",p,formatEther(newPayouts[p]),newPayouts[p],addressByIndex)
               /*payoutsByAddress.push({
                 title: recipientByIndex[p],
                 index: p,
@@ -142,19 +165,19 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
               totalPayoutFunds = totalPayoutFunds.add(newPayouts[p])
             }
 
-
+            console.log("totalPayoutFunds",totalPayoutFunds,formatEther(totalPayoutFunds))
 
             console.log("LOOKING THROUGH ALL MATCHING EVENTS",matchingPoolEvents)
-            let totalMatchedFunds = ethers.BigNumber.from(0)
+            let totalMatchingPoolFunds = ethers.BigNumber.from(0)
             for(let e in matchingPoolEvents){
-              if(matchingPoolEvents[e].total.gt(totalMatchedFunds)){
-                totalMatchedFunds =  matchingPoolEvents[e].total
-              }
+              console.log("matching pool value add:",formatEther(matchingPoolEvents[e].value))
+              totalMatchingPoolFunds = totalMatchingPoolFunds.add(matchingPoolEvents[e].value)
+              //totalMatchedFunds = totalMatchedFunds.add(matchingPoolEvents[e].)
             }
-            console.log("totalFunds (payouts+matchedDonations)",formatEther(totalMatchedFunds))
+            console.log("totalMatchingPoolFunds:",formatEther(totalMatchingPoolFunds))
 
-            totalMatchedFunds = totalMatchedFunds.sub(totalPayoutFunds)
-            console.log("totalMatchedFunds",formatEther(totalMatchedFunds))
+            //totalMatchedFunds = totalMatchedFunds.sub(totalPayoutFunds)
+            //console.log("totalMatchedFunds",formatEther(totalMatchedFunds))
 
 
             let sqrtSumDonationsByIndex = []
@@ -164,7 +187,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
               console.log("====>donateEvents ",d,donateEvents[d])
               const index = donateEvents[d].index.toNumber()
               console.log("index",index)
-              const chrushedUpValueForSqrt = parseFloat(ethers.utils.formatEther(donateEvents[d].value)).toFixed(8)
+              const chrushedUpValueForSqrt = parseFloat(ethers.utils.formatEther(donateEvents[d].value)).toFixed(PRECISION)
               console.log("chrushedUpValueForSqrt",chrushedUpValueForSqrt)
               const sqrt = Math.sqrt(chrushedUpValueForSqrt)
               console.log("sqrt",sqrt)
@@ -175,21 +198,24 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
 
             let newMatches = {}
 
-
+            let totalMatchesCounted = ethers.BigNumber.from(0)
             console.log("sqrtSumDonationsByIndex>=>=>=",sqrtSumDonationsByIndex)
+            let floatOfTotalMatchedFunds = parseFloat(formatEther(totalMatchingPoolFunds))
+            floatOfTotalMatchedFunds -= LEAVE_A_LITTLE_DUST_TO_BE_SAFE
+            console.log("floatOfTotalMatchedFunds",floatOfTotalMatchedFunds)
             for(let s in sqrtSumDonationsByIndex){
-              const neverTrustAFloat = parseFloat(sqrtSumDonationsByIndex[s]*100/totalSqrts).toFixed(8)
+              const neverTrustAFloat = parseFloat(sqrtSumDonationsByIndex[s]*100/totalSqrts).toFixed(PRECISION)
               console.log("neverTrustAFloat",neverTrustAFloat,"% of matching pool")
               console.log("recipientByIndex",recipientByIndex[s])
               newMatches[s] = ethers.utils.parseEther(parseFloat(
-                (neverTrustAFloat * parseFloat(formatEther(totalMatchedFunds))) / 100
-              ).toFixed(8))
-
-              //console.log("PROJ",sqrtSumDonationsByIndex[s],totalSqrts,neverTrustAFloat)
+                (neverTrustAFloat * floatOfTotalMatchedFunds) / 100
+              ).toFixed(PRECISION))
+              totalMatchesCounted = totalMatchesCounted.add(newMatches[s])
+              console.log("##### MATCHING FUNDING ",s,formatEther(newMatches[s]))
             }
+            console.log("totalMatchesCounted:",totalMatchesCounted,formatEther(totalMatchesCounted))
 
             console.log("newMatches",newMatches)
-
             let payoutsByAddress = []
             for(let p in newPayouts){
               console.log("newPayout:",p,newPayouts[p],addressByIndex)
@@ -205,12 +231,56 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
             console.log("payoutsByAddress",payoutsByAddress)
             setPayouts(payoutsByAddress)
 
-          } catch (e) {
+
+            let nextTotalMatched = ethers.BigNumber.from(0)
+            let nextTotalDonated = ethers.BigNumber.from(0)
+            for(let a in payoutsByAddress){
+              console.log("payoutsByAddress[a]",a,payoutsByAddress[a])
+              nextTotalMatched = nextTotalMatched.add(payoutsByAddress[a].matching)
+              nextTotalDonated = nextTotalDonated.add(payoutsByAddress[a].payout)
+            }
+
+            console.log("TOTAL MATCHED ",nextTotalMatched,formatEther(nextTotalMatched))
+            console.log("TOTAL DONATED ",nextTotalDonated,formatEther(nextTotalDonated))
+            setTotalDonated(nextTotalDonated)
+            setTotalMatched(nextTotalMatched)
+
+            console.log("BALANCE OF CONTRACT",balanceOfContract,formatEther(balanceOfContract))
+            let nextFinalBalance = balanceOfContract.sub(nextTotalDonated.add(nextTotalMatched))
+            console.log("ENDING BALANCE",balanceOfContract,"-",nextTotalDonated.add(nextTotalMatched),"=",nextFinalBalance)
+            if(nextFinalBalance.lt(0)){
+              alert("WATCH OUT, NOT ENOUGH IN CONTRACT TO PAY OUT")
+            }else{
+              console.log("Looks good, there will be ",formatEther(nextFinalBalance)," left in the contract")
+            }
+
+          /*} catch (e) {
             console.log(e);
-          }
+          }*/
       }}>
        🧮 Calc
       </Button>
+    )
+  }
+
+  let extraBalanceDisplay = ""
+  if(totalMatched&&totalDonated){
+    extraBalanceDisplay = (
+      <div>
+
+      <div>
+        Donated: <Balance
+          balance={totalDonated}
+          dollarMultiplier={price}
+        />
+        </div>
+        <div style={{color:"#89f989"}}>
+        Matched: <Balance
+          balance={totalMatched}
+          dollarMultiplier={price}
+        />
+        </div>
+      </div>
     )
   }
 
@@ -223,6 +293,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
           provider={localProvider}
           dollarMultiplier={price}
         />
+        {extraBalanceDisplay}
       </div>
 
 
