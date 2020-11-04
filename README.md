@@ -1,6 +1,8 @@
 
 
 
+
+
 # Emoji Support
 ## 🏗 scaffold-eth MVP CLR Example
 
@@ -48,3 +50,7 @@ yarn deploy
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
 
 📱 Open http://localhost:3000 to see the app
+
+📡 Deploy by creating account `yarn generate` send funds to `yarn account` and then edit `packages/buidler/buidler.config.js` defaultNetwork
+
+🚢 Ship your app with `yarn build` and then `yarn surge` or `yarn s3`
