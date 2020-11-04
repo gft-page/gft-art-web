@@ -37,6 +37,7 @@ contract MVPCLR is Ownable {
   }
 
   constructor(uint256 _roundDuration) public {
+    require(_roundDuration < 31536000,"MVPCLR: round duration too long");
     roundDuration = _roundDuration;
   }
 
@@ -73,6 +74,13 @@ contract MVPCLR is Ownable {
   {
     to.transfer(amount);
     emit Distribute(to,index,amount);
+  }
+
+
+  // receive donation for the matching pool
+  receive() external payable {
+    require(roundStart == 0 || getBlockTimestamp() < roundStart + roundDuration, "CLR:receive closed");
+    emit MatchingPoolDonation(_msgSender(), msg.value, address(this).balance);
   }
 
 }

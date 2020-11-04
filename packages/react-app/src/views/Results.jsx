@@ -9,15 +9,15 @@ import { ethers } from "ethers";
 export default function Results({ tx, clrBalance, roundFinish, address, writeContracts, recipientAddedEvents, mainnetProvider, blockExplorer, readContracts, localProvider, price }) {
 
   const [ payouts, setPayouts ] = useState()
-  const [ matches, setMatches ] = useState()
-
-  const currentAmountOfMatchingFunds = 999
 
   const distributeEvents = useEventListener(readContracts, "MVPCLR", "Distribute", localProvider, 1);
   //console.log("📟 distributeEvents:",distributeEvents)
 
   const donateEvents = useEventListener(readContracts, "MVPCLR", "Donate", localProvider, 1);
   //console.log("📟 donateEvents:",donateEvents)
+
+  // event MatchingPoolDonation(address sender, uint256 value, uint256 total);
+  const matchingPoolEvents = useEventListener(readContracts, "MVPCLR", "MatchingPoolDonation", localProvider, 1);
 
 
   let payoutDisplay = []
@@ -33,8 +33,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
           found.push(distributeEvents[e])
         }
       }
-      console.log("FOUND",found)
-      console.log("matches",JSON.stringify(matches))
+
       if(found&&found.length>0){
         payoutDisplay.push(
           <List
@@ -70,6 +69,13 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
                 balance={payouts[p].payout}
                 dollarMultiplier={price}
               />
+              <div style={{color:"#89f989"}}>
+              + <Balance
+                balance={payouts[p].matching}
+                dollarMultiplier={price}
+              />
+              </div>
+
               <Address
                 value={payouts[p].address}
                 ensProvider={mainnetProvider}
@@ -82,7 +88,13 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
                     to: payouts[p].address,
                     value: payouts[p].payout,
                   })*/
-                  tx( writeContracts.MVPCLR.distribute(payouts[p].address,p,payouts[p].payout) )
+
+                  let total = payouts[p].payout
+                  if(payouts[p].matching){
+                    total = total.add(payouts[p].matching)
+                  }
+
+                  tx( writeContracts.MVPCLR.distribute(payouts[p].address,p,total) )
                 }}>
                   Send
                 </Button>
@@ -115,19 +127,35 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
               newPayouts[donations[d].args.index] = newPayouts[donations[d].args.index].add(donations[d].args.value)
               console.log(donations[d].args.sender+" -> "+donations[d].args.value+" "+recipientByIndex[donations[d].args.index])//value index
             }
+
+            let totalPayoutFunds = ethers.BigNumber.from(0)
             console.log("newPayouts",newPayouts)
-            let payoutsByAddress = []
+
             for(let p in newPayouts){
               console.log("newPayout:",p,newPayouts[p],addressByIndex)
-              payoutsByAddress.push({
+              /*payoutsByAddress.push({
                 title: recipientByIndex[p],
                 index: p,
                 address: addressByIndex[p],
                 payout: newPayouts[p]
-              })
+              })*/
+              totalPayoutFunds = totalPayoutFunds.add(newPayouts[p])
             }
-            console.log("payoutsByAddress",payoutsByAddress)
-            setPayouts(payoutsByAddress)
+
+
+
+            console.log("LOOKING THROUGH ALL MATCHING EVENTS",matchingPoolEvents)
+            let totalMatchedFunds = ethers.BigNumber.from(0)
+            for(let e in matchingPoolEvents){
+              if(matchingPoolEvents[e].total.gt(totalMatchedFunds)){
+                totalMatchedFunds =  matchingPoolEvents[e].total
+              }
+            }
+            console.log("totalFunds (payouts+matchedDonations)",formatEther(totalMatchedFunds))
+
+            totalMatchedFunds = totalMatchedFunds.sub(totalPayoutFunds)
+            console.log("totalMatchedFunds",formatEther(totalMatchedFunds))
+
 
             let sqrtSumDonationsByIndex = []
             let totalSqrts = 0
@@ -147,17 +175,35 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
 
             let newMatches = {}
 
+
             console.log("sqrtSumDonationsByIndex>=>=>=",sqrtSumDonationsByIndex)
             for(let s in sqrtSumDonationsByIndex){
-              const neverTrustAFloat = parseFloat(sqrtSumDonationsByIndex[s]*100/totalSqrts).toFixed(2)
+              const neverTrustAFloat = parseFloat(sqrtSumDonationsByIndex[s]*100/totalSqrts).toFixed(8)
               console.log("neverTrustAFloat",neverTrustAFloat,"% of matching pool")
               console.log("recipientByIndex",recipientByIndex[s])
-              newMatches[s]=neverTrustAFloat
+              newMatches[s] = ethers.utils.parseEther(parseFloat(
+                (neverTrustAFloat * parseFloat(formatEther(totalMatchedFunds))) / 100
+              ).toFixed(8))
+
               //console.log("PROJ",sqrtSumDonationsByIndex[s],totalSqrts,neverTrustAFloat)
             }
 
-            setMatches(newMatches)
+            console.log("newMatches",newMatches)
 
+            let payoutsByAddress = []
+            for(let p in newPayouts){
+              console.log("newPayout:",p,newPayouts[p],addressByIndex)
+              payoutsByAddress.push({
+                title: recipientByIndex[p],
+                index: p,
+                address: addressByIndex[p],
+                payout: newPayouts[p],
+                matching: newMatches[p]
+              })
+              totalPayoutFunds = totalPayoutFunds.add(newPayouts[p])
+            }
+            console.log("payoutsByAddress",payoutsByAddress)
+            setPayouts(payoutsByAddress)
 
           } catch (e) {
             console.log(e);
@@ -177,7 +223,6 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
           provider={localProvider}
           dollarMultiplier={price}
         />
-        <div style={{color:"#458895"}}>+${currentAmountOfMatchingFunds}.00 matching</div>
       </div>
 
 
