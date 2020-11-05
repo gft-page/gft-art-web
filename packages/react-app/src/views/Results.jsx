@@ -141,6 +141,9 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
             let totalDonationAmount = ethers.BigNumber.from(0)
             let donations = await readContracts.MVPCLR.queryFilter(readContracts.MVPCLR.filters.Donate())
             console.log("There are a total of "+donations.length+" donations")
+
+
+
             let newPayouts = {}
             for(let d in donations){
               if(!newPayouts[donations[d].args.index]) newPayouts[donations[d].args.index] = ethers.BigNumber.from(0)
@@ -178,22 +181,40 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
 
             //totalMatchedFunds = totalMatchedFunds.sub(totalPayoutFunds)
             //console.log("totalMatchedFunds",formatEther(totalMatchedFunds))
-
-
-            let sqrtSumDonationsByIndex = []
-            let totalSqrts = 0
+            console.log("Getting donationsByIndexByAddress...")
+            let donationsByIndexByAddress = {}
             console.log("donateEvents",donateEvents)
             for(let d in donateEvents){
               console.log("====>donateEvents ",d,donateEvents[d])
               const index = donateEvents[d].index.toNumber()
               console.log("index",index)
-              const chrushedUpValueForSqrt = parseFloat(ethers.utils.formatEther(donateEvents[d].value)).toFixed(PRECISION)
-              console.log("chrushedUpValueForSqrt",chrushedUpValueForSqrt)
-              const sqrt = Math.sqrt(chrushedUpValueForSqrt)
-              console.log("sqrt",sqrt)
-              if(!sqrtSumDonationsByIndex[index]) sqrtSumDonationsByIndex[index] = 0
-              sqrtSumDonationsByIndex[index] += sqrt
-              totalSqrts += sqrt
+              if(!donationsByIndexByAddress[index]) donationsByIndexByAddress[index] = {}
+
+              if(!donationsByIndexByAddress[index][donateEvents[d].sender]) donationsByIndexByAddress[index][donateEvents[d].sender] = ethers.BigNumber.from(0)
+
+              donationsByIndexByAddress[index][donateEvents[d].sender] = donationsByIndexByAddress[index][donateEvents[d].sender].add(donateEvents[d].value)
+            }
+
+
+            console.log("donationsByIndexByAddress",donationsByIndexByAddress)
+            let sqrtSumDonationsByIndex = []
+            let totalSqrts = 0
+
+            for(let i in donationsByIndexByAddress){
+              if(!sqrtSumDonationsByIndex[i]) sqrtSumDonationsByIndex[i] = 0
+
+              console.log("INDEXED BY ADDDRRRRRRR ",i,donationsByIndexByAddress[i])
+              for(let addr in donationsByIndexByAddress[i])
+              {
+                console.log("ACTUALLY DO SQRT HERE",addr,i,donationsByIndexByAddress[i][addr])
+                const chrushedUpValueForSqrt = parseFloat(ethers.utils.formatEther(donationsByIndexByAddress[i][addr])).toFixed(PRECISION)
+                console.log("chrushedUpValueForSqrt",chrushedUpValueForSqrt)
+                const sqrt = Math.sqrt(chrushedUpValueForSqrt)
+                console.log("SQRT",sqrt)
+                sqrtSumDonationsByIndex[i] += sqrt
+                totalSqrts += sqrt
+              }
+
             }
 
             let newMatches = {}

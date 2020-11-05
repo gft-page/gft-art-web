@@ -49,7 +49,7 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFU
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 //const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 //if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider("http://localhost:8545");//mainnetProvider//
+const localProvider = mainnetProvider//new JsonRpcProvider("http://localhost:8545");////
 
 
 
