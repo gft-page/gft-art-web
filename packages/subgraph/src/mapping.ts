@@ -141,7 +141,7 @@ export function handleRecipientAdded(event: RecipientAdded): void {
   let recipient = new Recipient(recipientIndex)
   recipient.index = event.params.index
   recipient.addr = event.params.addr
-  recipient.project = event.params.data.toHexString()
+  recipient.project = event.params.data
 
   recipient.save()
 }

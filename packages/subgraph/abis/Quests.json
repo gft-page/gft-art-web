@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "projectsAddress",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "buildersAddress",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -158,6 +163,19 @@
     ],
     "name": "QuestWork",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "builders",
+    "outputs": [
+      {
+        "internalType": "contract Builders",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
