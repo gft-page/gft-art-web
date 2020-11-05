@@ -26,7 +26,7 @@ dataSources:
     name: Quests
     network: localhost
     source:
-      address: '0xbAc762e2000b6815268587b081Fd17aC25519aD5'
+      address: '0xadc8f433eA2371bE71D986d9B131892122969CA6'
       abi: Quests
       startBlock: 1
     mapping:
@@ -54,7 +54,7 @@ dataSources:
     name: Builders
     network: localhost
     source:
-      address: '0x1a66D6103F8BBf9204E1618F095a80b3E4817C95'
+      address: '0x8BFFF31B1757da579Bb5B118489568526F7fb6D4'
       abi: Builders
       startBlock: 1
     mapping:

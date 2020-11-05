@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects, Quests, Support, Builders, Supporters, Quest } from "./views"
+import { Hints, ExampleUI, Subgraph, Projects, Quests, Builders, Quest } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -112,14 +112,12 @@ function App(props) {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/supporters">
-            <Link onClick={()=>{
-              setRoute("/supporters")
-            }} to="/supporters">Supporters</Link>
+
+          <Menu.Item key="/about">
+            <a target="_blank" href="https://medium.com/@austin_48503/build-guild-round-0-4e1d9456e43d">About</a>
           </Menu.Item>
-          <Menu.Item key="/support">
-            <Link onClick={()=>{setRoute("/support")}} to="/support">Support</Link>
-          </Menu.Item>
+
+
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">Projects</Link>
           </Menu.Item>
@@ -137,10 +135,10 @@ function App(props) {
 
 
           <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">DebugSubgraph</Link>
+            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">📊</Link>
           </Menu.Item>
           <Menu.Item key="/debug">
-            <Link onClick={()=>{setRoute("/debug")}} to="/debug">DebugContracts</Link>
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">🐞</Link>
           </Menu.Item>
         </Menu>
 
@@ -232,19 +230,7 @@ function App(props) {
                blockExplorer={blockExplorer}
             />
           </Route>
-          <Route exact path="/support/:id?">
-           <Support
-             address={address}
-             userProvider={userProvider}
-             mainnetProvider={mainnetProvider}
-             localProvider={localProvider}
-             yourLocalBalance={yourLocalBalance}
-             price={price}
-             tx={tx}
-             writeContracts={writeContracts}
-             readContracts={readContracts}
-           />
-         </Route>
+
           <Route exact path="/">
             <Projects
               subgraphUri={props.subgraphUri}
@@ -279,23 +265,6 @@ function App(props) {
               return (<Builders
                 subgraphUri={props.subgraphUri}
 
-                localProvider={localProvider}
-                address={address}
-                userProvider={userProvider}
-                blockExplorer={blockExplorer}
-                mainnetProvider={mainnetProvider}
-                localProvider={localProvider}
-                yourLocalBalance={yourLocalBalance}
-                price={price}
-                tx={tx}
-                writeContracts={writeContracts}
-                readContracts={readContracts}
-              />)
-            }}>
-          </Route>
-          <Route exact path="/supporters/:id?" render = {(routerProps) => {
-              return (<Supporters
-                subgraphUri={props.subgraphUri}
                 localProvider={localProvider}
                 address={address}
                 userProvider={userProvider}

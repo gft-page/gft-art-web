@@ -87,6 +87,12 @@ async function main() {
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
      {
+       title: "🏯 haiku.exchange",
+       desc: "Mint haikus as ERC721s and exchange them on a curve",
+       repo: "https://github.com/austintgriffith/scaffold-eth/tree/haiku.exchange",
+       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+     },
+     {
        title: "‍👩‍🎤 xNFT.io",
        desc: "Super clean Nifty.ink fork that is for image uploads instead of inks",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
@@ -94,7 +100,7 @@ async function main() {
      },
      {
        title: "👛 Multisig.Holdings",
-       desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig",
+       desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig that streams too",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig",
        projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
      },
