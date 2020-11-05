@@ -54,3 +54,11 @@ yarn deploy
 📡 Deploy by creating account `yarn generate` send funds to `yarn account` and then edit `packages/buidler/buidler.config.js` defaultNetwork
 
 🚢 Ship your app with `yarn build` and then `yarn surge` or `yarn s3`
+
+
+![image](https://user-images.githubusercontent.com/2653167/98257948-85038a80-1f3d-11eb-8cfc-1fc9f89104ac.png)
+
+
+
+![image](https://user-images.githubusercontent.com/2653167/98258057-a2385900-1f3d-11eb-9cc0-ad50621fbc58.png)
+
