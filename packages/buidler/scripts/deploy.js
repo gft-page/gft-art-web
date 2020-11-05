@@ -14,7 +14,7 @@ const main = async () => {
   // OR
   // custom deploy (to use deployed addresses dynamically for example:)
   console.log("🛰  deploying MVPCLR")
-  const MVPCLR = await deploy("MVPCLR",[  3600*19 /*is 8 hrs */])// 778111
+  const MVPCLR = await deploy("MVPCLR",[ 60 /* 3600*8 == 8 hrs */])// 778111
 
   console.log("😺  Recipients...")
   await MVPCLR.addRecipient("0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc",ethers.utils.formatBytes32String("🐶 Dog On it Dapps"),"http://localhost:3000")// 70-90k gas ~>$1 40G
@@ -35,7 +35,7 @@ const main = async () => {
   /// TRANSFER THE CLR TO YOU AFTER IT IS DEPLOYED:
   await MVPCLR.transferOwnership("0x34aA3F359A9D614239015126635CE7732c18fDF3")
 
-  
+
   var matchingFunds = {
     to: MVPCLR.address,
     value: ethers.utils.parseEther("1")
