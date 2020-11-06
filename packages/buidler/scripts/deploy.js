@@ -27,19 +27,19 @@ const main = async () => {
      },
      {
        title: "🔵 Circles.Maybe",
-       desc: "Make some weird experiment on CirclesUBI",
+       desc: "Build some weird experiment on CirclesUBI",
        repo: "https://github.com/austintgriffith/scaffold-eth",
        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
      },
      {
        title: "🏰 BuidlGuidl.com - Round 2",
-       desc: "Pass funding on to the Round 2 matching pool.",
+       desc: "Pass funding on to the Round 2 matching pool",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
      },
      {
        title: "🏰 BuidlGuidl.com - Round 1",
-       desc: "Pass funding on to the Round 1 matching pool.",
+       desc: "Pass funding on to the Round 1 matching pool",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
      },
