@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract MVPCLR is Ownable {
 
   uint256 public roundStart;
-  uint256 public roundDuration;
+  uint256 public immutable roundDuration;
   uint256 public recipientCount = 0;
 
   event RoundStarted(uint256 roundStart, uint256 roundDuration);

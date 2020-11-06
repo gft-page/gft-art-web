@@ -166,40 +166,80 @@ function App(props) {
     )
   }
 
+  let fullMenu = []
+
+  fullMenu.push(
+    <Menu.Item key="/">
+      <Link onClick={()=>{setRoute("/")}} to="/">Support</Link>
+    </Menu.Item>
+  )
+  fullMenu.push(
+    <Menu.Item key="/activity">
+      <Link onClick={()=>{setRoute("/activity")}} to="/activity">Activity</Link>
+    </Menu.Item>
+  )
+
+
+  if(address=="0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"){
+
+    fullMenu.push(
+      <Menu.Item key="/results">
+        <Link onClick={()=>{setRoute("/results")}} to="/results">Results</Link>
+      </Menu.Item>
+    )
+
+    fullMenu.push(
+      <Menu.Item key="/debug">
+        <Link onClick={()=>{setRoute("/debug")}} to="/debug">🔧</Link>
+      </Menu.Item>
+    )
+
+    fullMenu.push(
+      <Menu.Item key="/code">
+        <a target="_blank" href="https://github.com/austintgriffith/scaffold-eth/tree/emoji-support">🍴</a>
+      </Menu.Item>
+    )
+
+    fullMenu.push(
+      <Menu.Item key="/chat">
+        <a target="_blank" href="https://twitter.com/austingriffith">💬</a>
+      </Menu.Item>
+    )
+
+  }
+
+
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
+
+
+
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Support</Link>
-          </Menu.Item>
-          <Menu.Item key="/activity">
-            <Link onClick={()=>{setRoute("/activity")}} to="/activity">Activity</Link>
-          </Menu.Item>
 
-          <Menu.Item key="/results">
-            <Link onClick={()=>{setRoute("/results")}} to="/results">Results</Link>
-          </Menu.Item>
-          <Menu.Item key="/debug">
-            <Link onClick={()=>{setRoute("/debug")}} to="/debug">🔧</Link>
-          </Menu.Item>
-          <Menu.Item key="/code">
-            <a target="_blank" href="https://github.com/austintgriffith/scaffold-eth/tree/emoji-support">🍴</a>
-          </Menu.Item>
-          <Menu.Item key="/chat">
-            <a target="_blank" href="https://twitter.com/austingriffith">💬</a>
-          </Menu.Item>
+          { fullMenu }
 
         </Menu>
 
         <Switch>
           <Route exact path="/">
             <div style={{width:700,margin:"auto",paddingBottom:128}}>
+
+            <div style={{opacity:0.9, color:"#666666",marginTop:32,marginLeft:64,marginRight:64,marginBottom:16,border:"1px solid #f8f8f8",backgroundColor:"#fbfbfb",padding:16,fontSize:16, fontWeight:"bold"}}>
+              What should the 🏰 Build Guild build next?
+              <div style={{opacity:0.75}}>
+                Throw in a dollar or two and signal quadratically! 📡
+              </div>
+              <div style={{opacity:0.75,paddingTop:32}}>
+                <a style={{color:"#000"}} href="https://medium.com/@austin_48503/build-guild-round-0-4e1d9456e43d" target="_blank">What? 😅</a>
+              </div>
+            </div>
 
               {status}
 
@@ -213,15 +253,13 @@ function App(props) {
                     <List.Item key={index}>
                       <div>
                         <div style={{textAlign:"left",padding:8,fontWeight:'bolder',letterSpacing:"1.5px"}}>
-                          {ethers.utils.parseBytes32String(item.data)}<a style={{fontSize:8}} href={item.link}>{"🔗"}</a>
+                          {ethers.utils.parseBytes32String(item.data)}
+
                         </div>
-                        <div style={{textAlign:"left",padding:8}}>
-                          <Address
-                            value={item.addr}
-                            ensProvider={mainnetProvider}
-                            blockExplorer={blockExplorer}
-                            fontSize={16}
-                          />
+                        <div style={{textAlign:"left",padding:8,width:300}}>
+                          <div style={{opacity:0.7,letterSpacing:0.8}}>
+                            {(item.link)}
+                          </div>
                         </div>
                       </div>
                       <div style={{float:"right",opacity:roundFinished?0.1:1}}>
