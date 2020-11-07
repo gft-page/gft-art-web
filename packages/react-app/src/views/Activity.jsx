@@ -84,7 +84,7 @@ export default function Activity({ address, recipientAddedEvents, mainnetProvide
 
               <div style={{float:"right"}}>
                 <Address
-                  value={item.sender}
+                  value={item.origin} /* item.sender */
                   ensProvider={mainnetProvider}
                   blockExplorer={blockExplorer}
                   fontSize={16}
