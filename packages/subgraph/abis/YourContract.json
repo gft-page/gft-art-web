@@ -9,28 +9,52 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "d",
+        "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "purpose",
-        "type": "string"
+        "internalType": "bytes32",
+        "name": "h",
+        "type": "bytes32"
       }
     ],
-    "name": "SetPurpose",
+    "name": "Check",
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "purpose",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "depth",
+        "type": "uint256"
+      }
+    ],
+    "name": "blockHashAtDepth",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "bytes32",
         "name": "",
-        "type": "string"
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "current",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -39,14 +63,44 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "newPurpose",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "depth",
+        "type": "uint256"
       }
     ],
-    "name": "setPurpose",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "discover",
+    "outputs": [
+      {
+        "internalType": "bytes2",
+        "name": "",
+        "type": "bytes2"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "num",
+        "type": "uint256"
+      }
+    ],
+    "name": "look",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

@@ -7,13 +7,13 @@ import "./App.css";
 import { Row, Col, Button, List, Tabs, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { useUserAddress } from "eth-hooks";
+import { useUserAddress, useBlockNumber } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { Hints, ExampleUI, Subgraph, BytesLand } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -51,6 +51,22 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
+const translateBytes = (bytes)=>{
+  let value = parseInt(bytes,16)
+  if(value<655){
+    return "💎"
+  } else if(value<2455){
+    return "⛰"
+  } else if(value<12275){
+    return "🌲"
+  } else if(value<24550){
+    return "🌳"
+  } else {
+    return " "
+  }
+}
+
+
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
@@ -85,6 +101,9 @@ function App(props) {
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
 
+  const blockNumber = useBlockNumber(localProvider)
+  console.log("blockNumber",blockNumber)
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -101,76 +120,40 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+  let extraIndex = 0
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
-      <BrowserRouter>
+      <Contract
+        name="BlockShorts"
+        signer={userProvider.getSigner()}
+        provider={localProvider}
+        address={address}
+        blockExplorer={blockExplorer}
+      />
+      <Contract
+        name="BytesLand"
+        signer={userProvider.getSigner()}
+        provider={localProvider}
+        address={address}
+        blockExplorer={blockExplorer}
+      />
 
-        <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
-          </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
-          </Menu.Item>
-        </Menu>
-
-        <Switch>
-          <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-          </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-            />
-          </Route>
-        </Switch>
-      </BrowserRouter>
-
+      <div style={{position:"absolute",left:0,top:100}}>
+        <BytesLand blockNumber={blockNumber} localProvider={localProvider} key={"BLB_"+blockNumber} translateBytes={translateBytes} />
+      </div>
+      <div style={{position:"absolute",left:30,top:100}}>
+        <BytesLand blockNumber={blockNumber-1} localProvider={localProvider} key={"BLB_"+blockNumber-1} translateBytes={translateBytes} />
+      </div>
+      <div style={{position:"absolute",left:60,top:100}}>
+        <BytesLand blockNumber={blockNumber-2} localProvider={localProvider} key={"BLB_"+blockNumber-2} translateBytes={translateBytes} />
+      </div>
+      <div style={{position:"absolute",left:90,top:100}}>
+        <BytesLand blockNumber={blockNumber-3} localProvider={localProvider} key={"BLB_"+blockNumber-3} translateBytes={translateBytes} />
+      </div>
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>

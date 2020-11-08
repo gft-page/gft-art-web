@@ -12,7 +12,7 @@ const main = async () => {
   // ! AUTO DEPLOY
   // * -----------
   // to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
+  //await autoDeploy();
 
   // ! OR CUSTOM DEPLOY
   // * ----------------
@@ -20,6 +20,22 @@ const main = async () => {
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
   // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+
+
+  const BlockShorts = await deploy("BlockShorts")
+  const BytesLand = await deploy("BytesLand",[BlockShorts.address])
+
+  //send some transactions so there are enough blocks to look back
+  var exampleTx = {
+    to: "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
+    value: ethers.utils.parseEther("0.001")
+  };
+  for(let t=0;t<3;t++){
+    const wallet = ethers.provider.getSigner()
+    await wallet.sendTransaction(exampleTx)
+  }
+
+
 
   console.log(
     " 💾  Artifacts (address, abi, and args) saved to: ",
