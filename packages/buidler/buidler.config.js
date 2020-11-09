@@ -18,7 +18,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "mainnet";
 
 function mnemonic() {
   try {
@@ -48,26 +48,26 @@ module.exports = {
       */
     },
     rinkeby: {
-      url: "https://rinkeby.infura.io/v3/5b3aa68d82264f59bb6a1874cb3c23ea",//<---- YOUR INFURA ID! (or it won't work)
+      url: "https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad",//<---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
     },
     mainnet: {
-      url: "https://mainnet.infura.io/v3/5b3aa68d82264f59bb6a1874cb3c23ea",//<---- YOUR INFURA ID! (or it won't work)
+      url: "https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad",//<---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
-      gasPrice: 41000000000,
+      gasPrice: 118001000000,
     },
     ropsten: {
-      url: "https://ropsten.infura.io/v3/5b3aa68d82264f59bb6a1874cb3c23ea", //<---- YOUR INFURA ID! (or it won't work)
+      url: "https://ropsten.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
     },
     goerli: {
-      url: "https://goerli.infura.io/v3/5b3aa68d82264f59bb6a1874cb3c23ea", //<---- YOUR INFURA ID! (or it won't work)
+      url: "https://goerli.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
       accounts: {
         mnemonic: mnemonic(),
       },
@@ -160,6 +160,58 @@ task("account", "Get balance informations for the deployment account.", async (_
 
 });
 
+
+task("wallet", "Create a wallet (pk) link", async (_, { ethers }) => {
+  const randomWallet = ethers.Wallet.createRandom()
+  const privateKey = randomWallet._signingKey().privateKey
+  console.log("🔐 WALLET Generated as " + randomWallet.address + "")
+  console.log("🔗 http://localhost:3000/pk#"+privateKey)
+});
+
+
+task("fundedwallet", "Create a wallet (pk) link and fund it with deployer?")
+  .addOptionalParam("amount", "Amount of ETH to send to wallet after generating")
+  .addOptionalParam("url", "URL to add pk to")
+  .setAction(async (taskArgs, { network, ethers }) => {
+
+    const randomWallet = ethers.Wallet.createRandom()
+    const privateKey = randomWallet._signingKey().privateKey
+    console.log("🔐 WALLET Generated as " + randomWallet.address + "")
+    let url = taskArgs.url?taskArgs.url:"http://localhost:3000"
+
+    let localDeployerMnemonic
+    try{
+      localDeployerMnemonic = fs.readFileSync("./mnemonic.txt")
+      localDeployerMnemonic = localDeployerMnemonic.toString().trim()
+    } catch (e) {
+      /* do nothing - this file isn't always there */
+    }
+
+    let amount = taskArgs.amount?taskArgs.amount:"0.01"
+    const tx = {
+      to: randomWallet.address,
+      value: ethers.utils.parseEther(amount)
+    };
+
+    //SEND USING LOCAL DEPLOYER MNEMONIC IF THERE IS ONE
+    // IF NOT SEND USING LOCAL HARDHAT NODE:
+    if(localDeployerMnemonic){
+      let deployerWallet = new ethers.Wallet.fromMnemonic(localDeployerMnemonic)
+      deployerWallet = deployerWallet.connect(ethers.provider)
+      console.log("💵 Sending "+amount+" ETH to "+randomWallet.address+" using deployer account");
+
+      tx.gasPrice = 27020000000
+
+      let sendresult = await deployerWallet.sendTransaction(tx)
+      console.log("\n"+url+"/pk#"+privateKey+"\n")
+      return
+    }else{
+      console.log("💵 Sending "+amount+" ETH to "+randomWallet.address+" using local node");
+      console.log("\n"+url+"/pk#"+privateKey+"\n")
+      return send(ethers.provider.getSigner(), tx);
+    }
+
+});
 
 async function addr(ethers, addr) {
   if (isAddress(addr)) {

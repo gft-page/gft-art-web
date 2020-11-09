@@ -149,7 +149,7 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
               if(!newPayouts[donations[d].args.index]) newPayouts[donations[d].args.index] = ethers.BigNumber.from(0)
               newPayouts[donations[d].args.index] = newPayouts[donations[d].args.index].add(donations[d].args.value)
               totalDonationAmount = totalDonationAmount.add(donations[d].args.value)
-              console.log(donations[d].args.sender+" -> "+donations[d].args.value+" "+recipientByIndex[donations[d].args.index])//value index
+              console.log(/*donations[d].args.sender*/ donations[d].args.origin+" -> "+donations[d].args.value+" "+recipientByIndex[donations[d].args.index])//value index
             }
 
             console.log("***** totalDonationAmount",totalDonationAmount,formatEther(totalDonationAmount))
@@ -188,11 +188,13 @@ export default function Results({ tx, clrBalance, roundFinish, address, writeCon
               console.log("====>donateEvents ",d,donateEvents[d])
               const index = donateEvents[d].index.toNumber()
               console.log("index",index)
+              const address = donateEvents[d].origin /* donateEvents[d].sender */
+              console.log("address",address)
               if(!donationsByIndexByAddress[index]) donationsByIndexByAddress[index] = {}
 
-              if(!donationsByIndexByAddress[index][donateEvents[d].sender]) donationsByIndexByAddress[index][donateEvents[d].sender] = ethers.BigNumber.from(0)
+              if(!donationsByIndexByAddress[index][address]) donationsByIndexByAddress[index][address] = ethers.BigNumber.from(0)
 
-              donationsByIndexByAddress[index][donateEvents[d].sender] = donationsByIndexByAddress[index][donateEvents[d].sender].add(donateEvents[d].value)
+              donationsByIndexByAddress[index][address] = donationsByIndexByAddress[index][address].add(donateEvents[d].value)
             }
 
 

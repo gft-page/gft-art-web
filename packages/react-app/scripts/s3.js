@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const directoryName = "build";
 
-const BUCKETNAME = "emoji.support"; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
+const BUCKETNAME = "support.buidlguidl.com"; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
 
 if (!BUCKETNAME) {
   console.log("☢️   Enter a bucket name in packages/react-app/scripts/s3.js ");
@@ -32,7 +32,7 @@ const options = {
 
 // optional cloudfront invalidation rule
  const invalidation = {
-   awsDistributionId: "E250FX02OXGK9D",
+   awsDistributionId: "E7JATOQBUFUIO",
   awsInvalidationPath: "/*"
  }
 

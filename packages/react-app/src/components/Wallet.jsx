@@ -101,6 +101,28 @@ export default function Wallet(props) {
        </div>
      )
    }else{
+
+     let extraPkDisplayAdded = {}
+     let extraPkDisplay = []
+     for (var key in localStorage){
+       if(key.indexOf("metaPrivateKey_backup")>=0){
+         console.log(key)
+         let pastpk = localStorage.getItem(key)
+         let pastwallet = new ethers.Wallet(pastpk)
+         if(!extraPkDisplayAdded[pastwallet.address] /*&& selectedAddress!=pastwallet.address*/){
+           extraPkDisplayAdded[pastwallet.address] = true
+           extraPkDisplay.push(
+             <div style={{fontSize:16}}>
+                <a href={"/pk#"+pastpk}>
+                  <Address minimized={true} value={pastwallet.address} ensProvider={props.ensProvider} /> {pastwallet.address.substr(0,6)}
+                </a>
+             </div>
+           )
+         }
+       }
+     }
+
+
      display = (
        <div>
          <b>Private Key:</b>
@@ -116,6 +138,14 @@ export default function Wallet(props) {
 
          <Paragraph style={{fontSize:"16"}} copyable>{"https://xdai.io/"+pk}</Paragraph>
 
+         {extraPkDisplay?(
+           <div>
+             <h3>
+              Known Private Keys:
+             </h3>
+             {extraPkDisplay}
+           </div>
+         ):""}
 
        </div>
      )

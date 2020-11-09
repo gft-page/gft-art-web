@@ -10,7 +10,7 @@ contract MVPCLR is Ownable {
 
   event RoundStarted(uint256 roundStart, uint256 roundDuration);
   event RecipientAdded(address addr, bytes32 data, string link, uint256 index);
-  event Donate(address sender, uint256 value, uint256 index);
+  event Donate(address origin, address sender, uint256 value, uint256 index);
   event MatchingPoolDonation(address sender, uint256 value);
   event Distribute(address to, uint256 index, uint256 amount);
 
@@ -64,7 +64,7 @@ contract MVPCLR is Ownable {
 
   function donate(uint256 index) public payable isRoundOpen {
     require(index<recipientCount, "CLR:donate - Not a valid recipient");
-    emit Donate(_msgSender(), msg.value, index);
+    emit Donate(tx.origin, _msgSender(), msg.value, index);
   }
 
   function distribute(address payable to, uint256 index, uint256 amount)

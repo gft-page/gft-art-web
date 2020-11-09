@@ -14,7 +14,7 @@ const main = async () => {
   // OR
   // custom deploy (to use deployed addresses dynamically for example:)
   console.log("🛰  deploying MVPCLR")
-  const MVPCLR = await deploy("MVPCLR",[ 60 /* 3600*8 == 8 hrs */])// 778111
+  const MVPCLR = await deploy("MVPCLR",[ 3600 * 24 * 6 /* 3600*8 == 8 hrs */])// 778111
 
 
 
@@ -131,7 +131,7 @@ const main = async () => {
        title: "🎨 Nifty.ink",
        desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
        repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
-       projectOwner: "0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc"//adamfuller.eth
+       projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"//adamfuller.eth
      },
    ]
 
@@ -159,7 +159,7 @@ const main = async () => {
 
   console.log("🔑 Sending ownership...")
   /// TRANSFER THE CLR TO YOU AFTER IT IS DEPLOYED:
-  await MVPCLR.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")
+  await MVPCLR.transferOwnership("0x34aA3F359A9D614239015126635CE7732c18fDF3")//austingriffith.eth
 
 
 
