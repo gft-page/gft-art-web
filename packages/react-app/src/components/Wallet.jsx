@@ -104,6 +104,14 @@ export default function Wallet(props) {
 
      let extraPkDisplayAdded = {}
      let extraPkDisplay = []
+     extraPkDisplayAdded[wallet.address] = true
+     extraPkDisplay.push(
+       <div style={{fontSize:16,padding:2,backgroundStyle:"#89e789"}}>
+          <a href={"/pk#"+pk}>
+            <Address minimized={true} value={wallet.address} ensProvider={props.ensProvider} /> {wallet.address.substr(0,6)}
+          </a>
+       </div>
+     )
      for (var key in localStorage){
        if(key.indexOf("metaPrivateKey_backup")>=0){
          console.log(key)
@@ -144,6 +152,18 @@ export default function Wallet(props) {
               Known Private Keys:
              </h3>
              {extraPkDisplay}
+             <Button onClick={()=>{
+               let currentPrivateKey = window.localStorage.getItem("metaPrivateKey");
+               if(currentPrivateKey){
+                 window.localStorage.setItem("metaPrivateKey_backup"+Date.now(),currentPrivateKey);
+               }
+               const randomWallet = ethers.Wallet.createRandom()
+               const privateKey = randomWallet._signingKey().privateKey
+               window.localStorage.setItem("metaPrivateKey",privateKey);
+               window.location.reload()
+             }}>
+              Generate
+             </Button>
            </div>
          ):""}
 
