@@ -31,110 +31,123 @@ async function main() {
    console.log("📲  Deploying Projects\n");
    const projects = await deploy("Projects")
 
+
    let genesisProjects = [
-     {
-       title: "🔥 xdai.io",
-       desc: "OG Burner Wallet rebuild as instant wallet fork",
-       repo: "https://github.com/austintgriffith/burner-wallet",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏰 BuidlGuidl.com - Round 2",
-       desc: "Pass funding on to the Round 1 matching pool.",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏰 BuidlGuidl.com - Round 1",
-       desc: "Pass funding on to the Round 1 matching pool.",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏴‍☠️  Galleass.io",
-       desc: "Rebuild Galleass.io using 🏗 scaffold-eth as a game build demo",
-       repo: "https://github.com/austintgriffith/galleass",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🐶 DAOG.io",
-       desc: "Rebuild DAOG.io using 🏗 scaffold-eth as a game build demo",
-       repo: "https://github.com/austintgriffith/galleass",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏷 FreeNS.io",
-       desc: "Free MVP ENS-like service on L2",
-       repo: "https://github.com/austintgriffith/scaffold-eth",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🔏 signator.io",
-       desc: "Simple signer app rebuild in 🏗 scaffold-eth",
-       repo: "https://github.com/austintgriffith/signatorio",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "⚙️ buidl.sh",
-       desc: "The 🏗 scaffold-eth dev stack in a single, delightful CLI (maybe even a docker container we can host at first)",
-       repo: "",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🍀 nftdao.com",
-       desc: "MVP of a DAO that can control an NFT",
-       repo: "https://github.com/austintgriffith/scaffold-eth",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏯 haiku.exchange",
-       desc: "Mint haikus as ERC721s and exchange them on a curve",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/haiku.exchange",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "‍👩‍🎤 xNFT.io",
-       desc: "Super clean Nifty.ink fork that is for image uploads instead of inks",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "👛 Multisig.Holdings",
-       desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig that streams too",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🔴 Optimistic.Money",
-       desc: "InstantWallet.io fork for deposit/send on OVM testnet",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🏗 ScaffoldETH.io",
-       desc: "Forkable Ethereum Dev Stack and Community",
-       repo: "https://github.com/austintgriffith/scaffold-eth",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "⚖️ Backlog.Exchange",
-       desc: "Token-weighted github backlog ordering app",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/backlog-market",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🧙‍♂️ InstantWallet.io",
-       desc: "Simple and forkable burner wallet made with 🏗 scaffold-eth.",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
-       projectOwner: "0x34aA3F359A9D614239015126635CE7732c18fDF3"
-     },
-     {
-       title: "🎨 Nifty.ink",
-       desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
-       repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
-       projectOwner: "0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc"//adamfuller.eth
-     },
-   ]
+      {
+        title: "🔥 xDAI.io",
+        desc: "OG burner wallet rebuild as instant wallet fork so people stop having a bad time forking it",
+        repo: "https://github.com/austintgriffith/burner-wallet",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🔵 Circles.Maybe",
+        desc: "Build some weird experiment on CirclesUBI",
+        repo: "https://github.com/austintgriffith/scaffold-eth",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🏰 BuidlGuidl.com - Round 2",
+        desc: "Pass funding on to the Round 2 matching pool",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🏰 BuidlGuidl.com - Round 1",
+        desc: "Pass funding on to the Round 1 matching pool",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/address-registry-example",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🏴‍☠️  Galleass.io",
+        desc: "Rebuild Galleass.io using 🏗 scaffold-eth as a game build demo",
+        repo: "https://github.com/austintgriffith/galleass",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🐶 DAOG.io",
+        desc: "Rebuild DAOG.io using 🏗 scaffold-eth as a game build demo",
+        repo: "https://github.com/austintgriffith/galleass",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🏷 FreeNS.io",
+        desc: "Free MVP ENS-like service on L2",
+        repo: "https://github.com/austintgriffith/scaffold-eth",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🔏 Signator.io",
+        desc: "Simple signer app rebuilt in 🏗 scaffold-eth",
+        repo: "https://github.com/austintgriffith/signatorio",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "⚙️ Buidl.sh",
+        desc: "The 🏗 scaffold-eth dev stack in a single, delightful CLI (maybe even a docker container we can host at first)",
+        repo: "",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🍀 NFTDAO.com",
+        desc: "MVP of a DAO that can control an NFT",
+        repo: "https://github.com/austintgriffith/scaffold-eth",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🏯 Haiku.Exchange",
+        desc: "Mint haikus as ERC721s and exchange them on a curve",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/haiku.exchange",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "‍👩‍🎤 xNFT.io",
+        desc: "Super clean Nifty.ink fork that is for image uploads instead of inks",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "👛 Multisig.Holdings",
+        desc: "Meta-multi-sig factory and frontend where anyone can spin up an MVP signature based multisig that streams",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🔴 Optimistic.Money",
+        desc: "InstantWallet.io fork for deposit/send on OVM testnet",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "💰 Emoji.Support",
+        desc: "MVP quadratic funding in a box",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/emoji-support",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🏗 ScaffoldETH.io",
+        desc: "Forkable Ethereum dev stack and community",
+        repo: "https://github.com/austintgriffith/scaffold-eth",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "⚖️ Backlog.Exchange",
+        desc: "Token-weighted github backlog ordering app",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/backlog-market",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🧙‍♂️ InstantWallet.io",
+        desc: "Simple and forkable burner wallet made with 🏗 scaffold-eth.",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/instantwallet-dev-session",
+        projectOwner: "0x97843608a00e2bbc75ab0C1911387E002565DEDE"
+      },
+      {
+        title: "🎨 Nifty.ink",
+        desc: "Instant onboarding NFT platform powered by meta transactions, xDAI, and bridged to Ethereum.",
+        repo: "https://github.com/austintgriffith/scaffold-eth/tree/nifty-ink-dev",
+        projectOwner: "0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc"//adamfuller.eth
+      },
+    ]
 
    for(let g in genesisProjects){
      console.log("     "+genesisProjects[g].title+" ("+chalk.gray(utils.formatBytes32String(genesisProjects[g].title))+")")

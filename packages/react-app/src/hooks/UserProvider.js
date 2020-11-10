@@ -23,13 +23,7 @@ useMemo(() => {
         rawPK=incomingPK
         burnerConfig.privateKey = rawPK
         window.history.pushState({},"", "/");
-      }else{
-        console.log("DECODE!",incomingPK)
-        //rawPK=tempweb3.utils.bytesToHex(base64url.toBuffer(base64encodedPK))
-        //burnerConfig.privateKey = rawPK
-        //window.history.pushState({},"", "/");
       }
-
     }
   }
 

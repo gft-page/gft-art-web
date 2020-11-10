@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph, Projects, Quests, Builders, Quest } from "./views"
+import { About, ExampleUI, Subgraph, Projects, Quests, Builders, Quest } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -47,7 +47,7 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = mainnetProvider//new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
@@ -107,19 +107,31 @@ function App(props) {
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
+
+
+
+
       <Header />
+
+      { /*
+
+        <Menu.Item key="/about">
+          <a target="_blank" href="https://medium.com/@austin_48503/build-guild-round-0-4e1d9456e43d">About</a>
+        </Menu.Item>
+
+      */ }
 
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
 
-          <Menu.Item key="/about">
-            <a target="_blank" href="https://medium.com/@austin_48503/build-guild-round-0-4e1d9456e43d">About</a>
-          </Menu.Item>
+        <Menu.Item key="/">
+          <Link onClick={()=>{setRoute("/")}} to="/">About</Link>
+        </Menu.Item>
 
 
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Projects</Link>
+          <Menu.Item key="/projects">
+            <Link onClick={()=>{setRoute("/projects")}} to="/projects">Projects</Link>
           </Menu.Item>
           <Menu.Item key="/quests">
             <Link onClick={()=>{
@@ -230,8 +242,11 @@ function App(props) {
                blockExplorer={blockExplorer}
             />
           </Route>
-
           <Route exact path="/">
+            <About />
+          </Route>
+
+          <Route exact path="/projects">
             <Projects
               subgraphUri={props.subgraphUri}
               setQuestFilter={setQuestFilter}
@@ -279,14 +294,7 @@ function App(props) {
               />)
             }}>
           </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
+
           <Route path="/exampleui">
             <ExampleUI
               address={address}
