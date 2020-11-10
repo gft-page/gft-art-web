@@ -10,6 +10,8 @@ import "./BlockShorts.sol";
 
 contract BytesLand {
 
+  event Discovered(address sender, uint256 blockNumber, uint256 depth, bytes2 short);
+
   struct Land {
     address owner;
     bytes2 land;
@@ -28,6 +30,7 @@ contract BytesLand {
       owner: msg.sender,
       land: blockShorts.getShortAt(blockNumber,depth)
     });
+    emit Discovered( msg.sender, blockNumber, depth, bytesLand[blockNumber][depth].land );
   }
 
 }

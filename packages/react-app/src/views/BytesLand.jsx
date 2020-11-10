@@ -6,7 +6,7 @@ import { useContractReader, useEventListener, useResolveName } from "../hooks";
 import { parseEther, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers"
 
-export default function BytesLand({ blockNumber, localProvider, translateBytes }) {
+export default function BytesLand({ tx, writeContracts, offSet, blockNumber, localProvider, translateBytes }) {
 
   const [ land, setLand ] = useState([])
 
@@ -18,25 +18,26 @@ export default function BytesLand({ blockNumber, localProvider, translateBytes }
 
         let nextArray = []
         let index = 0
-        console.log(block)
+        //console.log(block)
         if(blockNumber>0){
-          console.log("BLOCKHASH FOR",blockNumber,"IS",block.hash)
+          //console.log("BLOCKHASH FOR",blockNumber,"IS",block.hash)
           let currentHash = block.hash
 
-          while(index<1500){
-
-              console.log("CURRENTHASH",currentHash)
-              let splitHash = currentHash.replace("0x","")
-              splitHash = splitHash.match(/.{1,4}/g)
-              for(let s in splitHash){
-                nextArray.push(translateBytes(splitHash[s]))
-                index++
+          while(index<(1024*5)){
+            let splitHash = currentHash.replace("0x","")
+            splitHash = splitHash.match(/.{1,4}/g)
+            for(let s in splitHash){
+              //nextArray.push()
+              let translated = translateBytes(splitHash[s])
+              if(translated){
+                let currentLand = land
+                currentLand[index] = translated
+                setLand(currentLand)
               }
-              currentHash = ethers.utils.keccak256( currentHash )
-
+              index++
+            }
+            currentHash = ethers.utils.keccak256( currentHash )
           }
-
-          setLand(nextArray)
 
         }
 
@@ -50,8 +51,9 @@ export default function BytesLand({ blockNumber, localProvider, translateBytes }
   for(let l in land){
     if(land[l]){
       display.push(
-        <div style={{position:"absolute",top:30*l}} onClick={()=>{
+        <div style={{cursor:"pointer",position:"absolute",top: (l * 0.2) }} onClick={()=>{
           console.log("LANDCLICK",blockNumber,l)
+          tx( writeContracts.BytesLand.discoverBytesAt(blockNumber,l) )
         }}>
           {land[l]}
         </div>
@@ -60,9 +62,11 @@ export default function BytesLand({ blockNumber, localProvider, translateBytes }
   }
 
   return (
-    <div style={{width:30,border:"1px solid #999999",height:2560,backgroundColor:"#eeeeee"}}>
-      <div>{blockNumber}</div>
-      {display}
+    <div key={"blockdiv_"+blockNumber} style={{position:"absolute",left:offSet,top:100}}>
+      <div style={{width:25,height:1100,backgroundColor:"#6A6557"}}>
+        <div>{blockNumber}</div>
+        {display}
+      </div>
     </div>
   );
 }

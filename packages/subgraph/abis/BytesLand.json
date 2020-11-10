@@ -11,6 +11,37 @@
     "type": "constructor"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "blockNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "depth",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes2",
+        "name": "short",
+        "type": "bytes2"
+      }
+    ],
+    "name": "Discovered",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",

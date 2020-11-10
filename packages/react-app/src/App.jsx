@@ -30,7 +30,7 @@ import { Hints, ExampleUI, Subgraph, BytesLand } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
 
-const DEBUG = true
+const DEBUG = false
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -53,13 +53,13 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 const translateBytes = (bytes)=>{
   let value = parseInt(bytes,16)
-  if(value<655){
+  if(value<2){
     return "💎"
-  } else if(value<2455){
+  } else if(value<50){
     return "⛰"
-  } else if(value<12275){
+  } else if(value<100){
     return "🌲"
-  } else if(value<24550){
+  } else if(value<200){
     return "🌳"
   } else {
     return " "
@@ -88,7 +88,7 @@ function App(props) {
   const yourLocalBalance = useBalance(localProvider, address);
   if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
 
-  // just plug in different 🛰 providers to get your balance on different chains:
+  // just plug in different 🛰 providersz to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
   if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
@@ -120,40 +120,92 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+
+  let [ firstBlock, setFirstBlock ] = useState()
+
+  let blockDisplay = []
+  for(let startingAtFirstBlock=firstBlock;startingAtFirstBlock<=blockNumber;startingAtFirstBlock++){
+    const thisBlockNumber = startingAtFirstBlock
+    if(thisBlockNumber>=0){
+      blockDisplay.push(
+        <BytesLand key={"blockDisplay_block"+thisBlockNumber} blockNumber={thisBlockNumber} offSet={blockDisplay.length*30} tx={tx} writeContracts={writeContracts} localProvider={localProvider} translateBytes={translateBytes} />
+      )
+    }
+  }
+
+
+
+  useEffect(()=>{
+    const adjustBlockDisplay = async ()=>{
+      console.log("👷‍♀️ adjustBlockDisplay() ->",firstBlock,blockNumber)
+      if(!firstBlock){
+        console.log("🥇 First Block SET:",blockNumber)
+        setFirstBlock(blockNumber)
+      }
+    }
+    if( localProvider && blockNumber){
+      adjustBlockDisplay()
+    }
+  }, [ blockNumber ])
+
+
+
+  const discoverEvents = useEventListener(readContracts, "BytesLand", "Discovered", localProvider /* to see past events:, 1 */);
+  console.log("📟 discoverEvents:",discoverEvents)
+
+
   let extraIndex = 0
   return (
-    <div className="App">
+    <div className="App" style={{backgroundColor:"#333333"}}>
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
-      <Contract
-        name="BlockShorts"
-        signer={userProvider.getSigner()}
-        provider={localProvider}
-        address={address}
-        blockExplorer={blockExplorer}
-      />
-      <Contract
-        name="BytesLand"
-        signer={userProvider.getSigner()}
-        provider={localProvider}
-        address={address}
-        blockExplorer={blockExplorer}
-      />
+      <div style={{float:"right",backgroundColor:"#eeeeee",padding:32}} >
+        <List
+          bordered
+          dataSource={discoverEvents}
+          renderItem={(item) => {
+            console.log("item",item)
+            //Discovered(address sender, uint256 blockNumber, uint256 depth, bytes2 short);
+            return (
+              <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.depth+"_"+item.short}>
+                <Address
+                    value={item.sender}
+                    ensProvider={mainnetProvider}
+                    fontSize={16}
+                  />
+                <div>
+                  {item.blockNumber.toNumber()}/{item.depth.toNumber()}
+                </div>
+                <div style={{fontSize:18}}>
+                  {translateBytes(item.short.replace("0x",""))}
+                </div>
+              </List.Item>
+            )
+          }}
+        />
+      </div>
 
-      <div style={{position:"absolute",left:0,top:100}}>
-        <BytesLand blockNumber={blockNumber} localProvider={localProvider} key={"BLB_"+blockNumber} translateBytes={translateBytes} />
+      {blockDisplay}
+
+      <div style={{marginTop:1200}}>
+        <Contract
+          name="BlockShorts"
+          signer={userProvider.getSigner()}
+          provider={localProvider}
+          address={address}
+          blockExplorer={blockExplorer}
+        />
+        <Contract
+          name="BytesLand"
+          signer={userProvider.getSigner()}
+          provider={localProvider}
+          address={address}
+          blockExplorer={blockExplorer}
+        />
       </div>
-      <div style={{position:"absolute",left:30,top:100}}>
-        <BytesLand blockNumber={blockNumber-1} localProvider={localProvider} key={"BLB_"+blockNumber-1} translateBytes={translateBytes} />
-      </div>
-      <div style={{position:"absolute",left:60,top:100}}>
-        <BytesLand blockNumber={blockNumber-2} localProvider={localProvider} key={"BLB_"+blockNumber-2} translateBytes={translateBytes} />
-      </div>
-      <div style={{position:"absolute",left:90,top:100}}>
-        <BytesLand blockNumber={blockNumber-3} localProvider={localProvider} key={"BLB_"+blockNumber-3} translateBytes={translateBytes} />
-      </div>
+
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
