@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { WalletOutlined, QrcodeOutlined, SendOutlined, KeyOutlined } from "@ant-design/icons";
 import { Tooltip, Spin, Modal, Button, Typography } from "antd";
 import QR from "qrcode.react";
@@ -12,19 +12,6 @@ import EtherInput from "./EtherInput";
 import { ethers } from "ethers";
 const { Text, Paragraph } = Typography;
 
-/*
-
-  Wallet UI for sending, receiving, and extracting the burner wallet
-
-  <Wallet
-    address={address}
-    provider={userProvider}
-    ensProvider={mainnetProvider}
-    price={price}
-  />
-
-*/
-
 export default function Wallet(props) {
   const signerAddress = useUserAddress(props.provider);
   const selectedAddress = props.address || signerAddress;
@@ -37,20 +24,15 @@ export default function Wallet(props) {
 
   let display;
 
+  useEffect(() => {
+    setPK(selectedAddress)
+  },[selectedAddress])
+
   const showButton = (
-      <WalletOutlined
-        onClick={() => {
-          setOpen(!open);
-        }}
-        rotate={-90}
-        style={{
-          padding: 7,
-          color: props.color ? props.color : "#1890ff",
-          cursor: "pointer",
-          fontSize: 28,
-          verticalAlign: "middle",
-        }}
-      />
+      <Button onClick={() => {
+                setOpen(!open);
+              }}><WalletOutlined/> View Private Key
+      </Button>
   )
 
   if(pk){

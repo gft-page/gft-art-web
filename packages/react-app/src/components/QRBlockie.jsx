@@ -8,8 +8,13 @@ const { Text } = Typography;
 export default function QRBlockie(props) {
 
   const size = useWindowSize();
-
-  const qrWidth = size.width / 3
+  const minSize = 400
+  let qrWidth
+  if(size.width / 3 < minSize) {
+    qrWidth = minSize
+  } else {
+    qrWidth = size.width / 3
+  }
 
   let scale = Math.min(size.height-130,size.width,1024)/(qrWidth*1)
 
@@ -21,8 +26,8 @@ export default function QRBlockie(props) {
     <div style={{margin:"auto", position:"relative"}}>
 
       <QR level={"M"} includeMargin={true} value={props.address?props.address:""} size={qrWidth} imageSettings={{width:qrWidth/5,height:qrWidth/5,excavate:true}}/>
-      <div style={{margin:"auto", position:"absolute", width:size.width, top:qrWidth/2-48}}>
-        <Blockie address={props.address} scale={12}/>
+      <div style={{margin:"auto", position:"absolute", width:size.width, top:qrWidth/2-40}}>
+        <Blockie address={props.address} scale={10}/>
       </div>
     </div>
   );
