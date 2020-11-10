@@ -1,7 +1,11 @@
 # 💎 Bytes.Land
 
 > sandbox for procedurally generating land with ETH block hashes
+
+
 > also playing with how you can only get the last 256 block hashes
+
+
 ---
 
 ## quickstart
@@ -50,7 +54,7 @@ yarn deploy
 
 📱 Open http://localhost:3000 to see the app
 
-> Blocks show up on the left, "Discovered" events trigger on the right, debug contracts at the bottom 
+> Blocks show up on the left, "Discovered" events trigger on the right, debug contracts at the bottom
 
 
 ![image](https://user-images.githubusercontent.com/2653167/98697041-b1e6e180-2331-11eb-9a70-1d487f107c6c.png)
