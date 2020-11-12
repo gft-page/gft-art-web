@@ -55,4 +55,14 @@ On deploy, trasfer the ownership to your frontend address in `packages/hardhat/s
 
 ![image](https://user-images.githubusercontent.com/2653167/98977842-5013ac80-24d6-11eb-8ded-8780d54701dd.png)
 
-(You can verify the owner in the `debug` tab)
+> redeploy your contracts so you will be the owner:
+
+```bash
+
+yarn deploy
+
+```
+
+(You can verify the `owner` in the `debug` tab)
+
+YourContract should start with 0.1 ETH in it, craft a signature to send some but use a different account to "relay" the signature to YourContract.

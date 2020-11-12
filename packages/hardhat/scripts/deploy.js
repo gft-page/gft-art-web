@@ -18,9 +18,8 @@ const main = async () => {
   // * ----------------
   // custom deploy (to use deployed addresses dynamically for example:)
   const YourContract = await deploy("YourContract")
-  await YourContract.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")
-  // const examplePriceOracle = await deploy("ExamplePriceOracle")
-  // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+  await YourContract.transferOwnership("0x87E1B95a70d0652699c54Eb4013c83E6173F6701")
+
 
   //send a little ETH to the contract
   await ethers.provider.getSigner().sendTransaction({
