@@ -83,10 +83,14 @@ Give this new address some gas at the faucet.
 
 In the new browser, put in the same to address and value and you should get the same hash:
 
-Instead of signing it with this second account, copy/paste the signature from the owner:
+Instead of signing it with this second account, copy/paste the signature from the owner (previous signature above):
 
 ![image](https://user-images.githubusercontent.com/2653167/98979564-bbf71480-24d8-11eb-8707-da2bea7da118.png)
 
 You should see that the transaction is sent from the non-owner address and is able to send money out of YourContract!
+
+![image](https://user-images.githubusercontent.com/2653167/98980004-50fa0d80-24d9-11eb-8884-49b7a9dbbecc.png)
+
+![image](https://user-images.githubusercontent.com/2653167/98979955-3c1d7a00-24d9-11eb-8878-62b938139612.png)
 
 🎉 🍾 🎊 🥳 🎉 🍾 🎊 🥳 🎉 🍾 🎊 🥳
