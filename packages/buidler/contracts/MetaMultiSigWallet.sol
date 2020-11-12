@@ -5,7 +5,11 @@
 pragma solidity ^0.6.10;
 pragma experimental ABIEncoderV2;
 
+import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+
 contract MetaMultiSigWallet {
+    using ECDSA for bytes32;
+
     event Deposit(address indexed sender, uint amount, uint balance);
     event ExecuteTransaction( address indexed owner, address payable to, uint256 value, bytes data, uint256 nonce, bytes32 hash, bytes result);
     event Owner( address indexed owner, bool added);
@@ -13,8 +17,9 @@ contract MetaMultiSigWallet {
     mapping(address => bool) public isOwner;
     uint public signaturesRequired;
     uint public nonce;
+    uint public chainId;
 
-    constructor(address[] memory _owners, uint _signaturesRequired) public {
+    constructor(uint256 _chainId, address[] memory _owners, uint _signaturesRequired) public {
         require(_signaturesRequired>0,"constructor: must be non-zero sigs required");
         signaturesRequired = _signaturesRequired;
         for (uint i = 0; i < _owners.length; i++) {
@@ -24,6 +29,7 @@ contract MetaMultiSigWallet {
             isOwner[owner] = true;
             emit Owner(owner,isOwner[owner]);
         }
+        _chainId=chainId;
     }
 
     modifier onlySelf() {
@@ -54,7 +60,7 @@ contract MetaMultiSigWallet {
     }
 
     function getTransactionHash( uint256 _nonce, address to, uint256 value, bytes memory data ) public view returns (bytes32) {
-        return keccak256(abi.encodePacked(address(this),_nonce,to,value,data));
+        return keccak256(abi.encodePacked(address(this),chainId,_nonce,to,value,data));
     }
 
     function executeTransaction( address payable to, uint256 value, bytes memory data, bytes[] memory signatures)
@@ -75,7 +81,7 @@ contract MetaMultiSigWallet {
             }
         }
 
-        require(validSignatures>=signaturesRequired, "executeTransaction: not enough valid signatures");        
+        require(validSignatures>=signaturesRequired, "executeTransaction: not enough valid signatures");
 
         (bool success, bytes memory result) = to.call{value: value}(data);
         require(success, "executeTransaction: tx failed");
@@ -85,18 +91,7 @@ contract MetaMultiSigWallet {
     }
 
     function recover(bytes32 _hash, bytes memory _signature) public pure returns (address) {
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        // Divide the signature in r, s and v variables (spends extra gas, you could split off-chain)
-        assembly {
-            r := mload(add(_signature, 32))
-            s := mload(add(_signature, 64))
-            v := byte(0, mload(add(_signature, 96)))
-        }
-        return ecrecover(keccak256(
-            abi.encodePacked("\x19Ethereum Signed Message:\n32", _hash)
-        ), v, r, s);
+        return _hash.toEthSignedMessageHash().recover(_signature);
     }
 
     receive() payable external {

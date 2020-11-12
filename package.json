@@ -31,7 +31,8 @@
     "ship": "yarn workspace @scaffold-eth/react-app ship",
     "generate": "cd packages/buidler && npx buidler generate",
     "account": "cd packages/buidler && npx buidler account",
-    "flatten": "cd packages/buidler && npx buidler flatten"
+    "flatten": "cd packages/buidler && npx buidler flatten",
+    "backend": "cd packages/backend && node index"
   },
   "workspaces": {
     "packages": [
