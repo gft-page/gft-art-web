@@ -79,18 +79,24 @@ Then, sign the hash using the `owner` account:
 
 In a different browser (or incognito), navigate to `http://localhost:3000/` and you should have a different address (in the top right).
 
-Give this new address some gas at the faucet.
+Give this new address some gas from the faucet.
 
-In the new browser, put in the same to address and value and you should get the same hash:
+In the new browser, put in the same `to address` and `value` and you should get the same `hash`:
 
-Instead of signing it with this second account, copy/paste the signature from the owner (previous signature above):
+Instead of signing it with this second account, copy/paste the `signature` from the `owner` (previous signature):
 
 ![image](https://user-images.githubusercontent.com/2653167/98979564-bbf71480-24d8-11eb-8707-da2bea7da118.png)
 
-You should see that the transaction is sent from the non-owner address and is able to send money out of YourContract!
+Click `SEND` and you should see that the transaction is sent from the non-owner address and is able to send money out of YourContract on behalf of the owner!
 
 ![image](https://user-images.githubusercontent.com/2653167/98980004-50fa0d80-24d9-11eb-8884-49b7a9dbbecc.png)
 
 ![image](https://user-images.githubusercontent.com/2653167/98979955-3c1d7a00-24d9-11eb-8878-62b938139612.png)
 
 🎉 🍾 🎊 🥳 🎉 🍾 🎊 🥳 🎉 🍾 🎊 🥳
+
+[Learn more about Meta Transactions](https://medium.com/@austin_48503/ethereum-meta-transactions-90ccf0859e84)
+
+[eth.build video on message signing with a private key](https://youtu.be/9LtBDy67Tho)
+
+[eth.build video on Meta Transactions](https://www.youtube.com/watch?v=CbbcISQvy1E&list=PLJz1HruEnenCXH7KW7wBCEBnBLOVkiqIi&index=10)
