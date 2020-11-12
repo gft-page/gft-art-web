@@ -4,12 +4,12 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Input, Divider } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance, AddressInput, EtherInput } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -101,6 +101,20 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+
+
+  const [ toAddress, setToAddress ] = useState()
+  const [ value, setValue ] = useState()
+  const [ hash, setHash ] = useState()
+  // = useContractReader(readContracts, "YourContract", "getHash",[nonce, toAddress, value])
+
+  const nonce = useContractReader(readContracts, "YourContract", "nonce")
+
+  console.log("hash",hash)
+
+  const [ signature, setSignature ] = useState()
+
+
   return (
     <div className="App">
 
@@ -113,59 +127,147 @@ function App(props) {
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">debug</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
+
+            <div style={{width:400, margin:"auto", marginTop:32}}>
+
+              <Address
+                value={readContracts?readContracts.YourContract.address:""}
+                ensProvider={mainnetProvider}
+                blockExplorer={blockExplorer}
+                fontSize={28}
+              />
+
+              <Balance
+                address={readContracts?readContracts.YourContract.address:""}
+                provider={localProvider}
+                dollarMultiplier={price}
+              />
+
+              <div style={{marginTop:32, padding: 10}}>
+
+                <div style={{marginBottom:16}}>
+                  nonce: #{nonce?nonce.toNumber():""}
+                </div>
+
+                <AddressInput
+                  autoFocus
+                  ensProvider={mainnetProvider}
+                  placeholder="to address"
+                  value={toAddress}
+                  onChange={setToAddress}
+                />
+              </div>
+              <div style={{padding: 10}}>
+                <EtherInput
+                  price={price}
+                  value={value}
+                  onChange={(v)=>{
+                    setValue(parseEther(""+parseFloat(v).toFixed(12)))
+                  }}
+                />
+              </div>
+
+              <Button onClick={async ()=>{
+                console.log("nonce, toAddress, value",nonce, toAddress, value)
+
+                let newHash = await readContracts.YourContract.getHash(nonce, toAddress, value)
+                console.log("newHash--->",newHash)
+
+                if(newHash){
+                  setHash(newHash)
+                }else{
+                  console.log("Either the address wasn't recovered right or signer is not the owner...")
+                }
+              }}>
+
+                HASH
+              </Button>
+
+              <Divider />
+
+              <div style={{marginTop:32}}>
+                <div style={{marginTop:32}}>
+                  hash: <Input
+                    value={hash}
+                  />
+                </div>
+              </div>
+
+
+              <Button style={{marginTop:16}}  onClick={async ()=>{
+                console.log("nonce, toAddress, value, hash:",nonce, toAddress, value, hash)
+
+                let newSignature = await userProvider.send("personal_sign", [ hash, address ]);
+                console.log("newSignature",newSignature)
+
+                let recover = await readContracts.YourContract.recover(hash, newSignature)
+                console.log("recover--->",recover)
+
+                let owner = await readContracts.YourContract.owner()
+                console.log("owner--->",owner)
+
+                if(recover==address && owner==recover){
+                  console.log("correctly recovered, saving...")
+                  setSignature(newSignature)
+                }else{
+                  console.log("Either the address wasn't recovered right or signer is not the owner...")
+                }
+              }}>
+
+                SIGN
+              </Button>
+
+              <Divider />
+
+              <div style={{marginTop:32}}>
+                <div style={{marginTop:32}}>
+                  signature: <Input
+                    value={signature}
+                    onChange={(e)=>{setSignature(e.target.value)}}
+                  />
+                </div>
+              </div>
+
+
+              <Button style={{marginTop:16}} onClick={async ()=>{
+                let recover = await readContracts.YourContract.recover(hash, signature)
+                console.log("recover--->",recover)
+
+                let owner = await readContracts.YourContract.owner()
+                console.log("owner--->",owner)
+
+                if(owner==recover){
+                  console.log("correctly recovered, sending...")
+
+                  tx( writeContracts.YourContract.metaSendValue(toAddress, value, signature) )
+                }else{
+                  console.log("Either the address wasn't recovered right or signer is not the owner...")
+                }
+              }}>
+
+                SEND
+              </Button>
+
+
+            </div>
+
+
+
+          </Route>
+          <Route path="/debug">
             <Contract
               name="YourContract"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
-            />
-          </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
             />
           </Route>
         </Switch>

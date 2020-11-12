@@ -12,14 +12,21 @@ const main = async () => {
   // ! AUTO DEPLOY
   // * -----------
   // to read contract directory and deploy them all (add ".args" files for arguments)
-  await autoDeploy();
+  //await autoDeploy();
 
   // ! OR CUSTOM DEPLOY
   // * ----------------
   // custom deploy (to use deployed addresses dynamically for example:)
-  // const exampleToken = await deploy("ExampleToken")
+  const YourContract = await deploy("YourContract")
+  await YourContract.transferOwnership("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
   // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+
+  //send a little ETH to the contract
+  await ethers.provider.getSigner().sendTransaction({
+    to:YourContract.address,
+    value: utils.parseEther("0.1")
+  })
 
   console.log(
     " 💾  Artifacts (address, abi, and args) saved to: ",
