@@ -29,7 +29,7 @@ contract MetaMultiSigWallet {
             isOwner[owner] = true;
             emit Owner(owner,isOwner[owner]);
         }
-        _chainId=chainId;
+        chainId=_chainId;
     }
 
     modifier onlySelf() {
