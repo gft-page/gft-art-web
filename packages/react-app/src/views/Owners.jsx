@@ -23,7 +23,7 @@ export default function Owners({ownerEvents, signaturesRequired, address, nonce,
         renderItem={(item) => {
           console.log("OWENRS ITEM",item)
           return (
-            <List.Item>
+            <List.Item key={"owner_"+item[0]}>
             <Address
               value={item[0]}
               ensProvider={mainnetProvider}
