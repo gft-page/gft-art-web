@@ -15,3 +15,4 @@ export { default as Timeline } from "./Timeline";
 export { default as GasGauge } from "./GasGauge";
 export { default as QRBlockie } from "./QRBlockie";
 export { default as PrivateKeyModal } from "./PrivateKeyModal";
+export { default as TokenSender } from "./TokenSender";

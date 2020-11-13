@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { BrowserRouter, Switch, Route, Link, Redirect } from "react-router-dom";
-import "antd/dist/antd.css";
-import { SettingOutlined, SendOutlined, InboxOutlined } from "@ant-design/icons";
+import 'antd/dist/antd.css'
+import { SettingOutlined, SendOutlined, InboxOutlined, WalletOutlined, QrcodeOutlined, FolderOpenOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu, Typography, Select, Form, notification, Card, PageHeader } from "antd";
+import { Row, Col, List, Tabs, Menu, Typography, Select, Form, notification, Card, PageHeader, Button, Spin } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { useUserAddress } from "eth-hooks";
+import { useUserAddress, usePoller } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener, useLocalStorage } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, QRBlockie, PrivateKeyModal, AddressInput, EtherInput, Balance } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, QRBlockie, PrivateKeyModal, AddressInput, EtherInput, Balance, TokenSender } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { ethers } from "ethers";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY, ALCHEMY_KEY } from "./constants";
@@ -40,8 +41,9 @@ function App(props) {
   const gasPrice = useGasPrice("fast"); //1000000000 for xdai
 
   const [network, setNetwork] = useLocalStorage("network")
-  console.log(network)
   const [selectedProvider, setSelectedProvider] = useState()
+
+  const [erc20s, setErc20s] = useState({})
 
   const networks = {
   "xdai": {
@@ -62,7 +64,11 @@ function App(props) {
     color1: "#626890",
     color2: "#5d658d",
     decimals: 3,
-    url: `https://mainnet.infura.io/v3/${INFURA_ID}`
+    url: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    erc20s: [
+      {name: "DAI", address: "0x6b175474e89094c44da98b954eedeac495271d0f"},
+      {name: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}
+    ]
   },
   /*"dai": {
     name: "DAI",
@@ -117,7 +123,10 @@ function App(props) {
     color2: "#b9b9b9",
     gasPrice: 1000000000,
     decimals: 3,
-    url: "http://localhost:8545"
+    url: "http://localhost:8545",
+    erc20s: [
+      {name: "YourToken", address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"}
+    ]
   },
   /*"xmoon": {
     name: "xMOON",
@@ -131,18 +140,6 @@ function App(props) {
   },*/
   }
 
-  useMemo(() => {
-    let newProvider
-    console.log('doing this thing')
-    if(network) {
-      console.log('there is a network', network)
-    newProvider = new JsonRpcProvider(network.url);
-  } else {
-    console.log('no network')
-    newProvider = new JsonRpcProvider(networks['mainnet']['url']);
-  }
-  setSelectedProvider(newProvider)
-  },[network])
 
 const [form] = Form.useForm();
 const [sending, setSending] = useState(false)
@@ -158,19 +155,15 @@ const [sending, setSending] = useState(false)
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(selectedProvider, address);
-  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
 
   // just plug in different 🛰 providers to get your balance on different chains:
   const yourMainnetBalance = useBalance(mainnetProvider, address);
-  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
 
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(localProvider)
-  if(DEBUG) console.log("📝 readContracts",readContracts)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
-  if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
   function handleChange(value) {
   console.log(`selected ${value}`);
@@ -178,6 +171,58 @@ const [sending, setSending] = useState(false)
   setNetwork(newNetwork)
 }
 
+useEffect(() => {
+  let newProvider
+  if(network) {
+  newProvider = new JsonRpcProvider(network.url);
+} else {
+  newProvider = new JsonRpcProvider(networks['mainnet']['url']);
+}
+setSelectedProvider(newProvider)
+},[network, address])
+
+
+const getErc20s = async () => {
+  console.log("getting erc20s")
+  if(network.erc20s && address) {
+    // A Human-Readable ABI; any supported ABI format could be used
+    const abi = [
+        // Read-Only Functions
+        "function balanceOf(address owner) view returns (uint256)",
+        "function decimals() view returns (uint8)",
+        "function symbol() view returns (string)",
+
+        // Authenticated Functions
+        "function transfer(address to, uint amount) returns (boolean)",
+
+        // Events
+        "event Transfer(address indexed from, address indexed to, uint amount)"
+    ];
+    let newErc20s = Object.assign({}, erc20s);
+    network.erc20s.forEach(async element => {
+      console.log(element)
+      let userSigner = userProvider.getSigner()
+      const erc20 = new ethers.Contract(element.address, abi, userSigner);
+      let erc20Balance = erc20.balanceOf(address)
+      let erc20Decimals = erc20.decimals()
+      Promise.all([erc20Balance, erc20Decimals]).then((values) => {
+        console.log(element.name, values)
+        newErc20s[element.name] = {name: element.name, contract: erc20, decimals: values[1], balance: values[0], network: network.name}
+      });
+    });
+    //console.log(newErc20s)
+    setErc20s(newErc20s)
+  }
+}
+
+usePoller(
+  () => {
+    getErc20s();
+  },
+  props.pollTime ? props.pollTime : 4000,
+);
+
+console.log(erc20s, network)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -193,6 +238,7 @@ const [sending, setSending] = useState(false)
   const [route, setRoute] = useState();
   useEffect(() => {
     setRoute(window.location.pathname)
+    console.log(route)
   }, [ window.location.pathname ]);
 
   return (
@@ -201,19 +247,29 @@ const [sending, setSending] = useState(false)
       {/* ✏️ Edit the header and change the title to your project name */}
       <PageHeader
         title={`🧙 instant-wallet`}
-        subTitle={<Select defaultValue={network?network.name:"mainnet"} style={{ width: 120 }} onChange={handleChange}>
+        subTitle={<Select defaultValue={network?network.name:"mainnet"} style={{ width: 120 }} onChange={handleChange} size="large">
                   {Object.values(networks).map(n => (
                     <Option key={n.id}>{n.name}</Option>
                   ))}
                  </Select>}
         style={{ cursor: "pointer", backgroundColor: network?network.color1:"#626890" }}
         ghost={false}
-        extra={[
-          <Link to="/send"><Button><SendOutlined/>Send</Button></Link>,
-          <Link to="/receive"><Button><InboxOutlined/>Receive</Button></Link>,
-          <Link to="/settings"><Button><SettingOutlined/>Settings</Button></Link>
-        ]}
       />
+
+      <Menu mode="horizontal" current={[route]} style={{fontSize: "28px", textAlign: "center"}}>
+        <Menu.Item key="wallet" icon={<WalletOutlined style={{fontSize: "28px"}}/>}>
+          <Link to="/wallet">Wallet</Link>
+        </Menu.Item>
+        <Menu.Item key="receive" icon={<QrcodeOutlined style={{fontSize: "28px"}}/>}>
+          <Link to="/receive">Receive</Link>
+        </Menu.Item>
+        <Menu.Item key="settings" icon={<SettingOutlined style={{fontSize: "28px"}}/>}>
+          <Link to="/settings">Settings</Link>
+        </Menu.Item>
+        <Menu.Item key="contract" icon={<FolderOpenOutlined style={{fontSize: "28px"}}/>}>
+          <Link to="/contract">Contract</Link>
+        </Menu.Item>
+      </Menu>
 
         <Switch>
           <Route exact path="/"render={() => (
@@ -270,26 +326,63 @@ const [sending, setSending] = useState(false)
                     <Button
                       htmlType="submit"
                       type="primary"
+                      size="large"
                       loading={sending}
                     >
                       <SendOutlined /> Send
                     </Button>
                     </Form.Item>
                   </Form>
-
           </Card>
           </Route>
+          <Route path="/send-token">
+            <Card style={{ width: 600, margin: 'auto'}}>
+              <TokenSender network={network} erc20s={erc20s} mainnetProvider={mainnetProvider}/>
+            </Card>
+          </Route>
           <Route path="/receive">
-            <QRBlockie address={address} />
             <div>
-              <Text copyable ellipsis>{address}</Text>
+              <Text copyable ellipsis style={{fontSize: "28px", padding: 12}}>{address}</Text>
             </div>
+            <QRBlockie address={address} />
           </Route>
           <Route path="/settings">
             <Card style={{ width: 600, margin: 'auto'}}>
               <PrivateKeyModal address={address}/>
             </Card>
           </Route>
+          <Route path="/wallet">
+            <Card style={{ width: 400, margin: 'auto'}}>
+            <Row align="middle" justify="center">
+            <Balance address={address} provider={selectedProvider} />
+            <Link to={"/send"}><SendOutlined style={{fontSize: "28px"}}/></Link>
+            </Row>
+            <List
+              itemLayout="horizontal"
+              size="large"
+              dataSource={(network&&network.erc20s)?network.erc20s:[]}
+              renderItem={item => {
+                let tokenBalance = (erc20s[item.name]?<span>{(erc20s[item.name]['balance'] / Math.pow(10, erc20s[item.name]['decimals']))}</span>:<Spin/>)
+                let sendButton = (erc20s[item.name]&&erc20s[item.name]['balance']>0)?<Link to={"/send-token?token="+item.name}><SendOutlined/></Link>:null
+                return (
+                <List.Item>
+                  <List.Item.Meta
+                    title={item.name}
+                    description={<>{tokenBalance} {sendButton}</>}
+                  />
+                </List.Item>)}}
+            />
+            </Card>
+          </Route>
+            <Route exact path="/contract">
+              <Contract
+                name="YourToken"
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+              />
+            </Route>
         </Switch>
       </BrowserRouter>
 

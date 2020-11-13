@@ -1,3 +1,32 @@
 .App {
   text-align: center;
 }
+
+.ant-input-affix-wrapper-lg {
+    padding: 6.5px 11px;
+    font-size: 24px;
+}
+
+.ant-input-lg {
+    padding: 6.5px 11px;
+    font-size: 24px;
+}
+
+.ant-input-group-addon {
+    font-size: 24px;
+}
+
+.ant-btn-lg {
+    height: 50px;
+    padding: 6.4px 15px;
+    font-size: 24px;
+    border-radius: 2px;
+}
+
+.ant-list-item-meta-title {
+    font-size: 20px;
+}
+
+.ant-list-item-meta-description {
+    font-size: 20px;
+}
