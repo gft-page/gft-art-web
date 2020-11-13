@@ -25,10 +25,6 @@ const DEBUG = true
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
 
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
-// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProvider = new JsonRpcProvider(localProviderUrl);
 const mainnetProvider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)//getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, alchemy: ALCHEMY_KEY, quorum: 1 });
 
 
@@ -160,7 +156,7 @@ const [sending, setSending] = useState(false)
   const yourMainnetBalance = useBalance(mainnetProvider, address);
 
   // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider)
+  const readContracts = useContractLoader(selectedProvider)
 
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
@@ -184,7 +180,7 @@ setSelectedProvider(newProvider)
 
 const getErc20s = async () => {
   console.log("getting erc20s")
-  if(network.erc20s && address) {
+  if(network && network.erc20s && address) {
     // A Human-Readable ABI; any supported ABI format could be used
     const abi = [
         // Read-Only Functions
@@ -253,10 +249,11 @@ console.log(erc20s, network)
                   ))}
                  </Select>}
         style={{ cursor: "pointer", backgroundColor: network?network.color1:"#626890" }}
+        extra={[(address ? <Address value={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : <span>"Connecting..."</span>)]}
         ghost={false}
       />
 
-      <Menu mode="horizontal" current={[route]} style={{fontSize: "28px", textAlign: "center"}}>
+      <Menu mode="horizontal" current={[route]} style={{fontSize: "28px", textAlign: "center", position: "fixed", left: 0, bottom: 0}}>
         <Menu.Item key="wallet" icon={<WalletOutlined style={{fontSize: "28px"}}/>}>
           <Link to="/wallet">Wallet</Link>
         </Menu.Item>
@@ -349,6 +346,42 @@ console.log(erc20s, network)
           <Route path="/settings">
             <Card style={{ width: 600, margin: 'auto'}}>
               <PrivateKeyModal address={address}/>
+              <Row align="middle" gutter={[4, 4]}>
+                <Col span={8}>
+                  <Ramp price={(network&&network.price)?network.price:price} address={address} />
+                </Col>
+
+                <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+                  <GasGauge gasPrice={gasPrice} />
+                </Col>
+                <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+                  <Button
+                    onClick={() => {
+                      window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                    }}
+                    size="large"
+                    shape="round"
+                  >
+                    <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                      💬
+                    </span>
+                    Support
+                  </Button>
+                </Col>
+              </Row>
+              <Row align="middle" gutter={[4, 4]}>
+                <Col span={24}>
+                  {
+
+                    /*  if the local provider has a signer, let's show the faucet:  */
+                    selectedProvider && selectedProvider.connection && selectedProvider.connection.url && selectedProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
+                      <Faucet localProvider={selectedProvider} price={price} ensProvider={mainnetProvider}/>
+                    ) : (
+                      ""
+                    )
+                  }
+                </Col>
+              </Row>
             </Card>
           </Route>
           <Route path="/wallet">
@@ -378,61 +411,13 @@ console.log(erc20s, network)
               <Contract
                 name="YourToken"
                 signer={userProvider.getSigner()}
-                provider={localProvider}
+                provider={selectedProvider}
                 address={address}
                 blockExplorer={blockExplorer}
               />
             </Route>
         </Switch>
       </BrowserRouter>
-
-
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, bottom: 0, padding: 10 }}>
-      {address ? <Address value={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : "Connecting..."}
-      <Balance address={address} provider={selectedProvider} dollarMultiplier={(network&&network.price)?network.price:price} />
-      </div>
-
-      {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
-       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={8}>
-             <Ramp price={(network&&network.price)?network.price:price} address={address} />
-           </Col>
-
-           <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-             <GasGauge gasPrice={gasPrice} />
-           </Col>
-           <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-             <Button
-               onClick={() => {
-                 window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-               }}
-               size="large"
-               shape="round"
-             >
-               <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                 💬
-               </span>
-               Support
-             </Button>
-           </Col>
-         </Row>
-
-         <Row align="middle" gutter={[4, 4]}>
-           <Col span={24}>
-             {
-
-               /*  if the local provider has a signer, let's show the faucet:  */
-               localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
-                 <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>
-               ) : (
-                 ""
-               )
-             }
-           </Col>
-         </Row>
-       </div>
 
     </div>
   );
