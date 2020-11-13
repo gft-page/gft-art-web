@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./co
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { Subgraph, CreateTransaction, Transactions, Owners, FrontPage } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -31,6 +31,8 @@ import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
 
 const DEBUG = true
+
+const poolServerUrl = "http://localhost:8001/"
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -84,6 +86,31 @@ function App(props) {
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
+  const contractName = "StreamingMetaMultiSigWallet"
+
+  //📟 Listen for broadcast events
+  const executeTransactionEvents = useEventListener(readContracts, contractName, "ExecuteTransaction", localProvider, 1);
+  console.log("📟 executeTransactionEvents:",executeTransactionEvents)
+
+  // keep track of a variable from the contract in the local React state:
+  const isOwner = useContractReader(readContracts, contractName, "isOwner", [address])
+  console.log("🤗 isOwner ("+address+"):",isOwner)
+
+  // keep track of a variable from the contract in the local React state:
+  const nonce = useContractReader(readContracts, contractName, "nonce")
+  console.log("# nonce:",nonce)
+
+  //📟 Listen for broadcast events
+  const ownerEvents = useEventListener(readContracts, contractName, "Owner", localProvider, 1);
+  console.log("📟 ownerEvents:",ownerEvents)
+
+  const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired")
+  console.log("✳️ signaturesRequired:",signaturesRequired)
+
+
+
+
+
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -107,48 +134,47 @@ function App(props) {
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
+      <Button onClick={()=>{
+        console.log("asdr")
+        tx( writeContracts[contractName].closeStream("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",{gasLimit:500000}) )
+      }}>
+        asdf
+      </Button>
+
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">MultiSig</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/owners">
+            <Link onClick={()=>{setRoute("/owners")}} to="/owners">Owners</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+          <Menu.Item key="/create">
+            <Link onClick={()=>{setRoute("/create")}} to="/create">Create</Link>
           </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/pool">
+            <Link onClick={()=>{setRoute("/pool")}} to="/pool">Pool</Link>
+          </Menu.Item>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
+            <FrontPage
+              contractName={contractName}
+              localProvider={localProvider}
+              readContracts={readContracts}
+              price={price}
+              mainnetProvider={mainnetProvider}
               blockExplorer={blockExplorer}
             />
           </Route>
-          <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
-          </Route>
-          <Route path="/exampleui">
-            <ExampleUI
+          <Route exact path="/owners">
+            <Owners
+              contractName={contractName}
               address={address}
               userProvider={userProvider}
               mainnetProvider={mainnetProvider}
@@ -158,6 +184,53 @@ function App(props) {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
+              blockExplorer={blockExplorer}
+              nonce={nonce}
+              ownerEvents={ownerEvents}
+              signaturesRequired={signaturesRequired}
+            />
+          </Route>
+          <Route path="/create">
+            <CreateTransaction
+              poolServerUrl={poolServerUrl}
+              contractName={contractName}
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              setRoute={setRoute}
+            />
+          </Route>
+          <Route path="/pool">
+            <Transactions
+              poolServerUrl={poolServerUrl}
+              contractName={contractName}
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer={blockExplorer}
+              nonce={nonce}
+              signaturesRequired={signaturesRequired}
+            />
+          </Route>
+          <Route path="/debug">
+            <Contract
+              name="StreamingMetaMultiSigWallet"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
             />
           </Route>
           <Route path="/subgraph">
