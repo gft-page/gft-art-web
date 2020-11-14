@@ -26,7 +26,7 @@ export default function QRBlockie(props) {
     <div style={{margin:"auto", position:"relative"}}>
 
       <QR level={"M"} includeMargin={false} value={props.address?props.address:""} size={qrWidth} imageSettings={{width:qrWidth/5,height:qrWidth/5,excavate:true}}/>
-      <div style={{margin:"auto", position:"absolute", width:size.width, top:qrWidth/2-40}}>
+      <div style={{margin:"auto", position:"absolute", width:"100%", top:qrWidth/2-40}}>
         <Blockie address={props.address} scale={10}/>
       </div>
     </div>

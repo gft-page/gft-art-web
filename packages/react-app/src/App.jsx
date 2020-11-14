@@ -1,24 +1,26 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { BrowserRouter, Switch, Route, Link, Redirect } from "react-router-dom";
-import 'antd/dist/antd.css'
-import { SettingOutlined, SendOutlined, InboxOutlined, WalletOutlined, QrcodeOutlined, FolderOpenOutlined } from "@ant-design/icons";
+//import 'antd/dist/antd.css'
+import { SettingOutlined, SendOutlined, InboxOutlined, WalletOutlined, QrcodeOutlined, FolderOpenOutlined, SmileOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, List, Tabs, Menu, Typography, Select, Form, notification, Card, PageHeader, Button, Spin } from "antd";
+import { Row, Col, List, Tabs, Menu, Typography, Select, Form, notification, Card, PageHeader, Button, Spin, Layout, Space, Affix, Table, Descriptions } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress, usePoller } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener, useLocalStorage } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, QRBlockie, PrivateKeyModal, AddressInput, EtherInput, Balance, TokenSender } from "./components";
+import { Account, Faucet, Ramp, Contract, GasGauge, Address, QRBlockie, PrivateKeyModal, AddressInput, EtherInput, Balance, TokenSender } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
+import Blockies from "react-blockies";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY, ALCHEMY_KEY } from "./constants";
 const { Text } = Typography;
 const { Option } = Select;
 const { TabPane } = Tabs;
+const { Header, Content, Footer } = Layout;
 
 const DEBUG = true
 
@@ -50,7 +52,12 @@ function App(props) {
     color1: "#47a8a5",
     color2: "#45a6a3",
     decimals: 3,
-    url: "https://dai.poa.network"
+    url: "https://dai.poa.network",
+    faucet: "https://xdai-faucet.top/",
+    blockExplorer: "https://blockscout.com/poa/xdai/",
+    erc20s: [
+      {name: "USDC", address: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83"}
+    ]
   },
   "mainnet": {
     name: "ETH",
@@ -61,6 +68,7 @@ function App(props) {
     color2: "#5d658d",
     decimals: 3,
     url: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+    blockExplorer: "https://etherscan.io/",
     erc20s: [
       {name: "DAI", address: "0x6b175474e89094c44da98b954eedeac495271d0f"},
       {name: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}
@@ -83,7 +91,12 @@ function App(props) {
     color2: "#f4c141",
     gasPrice: 4000000000,
     decimals: 3,
-    url: `https://rinkeby.infura.io/v3/${INFURA_ID}`
+    url: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
+    faucet: "https://faucet.rinkeby.io/",
+    blockExplorer: "https://rinkeby.etherscan.io/",
+    erc20s: [
+      {name: "test", address: "0xc3994c5cbddf7ce38b8a2ec2830335fa8f3eea6a"}
+    ]
   },
   "ropsten": {
     name: "Ropsten",
@@ -92,6 +105,8 @@ function App(props) {
     color2: "#fd4889",
     gasPrice: 4100000000,
     decimals: 3,
+    faucet: "https://faucet.ropsten.be/",
+    blockExplorer: "https://ropsten.etherscan.io/",
     url: `https://ropsten.infura.io/v3/${INFURA_ID}`
   },
   "kovan": {
@@ -101,7 +116,9 @@ function App(props) {
     color2: "#6d53fc",
     gasPrice: 1000000000,
     decimals: 3,
-    url: `https://kovan.infura.io/v3/${INFURA_ID}`
+    url: `https://kovan.infura.io/v3/${INFURA_ID}`,
+    blockExplorer: "https://kovan.etherscan.io/",
+    faucet: "https://faucet.kovan.network/"
   },
   "goerli": {
     name: "Goerli",
@@ -110,6 +127,8 @@ function App(props) {
     color2: "#2d95ee",
     gasPrice: 4000000000,
     decimals: 3,
+    faucet: "https://goerli-faucet.slock.it/",
+    blockExplorer: "https://goerli.etherscan.io/",
     url: `https://goerli.infura.io/v3/${INFURA_ID}`
   },
   "localhost": {
@@ -121,7 +140,7 @@ function App(props) {
     decimals: 3,
     url: "http://localhost:8545",
     erc20s: [
-      {name: "YourToken", address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"}
+      {name: "YourToken", address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"}
     ]
   },
   /*"xmoon": {
@@ -175,6 +194,7 @@ useEffect(() => {
   newProvider = new JsonRpcProvider(networks['mainnet']['url']);
 }
 setSelectedProvider(newProvider)
+setErc20s({})
 },[network, address])
 
 
@@ -237,186 +257,278 @@ console.log(erc20s, network)
     console.log(route)
   }, [ window.location.pathname ]);
 
+  let networkColumns = [{
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+  },
+  {
+    title: 'Color',
+    dataIndex: 'color1',
+    key: 'color1',
+    render: text => <span style={{color:text}}>{text}</span>
+  },
+  {
+    title: 'Price',
+    dataIndex: 'price',
+    key: 'price',
+  },
+  {
+    title: 'Blockexplorer',
+    dataIndex: 'blockExplorer',
+    key: 'blockExplorer',
+    render: text => <a>{text}</a>
+  },
+  {
+    title: 'Node URL',
+    dataIndex: 'url',
+    key: 'url',
+    ellipsis: true
+  }]
+
+  console.log(Object.values(networks))
+
   return (
-    <div className="App">
+    <div className="App" style={{height:"100%", minHeight:"100%" }}>
       <BrowserRouter>
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <PageHeader
-        title={`🧙 instant-wallet`}
-        subTitle={<Select defaultValue={network?network.name:"mainnet"} style={{ width: 120 }} onChange={handleChange} size="large">
-                  {Object.values(networks).map(n => (
-                    <Option key={n.id}>{n.name}</Option>
-                  ))}
-                 </Select>}
-        style={{ cursor: "pointer", backgroundColor: network?network.color1:"#626890" }}
-        extra={[(address ? <Address value={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} /> : <span>"Connecting..."</span>)]}
-        ghost={false}
-      />
+      <Layout style={{minHeight:"100%", display:"flex", flexDirection: "column"}}>
+        <Affix offsetTop={0}>
+        <Header style={{backgroundColor: network?network.color1:"#626890", height: "fit-content", verticalAlign: "middle"}}>
+          <Row align="middle" justify="center" gutter={4}>
+              <Col span={4}>
+              <Row align="middle" justify="center" gutter={4}>
+                <Link style={{fontSize:40}} to="/wallet">🧙</Link>
+              </Row>
+              </Col>
+              <Col span={4}>
+              <Row align="middle" justify="center" gutter={4}>
+                {(address ?
+                    <Blockies seed={address.toLowerCase()} size={8} scale={4}/>
+                  : <span>"Connecting..."</span>)}
+              </Row>
+              </Col>
+              <Col span={4}>
+                <Select defaultValue={network?network.name:"mainnet"} style={{ width: 120 }} onChange={handleChange} size="large">
+                          {Object.values(networks).map(n => (
+                            <Option key={n.id}>{n.name}</Option>
+                          ))}
+                         </Select>
+              </Col>
+          </Row>
+        </Header>
+        </Affix>
+        <Content style={{ padding: '0 50px', margin: 0, flex: 1, justifyContent: "center", height: "fit-content", display:"flex", flexDirection: "column"}}>
 
-      <Menu mode="horizontal" current={[route]} style={{fontSize: "28px", textAlign: "center", position: "fixed", left: 0, bottom: 0}}>
-        <Menu.Item key="wallet" icon={<WalletOutlined style={{fontSize: "28px"}}/>}>
-          <Link to="/wallet">Wallet</Link>
-        </Menu.Item>
-        <Menu.Item key="receive" icon={<QrcodeOutlined style={{fontSize: "28px"}}/>}>
-          <Link to="/receive">Receive</Link>
-        </Menu.Item>
-        <Menu.Item key="settings" icon={<SettingOutlined style={{fontSize: "28px"}}/>}>
-          <Link to="/settings">Settings</Link>
-        </Menu.Item>
-        <Menu.Item key="contract" icon={<FolderOpenOutlined style={{fontSize: "28px"}}/>}>
-          <Link to="/contract">Contract</Link>
-        </Menu.Item>
-      </Menu>
+          <Switch>
+            <Route exact path="/"render={() => (
+                <Redirect to="/wallet"/>
+            )}/>
+            <Route path="/send">
+            <Card style={{ maxWidth: 600, margin: 'auto'}}>
 
-        <Switch>
-          <Route exact path="/"render={() => (
-              <Redirect to="/send"/>
-          )}/>
-          <Route path="/send">
-          <Card style={{ maxWidth: 600, margin: 'auto'}}>
+              <Form
+                      form={form}
+                      initialValues={{ value: "0" }}
+                      onFinish={async (values) => {
+                        console.log(values)
+                        setSending(true)
+                        const tx = Transactor(userProvider);
 
-            <Form
-                    form={form}
-                    initialValues={{ value: "0" }}
-                    onFinish={async (values) => {
-                      console.log(values)
-                      setSending(true)
-                      const tx = Transactor(userProvider);
+                        let value;
+                        try {
+                          value = parseEther("" + values.amount);
+                        } catch (e) {
+                          // failed to parseEther, try something else
+                          value = parseEther("" + parseFloat(values.amount).toFixed(8));
+                        }
 
-                      let value;
-                      try {
-                        value = parseEther("" + values.amount);
-                      } catch (e) {
-                        // failed to parseEther, try something else
-                        value = parseEther("" + parseFloat(values.amount).toFixed(8));
-                      }
-
-                      await tx({
-                        to: values.toAddress,
-                        value,
-                      });
-                      notification.open({
-                        message: '👋 Sending successful!',
-                        description:
-                        `👀 Sent ${value} to ${values['toAddress']}`,
-                      });
-                      form.resetFields();
-                      setSending(false)
-                    }}
-                    onFinishFailed={errorInfo => {
-                      console.log('Failed:', errorInfo);
+                        await tx({
+                          to: values.toAddress,
+                          value,
+                        });
+                        notification.open({
+                          message: '👋 Sending successful!',
+                          description:
+                          `👀 Sent ${value} to ${values['toAddress']}`,
+                        });
+                        form.resetFields();
+                        setSending(false)
                       }}
-                  >
-                    <Form.Item name="toAddress">
-                    <AddressInput
-                      autoFocus
-                      ensProvider={mainnetProvider}
-                      placeholder="to address"
-                    />
-                    </Form.Item>
-                    <Form.Item name="amount">
-                    <EtherInput
-                      price={(network&&network.price)?network.price:price}
-                    />
-                    </Form.Item>
-                    <Form.Item >
-                    <Button
-                      htmlType="submit"
-                      type="primary"
-                      size="large"
-                      loading={sending}
+                      onFinishFailed={errorInfo => {
+                        console.log('Failed:', errorInfo);
+                        }}
                     >
-                      <SendOutlined /> Send
-                    </Button>
-                    </Form.Item>
-                  </Form>
-          </Card>
-          </Route>
-          <Route path="/send-token">
-            <Card style={{ width: 600, margin: 'auto'}}>
-              <TokenSender network={network} erc20s={erc20s} mainnetProvider={mainnetProvider}/>
+                      <Form.Item name="toAddress">
+                      <AddressInput
+                        autoFocus
+                        ensProvider={mainnetProvider}
+                        placeholder="to address"
+                      />
+                      </Form.Item>
+                      <Form.Item name="amount">
+                      <EtherInput
+                        price={(network&&network.price)?network.price:price}
+                      />
+                      </Form.Item>
+                      <Form.Item >
+                      <Button
+                        htmlType="submit"
+                        type="primary"
+                        size="large"
+                        loading={sending}
+                      >
+                        <SendOutlined /> Send
+                      </Button>
+                      </Form.Item>
+                    </Form>
             </Card>
-          </Route>
-          <Route path="/receive">
-            <div>
-              <Text copyable ellipsis style={{fontSize: "28px", padding: 12}}>{address}</Text>
-            </div>
-            <QRBlockie address={address} />
-          </Route>
-          <Route path="/settings">
-            <Card style={{ width: 600, margin: 'auto'}}>
-              <PrivateKeyModal address={address}/>
-              <Row align="middle" gutter={[4, 4]}>
-                <Col span={8}>
-                  <Ramp price={(network&&network.price)?network.price:price} address={address} />
-                </Col>
-
-                <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-                  <GasGauge gasPrice={gasPrice} />
-                </Col>
-                <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-                  <Button
-                    onClick={() => {
-                      window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-                    }}
-                    size="large"
-                    shape="round"
-                  >
-                    <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                      💬
-                    </span>
-                    Support
-                  </Button>
-                </Col>
-              </Row>
-              <Row align="middle" gutter={[4, 4]}>
-                <Col span={24}>
-                  {
-
-                    /*  if the local provider has a signer, let's show the faucet:  */
-                    selectedProvider && selectedProvider.connection && selectedProvider.connection.url && selectedProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
-                      <Faucet localProvider={selectedProvider} price={price} ensProvider={mainnetProvider}/>
-                    ) : (
-                      ""
-                    )
-                  }
-                </Col>
-              </Row>
-            </Card>
-          </Route>
-          <Route path="/wallet">
-            <Card style={{ width: 400, margin: 'auto'}}>
-            <Row align="middle" justify="center">
-            <Balance address={address} provider={selectedProvider} />
-            <Link to={"/send"}><SendOutlined style={{fontSize: "28px"}}/></Link>
-            </Row>
-            <List
-              itemLayout="horizontal"
-              size="large"
-              dataSource={(network&&network.erc20s)?network.erc20s:[]}
-              renderItem={item => {
-                let tokenBalance = (erc20s[item.name]?<span>{(erc20s[item.name]['balance'] / Math.pow(10, erc20s[item.name]['decimals']))}</span>:<Spin/>)
-                let sendButton = (erc20s[item.name]&&erc20s[item.name]['balance']>0)?<Link to={"/send-token?token="+item.name}><SendOutlined/></Link>:null
-                return (
-                <List.Item>
-                  <List.Item.Meta
-                    title={item.name}
-                    description={<>{tokenBalance} {sendButton}</>}
-                  />
-                </List.Item>)}}
-            />
-            </Card>
-          </Route>
-            <Route exact path="/contract">
-              <Contract
-                name="YourToken"
-                signer={userProvider.getSigner()}
-                provider={selectedProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-              />
             </Route>
-        </Switch>
+            <Route path="/send-token">
+              <Card style={{ width: 600, margin: 'auto'}}>
+                <TokenSender network={network} erc20s={erc20s} mainnetProvider={mainnetProvider}/>
+              </Card>
+            </Route>
+            <Route path="/receive">
+              <Row align="middle" justify="center" gutter={[4, 4]}>
+                <Text copyable ellipsis style={{fontSize: "28px", padding: 12}}>{address}</Text>
+              </Row>
+              <QRBlockie address={address} />
+            </Route>
+            <Route path="/settings">
+              <Card style={{ margin: 'auto'}}>
+                <Row align="middle" justify="center" gutter={[8, 8]}>
+                  <Space>
+                    <PrivateKeyModal address={address}/>
+                    {(network&&network.blockExplorer&&address)?<a href={network.blockExplorer+"address/"+address} target="_blank"><Button>Blockexplorer</Button></a>:null}
+                  </Space>
+                </Row>
+                <Row align="middle" gutter={[8, 8]}>
+                  <Col span={8}>
+                    <Ramp price={(network&&network.price)?network.price:price} address={address} />
+                  </Col>
+
+                  <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+                    <GasGauge gasPrice={gasPrice} />
+                  </Col>
+                  <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
+                    <Button
+                      onClick={() => {
+                        window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
+                      }}
+                      size="large"
+                      shape="round"
+                    >
+                      <span style={{ marginRight: 8 }} role="img" aria-label="support">
+                        💬
+                      </span>
+                      Support
+                    </Button>
+                  </Col>
+                </Row>
+                <Row>
+                <Table
+                dataSource={Object.values(networks)}
+                columns={networkColumns}
+                expandable={{
+                  expandedRowRender: record => <Descriptions>{
+                    record.erc20s.map(
+                      (r)=>
+                        <Descriptions.Item label={r.name}>
+                          {<a href={record.blockExplorer+"address/"+r.address} target="_blank">{r.address}</a>}
+                        </Descriptions.Item>
+                      )
+                    }</Descriptions>,
+                  rowExpandable: record => record.erc20s,
+                }}
+                />
+                </Row>
+              </Card>
+            </Route>
+            <Route path="/wallet">
+              <Row align="middle" justify="center">
+                <Col>
+                  <Row align="middle" justify="center">
+                  <Balance address={address} provider={selectedProvider} size={48} />
+                  {(yourLocalBalance&&yourLocalBalance.gt(0))?<Link to={"/send"}><SendOutlined style={{fontSize: "48px"}}/></Link>:null}
+                  {(network&&network.faucet&&yourLocalBalance&&yourLocalBalance.eq(0))?<a href={network.faucet} target="_blank"><SmileOutlined style={{fontSize: "48px"}}/></a>:null}
+                  </Row>
+                  {(network&&network.erc20s)?<List
+                    itemLayout="horizontal"
+                    size="large"
+                    dataSource={(network&&network.erc20s)?network.erc20s:[]}
+                    renderItem={item => {
+                      let tokenBalance = (erc20s[item.name]?<Text style={{
+                        verticalAlign: "middle",
+                        fontSize: 24,
+                        padding: 8,
+                      }}>{(erc20s[item.name]['balance'] / Math.pow(10, erc20s[item.name]['decimals']))}</Text>:<Spin/>)
+                      let sendButton = (erc20s[item.name]&&erc20s[item.name]['balance']>0)?<Link to={"/send-token?token="+item.name}><SendOutlined style={{fontSize: 24, padding: 8, verticalAlign: "middle"}}/></Link>:null
+                      return (
+                      <List.Item>
+                        <Text
+                          strong={true}
+                          style={{
+                            verticalAlign: "middle",
+                            fontSize: 24,
+                            padding: 8,
+                          }}
+                        >
+                          {item.name}
+                        </Text>
+                        {tokenBalance} {sendButton}
+                      </List.Item>)}}
+                  />:null}
+                  <Row align="middle" gutter={[4, 4]}>
+                    <Col span={24}>
+                      {
+
+                        /*  if the local provider has a signer, let's show the faucet:  */
+                        selectedProvider && selectedProvider.connection && selectedProvider.connection.url && selectedProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
+                          <Faucet localProvider={selectedProvider} price={price} ensProvider={mainnetProvider}/>
+                        ) : (
+                          ""
+                        )
+                      }
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </Route>
+              <Route exact path="/contract">
+                <Row>
+                <Contract
+                  name="YourToken"
+                  signer={userProvider.getSigner()}
+                  provider={selectedProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                />
+              </Row>
+              </Route>
+          </Switch>
+        </Content>
+        <Footer style={{padding: 0, zIndex: 100}}>
+          <Affix offsetBottom={0}>
+            <Menu mode="horizontal" current={[route]} theme="dark" style={{textAlign: "center"}}>
+              <Menu.Item key="wallet">
+                <Link to="/wallet">
+                  <WalletOutlined style={{fontSize: "42px", padding: "16px", margin:0}}/>
+                </Link>
+              </Menu.Item>
+              <Menu.Item key="receive">
+                <Link to="/receive">
+                  <QrcodeOutlined style={{fontSize: "42px", padding: "16px", margin:0}}/>
+                </Link>
+              </Menu.Item>
+              <Menu.Item key="settings">
+                <Link to="/settings">
+                  <SettingOutlined style={{fontSize: "42px", padding: "16px", margin:0}}/>
+                </Link>
+              </Menu.Item>
+            </Menu>
+          </Affix>
+        </Footer>
+      </Layout>
       </BrowserRouter>
 
     </div>
