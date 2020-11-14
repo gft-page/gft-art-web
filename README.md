@@ -66,7 +66,7 @@ yarn backend
 
 
 
-> deploy again with your frontend address as one of the owners:
+> Deploy again with your frontend address as one of the owners:
 
 ```bash
 
@@ -75,53 +75,53 @@ yarn deploy
 ```
 
 
-> use the faucet wallet to send your multi-sig contract some funds:
+> Use the faucet wallet to send your multi-sig contract some funds:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156785-fd2a2880-2680-11eb-8665-f8415cc77d5d.png)
 
-> to add new owners, use the "Owners" tab:
+> To add new owners, use the "Owners" tab:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156881-e6380600-2681-11eb-8161-43aeb7618af6.png)
 
-this will take you to a populated transaction create page:
+This will take you to a populated transaction create page:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156894-010a7a80-2682-11eb-9b19-8d749e678ce0.png)
 
-> create & sign the new transaction:
+> Create & sign the new transaction:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156898-0b2c7900-2682-11eb-96f1-aae5dfb13179.png)
 
-you will see the new transaction in the pool (this is all off-chain):
+You will see the new transaction in the pool (this is all off-chain):
 
 ![image](https://user-images.githubusercontent.com/2653167/99156905-2a2b0b00-2682-11eb-8da9-6016cc32aaa8.png)
 
-> give your account some gas at the faucet and execute the transaction
+> Give your account some gas at the faucet and execute the transaction
 
-the transction will appear as "executed" on the front page:
+The transction will appear as "executed" on the front page:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156918-6199b780-2682-11eb-89d4-7379fe5adb54.png)
 
 
-> create a transaction to open a stream to your frontend account:
+> Create a transaction to open a stream to your frontend account:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156945-8db53880-2682-11eb-8477-059094a99723.png)
 
-again, this will take you to a populated transaction form:
+Again, this will take you to a populated transaction form:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156981-a6255300-2682-11eb-9120-090bbbba513f.png)
 
 
-this time we will need a second signature:
+This time we will need a second signature:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156994-bc331380-2682-11eb-9492-7e0c83ea0fcc.png)
 
-> sign the transacton with enough owners:
+> Sign the transacton with enough owners:
 
 ![image](https://user-images.githubusercontent.com/2653167/99157010-d10fa700-2682-11eb-8f9a-328c561e97ef.png)
 
 (You'll notice you don't need ⛽️gas to sign transactions.)
 
-> execute the transction to open the stream:
+> Execute the transction to open the stream:
 
 ![image](https://user-images.githubusercontent.com/2653167/99157033-04523600-2683-11eb-8f97-1f6f3ed7b752.png)
 
