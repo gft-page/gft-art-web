@@ -21,7 +21,7 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
   const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
   if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
 
-  const blockNumber = useBlockNumber(localProvider);
+  const blockNumber = useBlockNumber(localProvider,1777);
   if(DEBUG) console.log("# blockNumber:",blockNumber)
 
   const [streams, setStreams] = useState()
