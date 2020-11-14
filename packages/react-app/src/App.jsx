@@ -30,7 +30,7 @@ import { Subgraph, CreateTransaction, Transactions, Owners, Streams, FrontPage }
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
 
-const DEBUG = true
+const DEBUG = false
 
 const poolServerUrl = "http://localhost:8001/"
 
@@ -50,6 +50,8 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+
+
 
 
 
@@ -90,29 +92,22 @@ function App(props) {
 
   //📟 Listen for broadcast events
   const executeTransactionEvents = useEventListener(readContracts, contractName, "ExecuteTransaction", localProvider, 1);
-  console.log("📟 executeTransactionEvents:",executeTransactionEvents)
+  if(DEBUG) console.log("📟 executeTransactionEvents:",executeTransactionEvents)
 
   // keep track of a variable from the contract in the local React state:
   const isOwner = useContractReader(readContracts, contractName, "isOwner", [address])
-  console.log("🤗 isOwner ("+address+"):",isOwner)
+  if(DEBUG) console.log("🤗 isOwner ("+address+"):",isOwner)
 
   // keep track of a variable from the contract in the local React state:
   const nonce = useContractReader(readContracts, contractName, "nonce")
-  console.log("# nonce:",nonce)
+  if(DEBUG) console.log("# nonce:",nonce)
 
   //📟 Listen for broadcast events
   const ownerEvents = useEventListener(readContracts, contractName, "Owner", localProvider, 1);
-  console.log("📟 ownerEvents:",ownerEvents)
+  if(DEBUG) console.log("📟 ownerEvents:",ownerEvents)
 
   const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired")
-  console.log("✳️ signaturesRequired:",signaturesRequired)
-
-
-  const streamBalance = useContractReader(readContracts, contractName, "streamBalance", [ address ])
-  console.log("💸 streamBalance:",streamBalance)
-
-
-
+  if(DEBUG) console.log("✳️ signaturesRequired:",signaturesRequired)
 
 
   const loadWeb3Modal = useCallback(async () => {
@@ -136,7 +131,7 @@ function App(props) {
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
-      
+
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">

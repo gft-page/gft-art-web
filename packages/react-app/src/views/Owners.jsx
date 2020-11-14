@@ -28,7 +28,6 @@ export default function Owners({contractName, ownerEvents, signaturesRequired, a
         bordered
         dataSource={ownerEvents}
         renderItem={(item) => {
-          console.log("OWENRS ITEM",item)
           return (
             <List.Item key={"owner_"+item[0]}>
             <Address

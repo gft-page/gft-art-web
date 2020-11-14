@@ -1,40 +1,61 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { InputNumber, Select, Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progress, Spin } from "antd";
+import { notification, InputNumber, Select, Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progress, Spin } from "antd";
 import { SyncOutlined } from '@ant-design/icons';
 import { Address, AddressInput, Balance, Blockie, EtherInput } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
-import { useContractReader, useEventListener, useLocalStorage } from "../hooks";
+import { useContractReader, useEventListener, useLocalStorage, useBalance } from "../hooks";
 import { useBlockNumber } from "eth-hooks";
 const axios = require('axios');
 const { Option } = Select;
 
+const DEBUG = false
+
 export default function Streams({contractName, ownerEvents, signaturesRequired, address, nonce, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
+
+  const walletBalance = useBalance(localProvider, readContracts?readContracts[contractName].address:readContracts);
+  if(DEBUG) console.log("💵 walletBalance",walletBalance?formatEther(walletBalance):"...")
 
   //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
   const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
-  console.log("📟 openStreamEvents:",openStreamEvents)
+  if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
 
   const blockNumber = useBlockNumber(localProvider);
-  console.log("# blockNumber:",blockNumber)
+  if(DEBUG) console.log("# blockNumber:",blockNumber)
 
   const [streams, setStreams] = useState()
-  const [streamBalances, setStreamBalances] = useState()
+  const [streamInfo, setStreamInfo] = useState()
+
   useEffect(()=>{
       let getStreams = async ()=>{
         let newStreams = []
-        let newStreamBalances = {}
+        let newStreamInfo = {}
+
         for(let s in openStreamEvents){
-          if(newStreams.indexOf(openStreamEvents[s].to)<0){
+          if(openStreamEvents[s].to && newStreams.indexOf(openStreamEvents[s].to)<0){
             newStreams.push(openStreamEvents[s].to)
-            newStreamBalances[openStreamEvents[s].to] = await readContracts[contractName].streamBalance(openStreamEvents[s].to)
+            console.log("GETTING STREAM BALANC OF ",openStreamEvents[s].to,"from",readContracts)
+            try{
+              let update = {}
+              update.stream = await readContracts[contractName].streams(openStreamEvents[s].to)
+              console.log("STREAM:",update.stream)
+              if(update.stream && update.stream.amount.gt(0)){
+                update.balance = await readContracts[contractName].streamBalance(openStreamEvents[s].to)
+              }
+              newStreamInfo[openStreamEvents[s].to] = update
+            }catch(e){
+              console.log(e)
+            }
+
           }
         }
         setStreams(newStreams)
-        setStreamBalances(newStreamBalances)
+        setStreamInfo(newStreamInfo)
       }
-      getStreams()
+      if(readContracts && readContracts[contractName]){
+        getStreams()
+      }
     },[ openStreamEvents, blockNumber ]
   )
 
@@ -80,19 +101,30 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
         bordered
         dataSource={streams}
         renderItem={(item) => {
-          console.log("STREAM ITEM",item)
-
           let withdrawButtonOrBalance = ""
-          if(address==item){
+          if(streamInfo[item] && !streamInfo[item].balance){
             withdrawButtonOrBalance = (
-              <Button type="large" style={{paddingTop:-8}}>
-                { "$" + (parseFloat(formatEther(streamBalances[item]?streamBalances[item]:0)) * price).toFixed(2) }
+              <div style={{opacity:0.5}}>closed</div>
+            )
+          } else if(address==item){
+            withdrawButtonOrBalance = (
+              <Button style={{paddingTop:-8}} onClick={()=>{
+                if(streamInfo[item] && streamInfo[item].balance && streamInfo[item].balance.gt(walletBalance)){
+                  notification.info({
+                    message: "Warning: Contract Balance",
+                    description: "It looks like there isn't enough in the contract to withdraw?",
+                    placement: "bottomRight",
+                  });
+                }
+                tx( writeContracts[contractName].streamWithdraw() )
+              }}>
+                { "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2) }
               </Button>
             )
           }else{
             withdrawButtonOrBalance = (
               <Balance
-                balance={streamBalances[item]}
+                balance={streamInfo[item].balance}
                 dollarMultiplier={price}
               />
             )

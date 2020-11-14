@@ -57,9 +57,16 @@ export default function CreateTransaction({poolServerUrl, contractName, address,
     for(let a=0;decodedDataObject && a<decodedDataObject.args.length;a++){
       let thisValue = decodedDataObject.args[a]
       if(thisValue){
+        if(thisValue._isBigNumber){
+          try{
+            thisValue = thisValue.toNumber()
+          }catch(e){
+            thisValue = formatEther(thisValue)
+          }
+        }
         argDisplay.push(
           <div key={"args_"+a}>
-            {thisValue._isBigNumber?thisValue.toNumber():thisValue}
+            {thisValue}
           </div>
         )
       }
