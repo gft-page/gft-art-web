@@ -36,7 +36,7 @@ contract StreamingMetaMultiSigWallet {
     }
 
     modifier onlySelf() {
-        //require(msg.sender == address(this), "Not Self");
+        require(msg.sender == address(this), "Not Self");
         _;
     }
 

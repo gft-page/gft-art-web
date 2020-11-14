@@ -49,6 +49,32 @@ export default function CreateTransaction({poolServerUrl, contractName, address,
     }
   }
 
+  let decodedData = ""
+  if(data&&data!="0x"){
+    let decodedDataObject = readContracts?readContracts[contractName].interface.parseTransaction({data:data}):""
+    console.log("decodedDataObject",decodedDataObject)
+    let argDisplay = []
+    for(let a=0;decodedDataObject && a<decodedDataObject.args.length;a++){
+      let thisValue = decodedDataObject.args[a]
+      if(thisValue){
+        argDisplay.push(
+          <div key={"args_"+a}>
+            {thisValue._isBigNumber?thisValue.toNumber():thisValue}
+          </div>
+        )
+      }
+    }
+    decodedData = (
+      <div>
+        <div style={{marginTop:16,marginBottom:16}}>
+          {decodedDataObject.signature}
+        </div>
+        {argDisplay}
+      </div>
+    )
+  }
+
+
   return (
     <div>
       {/*
@@ -80,7 +106,10 @@ export default function CreateTransaction({poolServerUrl, contractName, address,
             />
           </div>
 
-          Data:<Input value={data} onChange={(e)=>{setData(e.target.value)}} />
+          <div style={inputStyle}>
+            <Input placeholder={"calldata"} value={data} onChange={(e)=>{setData(e.target.value)}} />
+            {decodedData}
+          </div>
 
           <Button style={{marginTop:32}} onClick={async ()=>{
 

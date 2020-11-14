@@ -24,7 +24,7 @@ export default function Owners({contractName, ownerEvents, signaturesRequired, a
     <div>
       <h2 style={{marginTop:32}}>Signatures Required: {signaturesRequired?signaturesRequired.toNumber():<Spin></Spin>}</h2>
       <List
-        style={{maxWidth:450,margin:"auto",marginTop:32}}
+        style={{maxWidth:400,margin:"auto",marginTop:32}}
         bordered
         dataSource={ownerEvents}
         renderItem={(item) => {
@@ -81,7 +81,7 @@ export default function Owners({contractName, ownerEvents, signaturesRequired, a
               history.push('/create')
             },777)
           }}>
-            Update
+          Create Tx
           </Button>
         </div>
       </div>

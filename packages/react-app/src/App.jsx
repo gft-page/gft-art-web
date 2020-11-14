@@ -9,11 +9,11 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
+import { Balance, Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Subgraph, CreateTransaction, Transactions, Owners, FrontPage } from "./views"
+import { Subgraph, CreateTransaction, Transactions, Owners, Streams, FrontPage } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -108,6 +108,9 @@ function App(props) {
   console.log("✳️ signaturesRequired:",signaturesRequired)
 
 
+  const streamBalance = useContractReader(readContracts, contractName, "streamBalance", [ address ])
+  console.log("💸 streamBalance:",streamBalance)
+
 
 
 
@@ -133,14 +136,7 @@ function App(props) {
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
-
-      <Button onClick={()=>{
-        console.log("asdr")
-        tx( writeContracts[contractName].closeStream("0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",{gasLimit:500000}) )
-      }}>
-        asdf
-      </Button>
-
+      
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
@@ -149,6 +145,9 @@ function App(props) {
           </Menu.Item>
           <Menu.Item key="/owners">
             <Link onClick={()=>{setRoute("/owners")}} to="/owners">Owners</Link>
+          </Menu.Item>
+          <Menu.Item key="/streams">
+            <Link onClick={()=>{setRoute("/streams")}} to="/streams">Streams</Link>
           </Menu.Item>
           <Menu.Item key="/create">
             <Link onClick={()=>{setRoute("/create")}} to="/create">Create</Link>
@@ -164,12 +163,31 @@ function App(props) {
         <Switch>
           <Route exact path="/">
             <FrontPage
+              executeTransactionEvents={executeTransactionEvents}
               contractName={contractName}
               localProvider={localProvider}
               readContracts={readContracts}
               price={price}
               mainnetProvider={mainnetProvider}
               blockExplorer={blockExplorer}
+            />
+          </Route>
+          <Route exact path="/streams">
+            <Streams
+              contractName={contractName}
+              address={address}
+              userProvider={userProvider}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              blockExplorer={blockExplorer}
+              nonce={nonce}
+              ownerEvents={ownerEvents}
+              signaturesRequired={signaturesRequired}
             />
           </Route>
           <Route exact path="/owners">

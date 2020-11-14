@@ -8,7 +8,7 @@ import { useContractReader, useEventListener } from "../hooks";
 import QR from "qrcode.react";
 const axios = require('axios');
 
-export default function FrontPage({ contractName, localProvider, readContracts, price, mainnetProvider, blockExplorer }) {
+export default function FrontPage({ executeTransactionEvents, contractName, localProvider, readContracts, price, mainnetProvider, blockExplorer }) {
 
   return (
     <div style={{padding:32,maxWidth:750,margin:"auto"}}>
@@ -36,7 +36,7 @@ export default function FrontPage({ contractName, localProvider, readContracts, 
         </div>
       </div>
       {
-        /*
+
 
         <List
           bordered
@@ -67,7 +67,7 @@ export default function FrontPage({ contractName, localProvider, readContracts, 
           }}
         />
 
-        */
+
       }
 
 
