@@ -38,10 +38,11 @@ function App(props) {
   /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
   const gasPrice = useGasPrice("fast"); //1000000000 for xdai
 
-  const [network, setNetwork] = useLocalStorage("network")
+  const [network, setNetwork] = useLocalStorage("networkName")
   const [selectedProvider, setSelectedProvider] = useState()
 
   const [erc20s, setErc20s] = useState({})
+  const [myErc20s, setMyErc20s] = useLocalStorage("myErc20s")
 
   const networks = {
   "xdai": {
@@ -105,7 +106,7 @@ function App(props) {
     color2: "#fd4889",
     gasPrice: 4100000000,
     decimals: 3,
-    faucet: "https://faucet.ropsten.be/",
+    faucet: "https://faucet.dimensions.network/",
     blockExplorer: "https://ropsten.etherscan.io/",
     url: `https://ropsten.infura.io/v3/${INFURA_ID}`
   },
@@ -171,9 +172,6 @@ const [sending, setSending] = useState(false)
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(selectedProvider, address);
 
-  // just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-
   // Load in your local 📝 contract and read a value from it:
   const readContracts = useContractLoader(selectedProvider)
 
@@ -182,14 +180,14 @@ const [sending, setSending] = useState(false)
 
   function handleChange(value) {
   console.log(`selected ${value}`);
-  let newNetwork = networks[value]
+  let newNetwork = value
   setNetwork(newNetwork)
 }
 
 useEffect(() => {
   let newProvider
   if(network) {
-  newProvider = new JsonRpcProvider(network.url);
+  newProvider = new JsonRpcProvider(networks[network].url);
 } else {
   newProvider = new JsonRpcProvider(networks['mainnet']['url']);
 }
@@ -200,7 +198,7 @@ setErc20s({})
 
 const getErc20s = async () => {
   console.log("getting erc20s")
-  if(network && network.erc20s && address) {
+  if(network && networks[network].erc20s && address) {
     // A Human-Readable ABI; any supported ABI format could be used
     const abi = [
         // Read-Only Functions
@@ -215,7 +213,7 @@ const getErc20s = async () => {
         "event Transfer(address indexed from, address indexed to, uint amount)"
     ];
     let newErc20s = Object.assign({}, erc20s);
-    network.erc20s.forEach(async element => {
+    networks[network].erc20s.forEach(async element => {
       console.log(element)
       let userSigner = userProvider.getSigner()
       const erc20 = new ethers.Contract(element.address, abi, userSigner);
@@ -223,7 +221,7 @@ const getErc20s = async () => {
       let erc20Decimals = erc20.decimals()
       Promise.all([erc20Balance, erc20Decimals]).then((values) => {
         console.log(element.name, values)
-        newErc20s[element.name] = {name: element.name, contract: erc20, decimals: values[1], balance: values[0], network: network.name}
+        newErc20s[element.name] = {name: element.name, contract: erc20, decimals: values[1], balance: values[0], network: networks[network].name}
       });
     });
     //console.log(newErc20s)
@@ -237,8 +235,6 @@ usePoller(
   },
   props.pollTime ? props.pollTime : 4000,
 );
-
-console.log(erc20s, network)
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -286,29 +282,27 @@ console.log(erc20s, network)
     ellipsis: true
   }]
 
-  console.log(Object.values(networks))
-
   return (
     <div className="App" style={{height:"100%", minHeight:"100%" }}>
       <BrowserRouter>
       <Layout style={{minHeight:"100%", display:"flex", flexDirection: "column"}}>
         <Affix offsetTop={0}>
-        <Header style={{backgroundColor: network?network.color1:"#626890", height: "fit-content", verticalAlign: "middle"}}>
-          <Row align="middle" justify="center" gutter={4}>
-              <Col span={4}>
+        <Header style={{backgroundColor: network?networks[network].color1:"#626890", height: "fit-content", verticalAlign: "middle"}}>
+          <Row align="middle" justify="center" gutter={12} style={{padding: 8}}>
+              <Col span={8}>
               <Row align="middle" justify="center" gutter={4}>
-                <Link style={{fontSize:40}} to="/wallet">🧙</Link>
+                <Link style={{fontSize:60}} to="/wallet">🧙</Link>
               </Row>
               </Col>
-              <Col span={4}>
+              <Col span={8}>
               <Row align="middle" justify="center" gutter={4}>
                 {(address ?
-                    <Blockies seed={address.toLowerCase()} size={8} scale={4}/>
+                    <Blockies seed={address.toLowerCase()} size={8} scale={8}/>
                   : <span>"Connecting..."</span>)}
               </Row>
               </Col>
-              <Col span={4}>
-                <Select defaultValue={network?network.name:"mainnet"} style={{ width: 120 }} onChange={handleChange} size="large">
+              <Col span={8}>
+                <Select defaultValue={network?networks[network].name:"mainnet"} style={{ width: 120 }} onChange={handleChange} size="large">
                           {Object.values(networks).map(n => (
                             <Option key={n.id}>{n.name}</Option>
                           ))}
@@ -367,7 +361,7 @@ console.log(erc20s, network)
                       </Form.Item>
                       <Form.Item name="amount">
                       <EtherInput
-                        price={(network&&network.price)?network.price:price}
+                        price={(network&&networks[network].price)?networks[network].price:price}
                       />
                       </Form.Item>
                       <Form.Item >
@@ -389,22 +383,35 @@ console.log(erc20s, network)
               </Card>
             </Route>
             <Route path="/receive">
+              <QRBlockie address={address} />
               <Row align="middle" justify="center" gutter={[4, 4]}>
                 <Text copyable ellipsis style={{fontSize: "28px", padding: 12}}>{address}</Text>
               </Row>
-              <QRBlockie address={address} />
+              <Row align="middle" gutter={[4, 4]}>
+                <Col span={24}>
+                  {
+
+                    /*  if the local provider has a signer, let's show the faucet:  */
+                    selectedProvider && selectedProvider.connection && selectedProvider.connection.url && selectedProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
+                      <Faucet localProvider={selectedProvider} price={price} ensProvider={mainnetProvider}/>
+                    ) : (
+                      ""
+                    )
+                  }
+                </Col>
+              </Row>
             </Route>
             <Route path="/settings">
               <Card style={{ margin: 'auto'}}>
                 <Row align="middle" justify="center" gutter={[8, 8]}>
                   <Space>
                     <PrivateKeyModal address={address}/>
-                    {(network&&network.blockExplorer&&address)?<a href={network.blockExplorer+"address/"+address} target="_blank"><Button>Blockexplorer</Button></a>:null}
+                    {(network&&networks[network].blockExplorer&&address)?<a href={networks[network].blockExplorer+"address/"+address} target="_blank"><Button>Blockexplorer</Button></a>:null}
                   </Space>
                 </Row>
                 <Row align="middle" gutter={[8, 8]}>
                   <Col span={8}>
-                    <Ramp price={(network&&network.price)?network.price:price} address={address} />
+                    <Ramp price={(network&&networks[network].price)?networks[network].price:price} address={address} />
                   </Col>
 
                   <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
@@ -448,28 +455,28 @@ console.log(erc20s, network)
               <Row align="middle" justify="center">
                 <Col>
                   <Row align="middle" justify="center">
-                  <Balance address={address} provider={selectedProvider} size={48} />
-                  {(yourLocalBalance&&yourLocalBalance.gt(0))?<Link to={"/send"}><SendOutlined style={{fontSize: "48px"}}/></Link>:null}
-                  {(network&&network.faucet&&yourLocalBalance&&yourLocalBalance.eq(0))?<a href={network.faucet} target="_blank"><SmileOutlined style={{fontSize: "48px"}}/></a>:null}
+                  <Balance address={address} provider={selectedProvider} size={96} />
+                  {(yourLocalBalance&&yourLocalBalance.gt(0))?<Link to={"/send"}><SendOutlined style={{fontSize: "96px"}}/></Link>:null}
+                  {(network&&networks[network].faucet&&yourLocalBalance&&yourLocalBalance.eq(0))?<a href={networks[network].faucet} target="_blank"><SmileOutlined style={{fontSize: "72px"}}/></a>:null}
                   </Row>
-                  {(network&&network.erc20s)?<List
+                  {(network&&networks[network].erc20s)?<List
                     itemLayout="horizontal"
                     size="large"
-                    dataSource={(network&&network.erc20s)?network.erc20s:[]}
+                    dataSource={(network&&networks[network].erc20s)?networks[network].erc20s:[]}
                     renderItem={item => {
                       let tokenBalance = (erc20s[item.name]?<Text style={{
                         verticalAlign: "middle",
-                        fontSize: 24,
+                        fontSize: 32,
                         padding: 8,
                       }}>{(erc20s[item.name]['balance'] / Math.pow(10, erc20s[item.name]['decimals']))}</Text>:<Spin/>)
-                      let sendButton = (erc20s[item.name]&&erc20s[item.name]['balance']>0)?<Link to={"/send-token?token="+item.name}><SendOutlined style={{fontSize: 24, padding: 8, verticalAlign: "middle"}}/></Link>:null
+                      let sendButton = (erc20s[item.name]&&erc20s[item.name]['balance']>0)?<Link to={"/send-token?token="+item.name}><SendOutlined style={{fontSize: 32, padding: 8, verticalAlign: "middle"}}/></Link>:null
                       return (
                       <List.Item>
                         <Text
                           strong={true}
                           style={{
                             verticalAlign: "middle",
-                            fontSize: 24,
+                            fontSize: 32,
                             padding: 8,
                           }}
                         >
@@ -478,19 +485,6 @@ console.log(erc20s, network)
                         {tokenBalance} {sendButton}
                       </List.Item>)}}
                   />:null}
-                  <Row align="middle" gutter={[4, 4]}>
-                    <Col span={24}>
-                      {
-
-                        /*  if the local provider has a signer, let's show the faucet:  */
-                        selectedProvider && selectedProvider.connection && selectedProvider.connection.url && selectedProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
-                          <Faucet localProvider={selectedProvider} price={price} ensProvider={mainnetProvider}/>
-                        ) : (
-                          ""
-                        )
-                      }
-                    </Col>
-                  </Row>
                 </Col>
               </Row>
             </Route>
@@ -505,6 +499,11 @@ console.log(erc20s, network)
                 />
               </Row>
               </Route>
+                <Route exact path="/manage-erc20s">
+                  <Card style={{ margin: 'auto'}}>
+                  <span>test</span>
+                  </Card>
+                </Route>
           </Switch>
         </Content>
         <Footer style={{padding: 0, zIndex: 100}}>
@@ -512,17 +511,17 @@ console.log(erc20s, network)
             <Menu mode="horizontal" current={[route]} theme="dark" style={{textAlign: "center"}}>
               <Menu.Item key="wallet">
                 <Link to="/wallet">
-                  <WalletOutlined style={{fontSize: "42px", padding: "16px", margin:0}}/>
+                  <WalletOutlined style={{fontSize: "64px", padding: "16px", margin:0}}/>
                 </Link>
               </Menu.Item>
               <Menu.Item key="receive">
                 <Link to="/receive">
-                  <QrcodeOutlined style={{fontSize: "42px", padding: "16px", margin:0}}/>
+                  <QrcodeOutlined style={{fontSize: "64px", padding: "16px", margin:0}}/>
                 </Link>
               </Menu.Item>
               <Menu.Item key="settings">
                 <Link to="/settings">
-                  <SettingOutlined style={{fontSize: "42px", padding: "16px", margin:0}}/>
+                  <SettingOutlined style={{fontSize: "64px", padding: "16px", margin:0}}/>
                 </Link>
               </Menu.Item>
             </Menu>
