@@ -65,7 +65,7 @@ function Sender({userProvider, mainnetProvider, network, networks, price, gasPri
                         size="large"
                         loading={sending}
                       >
-                        <SendOutlined /> Send
+                        Send >
                       </Button>
                       </Form.Item>
                     </Form>

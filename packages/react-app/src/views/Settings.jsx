@@ -70,6 +70,7 @@ function Settings({address, network, networks, gasPrice, price}) {
                 rowKey="name"
                 dataSource={Object.values(networks)}
                 columns={networkColumns}
+                pagination={false} 
                 expandable={{
                   expandedRowRender: record => <Descriptions>{
                     record.erc20s.map(

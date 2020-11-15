@@ -3,23 +3,23 @@ import { Link } from "react-router-dom";
 import { SettingOutlined, WalletOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { Menu, Affix } from "antd";
 
-function WalletFooter({route}) {
+function WalletFooter({route, network, networks}) {
 
   return (
-            <Menu mode="horizontal" current={[route]} theme="dark" style={{textAlign: "center"}}>
-              <Menu.Item key="wallet">
+            <Menu mode="horizontal" selectable={false} style={{textAlign: "center"}}>
+              <Menu.Item key="wallet" style={{fontSize: "60px", margin: 16, width:"25%"}}>
                 <Link to="/wallet">
-                  <WalletOutlined style={{fontSize: "64px", padding: "16px", margin:0}}/>
+                  <span style={{color: network?networks[network].color1:"black", margin: 16}}>$</span>
                 </Link>
               </Menu.Item>
-              <Menu.Item key="receive">
+              <Menu.Item key="receive" style={{fontSize: "60px", margin: 16, width:"25%"}}>
                 <Link to="/receive">
-                  <QrcodeOutlined style={{fontSize: "64px", padding: "16px", margin:0}}/>
+                  <span style={{color: network?networks[network].color1:"black"}}>↓</span>
                 </Link>
               </Menu.Item>
-              <Menu.Item key="settings">
+              <Menu.Item key="settings" style={{fontSize: "60px", margin: 16, width:"25%"}}>
                 <Link to="/settings">
-                  <SettingOutlined style={{fontSize: "64px", padding: "16px", margin:0}}/>
+                  <span style={{color: network?networks[network].color1:"black"}}>?</span>
                 </Link>
               </Menu.Item>
             </Menu>

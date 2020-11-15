@@ -121,7 +121,7 @@ function TokenSender({erc20s, address, network, networks, selectedProvider, main
                       size="large"
                       loading={sending}
                     >
-                      <SendOutlined /> Send
+                      Send >
                     </Button>
                     </Form.Item>
                   </Form>

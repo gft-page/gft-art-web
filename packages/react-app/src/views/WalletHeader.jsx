@@ -10,7 +10,7 @@ function WalletHeader({address, network, networks, handleChange}) {
           <Row align="middle" justify="center" gutter={12} style={{padding: 8}}>
               <Col span={8}>
               <Row align="middle" justify="center" gutter={4}>
-                <Link style={{fontSize:60}} to="/wallet">🧙</Link>
+                <Link style={{fontSize:60}} to="/wallet"><i class="nes-icon coin is-large"></i></Link>
               </Row>
               </Col>
               <Col span={8}>
@@ -21,7 +21,7 @@ function WalletHeader({address, network, networks, handleChange}) {
               </Row>
               </Col>
               <Col span={8}>
-                <Select defaultValue={network?networks[network].name:"mainnet"} style={{ width: 120 }} onChange={handleChange} size="large">
+                <Select defaultValue={network?networks[network].name:"mainnet"} style={{ width: 200 }} onChange={handleChange} size="large">
                           {Object.values(networks).map(n => (
                             <Option key={n.id}>{n.name}</Option>
                           ))}

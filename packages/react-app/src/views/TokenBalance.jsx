@@ -9,12 +9,12 @@ const { Text } = Typography;
 function TokenBalance({name, contract, address, decimals}) {
   let balance = useTokenBalance(contract, address)
   let formattedBalance = balance?formatUnits(balance, decimals):"loading..."
-  let sendButton = (balance>0)?<Link to={"/send-token?token="+name}><SendOutlined style={{fontSize: 32, padding: 8, verticalAlign: "middle"}}/></Link>:null
+  let sendButton = (balance>0)?<Link to={"/send-token?token="+name}><button type="button" class="nes-btn is-primary">></button></Link>:null
 
   return (
     <>
     <Text
-      strong={true}
+      class="nes-text"
       style={{
         verticalAlign: "middle",
         fontSize: 32,

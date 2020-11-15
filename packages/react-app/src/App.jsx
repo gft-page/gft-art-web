@@ -9,7 +9,7 @@ import { useUserAddress, usePoller } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useBalance, useLocalStorage } from "./hooks";
 import { Contract, Balance } from "./components";
 import { ethers } from "ethers";
-import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings } from "./views"
+import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY, ALCHEMY_KEY } from "./constants";
 const { Header, Content, Footer } = Layout;
 
@@ -30,7 +30,7 @@ function App(props) {
   const [selectedProvider, setSelectedProvider] = useState()
 
   const [erc20s, setErc20s] = useState({})
-  const [myErc20s, setMyErc20s] = useLocalStorage("myErc20s")
+  const [myErc20s, setMyErc20s] = useState()//useLocalStorage("myErc20s")
 
   const networks = {
   "xdai": {
@@ -245,11 +245,18 @@ usePoller(
             </Route>
             <Route path="/send-token">
               <Card style={{ maxWidth: 600, width: "100%", margin: 'auto'}}>
-                <TokenSender network={network} networks={networks} erc20s={erc20s} mainnetProvider={mainnetProvider} selectedProvider={selectedProvider} address={address}/>
+                <TokenSender
+                  network={network}
+                  networks={networks}
+                  erc20s={erc20s}
+                  mainnetProvider={mainnetProvider}
+                  selectedProvider={selectedProvider}
+                  address={address}
+                  />
               </Card>
             </Route>
             <Route path="/receive">
-              <Receive address={address}/>
+              <Receive address={address} mainnetProvider={mainnetProvider}/>
             </Route>
             <Route path="/settings">
               <Settings
@@ -282,15 +289,22 @@ usePoller(
               </Row>
               </Route>
                 <Route exact path="/manage-erc20s">
-                  <Card style={{ margin: 'auto'}}>
-                  <span>test</span>
-                  </Card>
+                    <TokenManager
+                      network={network}
+                      networks={networks}
+                      erc20s={erc20s}
+                      myErc20s={myErc20s}
+                      />
                 </Route>
           </Switch>
         </Content>
         <Footer style={{padding: 0, zIndex: 100}}>
           <Affix offsetBottom={0}>
-          <WalletFooter route={route}/>
+          <WalletFooter
+          network={network}
+          networks={networks}
+          route={route}
+          />
           </Affix>
         </Footer>
       </Layout>

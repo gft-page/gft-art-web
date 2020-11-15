@@ -31,7 +31,7 @@ export default function Wallet(props) {
   const showButton = (
       <Button onClick={() => {
                 setOpen(!open);
-              }}><WalletOutlined/> View Private Key
+              }}>View Private Key
       </Button>
   )
 

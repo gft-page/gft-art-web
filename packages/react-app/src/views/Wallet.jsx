@@ -14,8 +14,8 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
               <Row align="middle" justify="center">
                 <Col>
                   <Row align="middle" justify="center">
-                  <Balance address={address} provider={selectedProvider} size={96} />
-                  {(yourBalance&&yourBalance.gt(0))?<Link to={"/send"}><SendOutlined style={{fontSize: "96px"}}/></Link>:null}
+                  <Balance address={address} provider={selectedProvider} size={60} />
+                  {(yourBalance&&yourBalance.gt(0))?<Link to={"/send"}><button type="button" class="nes-btn is-primary">></button></Link>:null}
                   {(network&&networks[network].faucet&&yourBalance&&yourBalance.eq(0))?<a href={networks[network].faucet} target="_blank"><SmileOutlined style={{fontSize: "72px"}}/></a>:null}
                   </Row>
                   <Row align="middle" gutter={[4, 4]}>
