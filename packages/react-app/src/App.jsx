@@ -145,6 +145,7 @@ useEffect(() => {
   newProvider = new JsonRpcProvider(networks[network].url);
 } else {
   newProvider = new JsonRpcProvider(networks['mainnet']['url']);
+  setNetwork('mainnet')
 }
 setSelectedProvider(newProvider)
 getErc20s()

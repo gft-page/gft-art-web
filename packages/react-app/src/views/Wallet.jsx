@@ -31,7 +31,7 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
                       }
                     </Col>
                   </Row>
-                  {(myErc20s&&myErc20s[network])?<List
+                  {(myErc20s&&myErc20s[network]&&myErc20s[network].length>0)?<List
                     itemLayout="horizontal"
                     size="large"
                     dataSource={(myErc20s&&myErc20s[network])?myErc20s[network]:[]}
