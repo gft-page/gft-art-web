@@ -13,9 +13,10 @@
 ```bash
 git clone https://github.com/austintgriffith/scaffold-eth.git bytes-land
 
+cd bytes-land
+
 git checkout bytes-land
 
-cd bytes-land
 ```
 
 ```bash
