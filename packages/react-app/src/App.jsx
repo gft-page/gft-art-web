@@ -30,7 +30,7 @@ function App(props) {
   const [selectedProvider, setSelectedProvider] = useState()
 
   const [erc20s, setErc20s] = useState({})
-  const [myErc20s, setMyErc20s] = useState()//useLocalStorage("myErc20s")
+  const [myErc20s, setMyErc20s] = useLocalStorage("myErc20s")
 
   const networks = {
   "xdai": {
@@ -139,18 +139,6 @@ function App(props) {
   setNetwork(newNetwork)
 }
 
-function addMyErc20(name, address, decimals) {
-console.log(`Adding ${name} at ${address} with ${decimals} decimals`);
-let newMyErc20s = Object.assign({}, myErc20s);
-if(newMyErc20s[network]) {
-  newMyErc20s[network].push({name: name, address: address, decimals: decimals})
-} else {
-  newMyErc20s[network] = []
-  newMyErc20s[network].push({name: name, address: address, decimals: decimals})
-}
-setNetwork(newMyErc20s)
-}
-
 useEffect(() => {
   let newProvider
   if(network) {
@@ -159,13 +147,13 @@ useEffect(() => {
   newProvider = new JsonRpcProvider(networks['mainnet']['url']);
 }
 setSelectedProvider(newProvider)
-setErc20s({})
-},[network, address])
+getErc20s()
+},[network, address, myErc20s])
 
 
 const getErc20s = async () => {
   console.log("getting erc20s")
-  if(network && networks[network].erc20s && address) {
+  if(myErc20s && myErc20s[network] && address) {
     // A Human-Readable ABI; any supported ABI format could be used
     const abi = [
         // Read-Only Functions
@@ -180,23 +168,16 @@ const getErc20s = async () => {
         "event Transfer(address indexed from, address indexed to, uint amount)"
     ];
     let newErc20s = Object.assign({}, erc20s);
-    networks[network].erc20s.forEach(async element => {
+    myErc20s[network].forEach(async element => {
       console.log(element)
       let userSigner = userProvider.getSigner()
       const erc20 = new ethers.Contract(element.address, abi, userSigner);
-      newErc20s[element.name] = {name: element.name, contract: erc20, decimals: element.decimals, balance: "100", network: networks[network].name}
+      newErc20s[element.name] = {name: element.name, contract: erc20, decimals: element.decimals, network: networks[network].name}
     });
-    //console.log(newErc20s)
+    console.log(newErc20s)
     setErc20s(newErc20s)
   }
 }
-
-usePoller(
-  () => {
-    getErc20s();
-  },
-  props.pollTime ? props.pollTime : 4000,
-);
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
@@ -264,7 +245,9 @@ usePoller(
                 network={network}
                 networks={networks}
                 gasPrice={gasPrice}
-                price={price} />
+                price={price}
+                setMyErc20s={setMyErc20s}
+                />
             </Route>
             <Route path="/wallet">
               <Wallet
@@ -276,9 +259,10 @@ usePoller(
                 price={price}
                 mainnetProvider={mainnetProvider}
                 erc20s={erc20s}
+                myErc20s={myErc20s}
                 />
             </Route>
-              <Route exact path="/contract">
+              <Route path="/contract">
                 <Row>
                 <Contract
                   name="YourToken"
@@ -288,12 +272,14 @@ usePoller(
                 />
               </Row>
               </Route>
-                <Route exact path="/manage-erc20s">
+                <Route path="/manage-tokens">
                     <TokenManager
                       network={network}
                       networks={networks}
                       erc20s={erc20s}
                       myErc20s={myErc20s}
+                      setMyErc20s={setMyErc20s}
+                      userProvider={userProvider}
                       />
                 </Route>
           </Switch>

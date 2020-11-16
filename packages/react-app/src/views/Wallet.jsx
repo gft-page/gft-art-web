@@ -8,7 +8,7 @@ import { parseEther, formatEther, formatUnits } from "@ethersproject/units";
 import { TokenBalance } from "."
 const { Text } = Typography;
 
-function Wallet({address, selectedProvider, yourBalance, network, networks, price, mainnetProvider, erc20s}) {
+function Wallet({address, selectedProvider, yourBalance, network, networks, price, mainnetProvider, erc20s, myErc20s}) {
 
   return (
               <Row align="middle" justify="center">
@@ -16,7 +16,7 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
                   <Row align="middle" justify="center">
                   <Balance address={address} provider={selectedProvider} size={60} />
                   {(yourBalance&&yourBalance.gt(0))?<Link to={"/send"}><button type="button" class="nes-btn is-primary">></button></Link>:null}
-                  {(network&&networks[network].faucet&&yourBalance&&yourBalance.eq(0))?<a href={networks[network].faucet} target="_blank"><SmileOutlined style={{fontSize: "72px"}}/></a>:null}
+                  {(network&&networks[network].faucet&&yourBalance&&yourBalance.eq(0))?<a href={networks[network].faucet} target="_blank"><Typography style={{fontSize: "72px"}}>🚰</Typography></a>:null}
                   </Row>
                   <Row align="middle" gutter={[4, 4]}>
                     <Col span={24}>
@@ -31,10 +31,10 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
                       }
                     </Col>
                   </Row>
-                  {(network&&networks[network].erc20s)?<List
+                  {(myErc20s&&myErc20s[network])?<List
                     itemLayout="horizontal"
                     size="large"
-                    dataSource={(network&&networks[network].erc20s)?networks[network].erc20s:[]}
+                    dataSource={(myErc20s&&myErc20s[network])?myErc20s[network]:[]}
                     renderItem={item => {
                       return (
                       <List.Item>
@@ -47,6 +47,7 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
                         </Row>
                       </List.Item>)}}
                   />:null}
+                <Link to="/manage-tokens"><span class="nes-text is-primary">+ tokens</span></Link>
                 </Col>
               </Row>
   );

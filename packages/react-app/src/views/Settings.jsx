@@ -1,14 +1,15 @@
 import React from "react";
-import { Row, Col, Typography, Button, Spin, Space, Table, Descriptions, Card } from "antd";
+import { Row, Col, Typography, Button, Spin, Space, Table, Descriptions, Card, Popconfirm, Divider } from "antd";
 import { Ramp, GasGauge, PrivateKeyModal } from "../components";
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
-function Settings({address, network, networks, gasPrice, price}) {
+function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
 
   let networkColumns = [{
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
+    fixed: 'left'
   },
   {
     title: 'Color',
@@ -25,7 +26,8 @@ function Settings({address, network, networks, gasPrice, price}) {
     title: 'Blockexplorer',
     dataIndex: 'blockExplorer',
     key: 'blockExplorer',
-    render: text => <a>{text}</a>
+    render: text => <a>{text}</a>,
+    ellipsis: true,
   },
   {
     title: 'Node URL',
@@ -35,42 +37,25 @@ function Settings({address, network, networks, gasPrice, price}) {
   }]
 
   return (
-              <Card style={{ margin: 'auto'}}>
-                <Row align="middle" justify="center" gutter={[8, 8]}>
-                  <Space>
+              <Card style={{ margin: 'auto', maxWidth: "100%"}}>
                     <PrivateKeyModal address={address}/>
                     {(network&&networks[network].blockExplorer&&address)?<a href={networks[network].blockExplorer+"address/"+address} target="_blank"><Button>Blockexplorer</Button></a>:null}
-                  </Space>
-                </Row>
-                <Row align="middle" gutter={[8, 8]}>
-                  <Col span={8}>
-                    <Ramp price={(network&&networks[network].price)?networks[network].price:price} address={address} />
-                  </Col>
-
-                  <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
-                    <GasGauge gasPrice={gasPrice} />
-                  </Col>
-                  <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-                    <Button
-                      onClick={() => {
-                        window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
-                      }}
-                      size="large"
-                      shape="round"
-                    >
-                      <span style={{ marginRight: 8 }} role="img" aria-label="support">
-                        💬
-                      </span>
-                      Support
-                    </Button>
-                  </Col>
-                </Row>
-                <Row>
+                    <Popconfirm
+                        title="Are you sure you want to reset your token settings for all networks?"
+                        onConfirm={() => {setMyErc20s({})}}
+                        okText="Yes"
+                        cancelText="No"
+                      >
+                    <Button>Reset tokens</Button>
+                    </Popconfirm>
+                <Divider/>
                 <Table
+                title={() => <Title level={4}>Network information</Title>}
                 rowKey="name"
                 dataSource={Object.values(networks)}
                 columns={networkColumns}
-                pagination={false} 
+                pagination={false}
+                scroll={{ x: 'max-content' }}
                 expandable={{
                   expandedRowRender: record => <Descriptions>{
                     record.erc20s.map(
@@ -83,7 +68,6 @@ function Settings({address, network, networks, gasPrice, price}) {
                   rowExpandable: record => record.erc20s,
                 }}
                 />
-                </Row>
               </Card>
   );
 }
