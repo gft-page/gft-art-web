@@ -4,7 +4,7 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu } from "antd";
+import { Row, Col, List, Tabs, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -14,6 +14,10 @@ import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
+import Blockies from "react-blockies";
+import { animateScroll as scroll } from 'react-scroll'
+import { Container, Button, Avatar } from "nes-react";
+import { ethers } from "ethers";
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -29,6 +33,9 @@ import { Hints, ExampleUI, Subgraph } from "./views"
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
+
+
+
 
 const DEBUG = true
 
@@ -48,7 +55,6 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
-
 
 
 function App(props) {
@@ -101,11 +107,59 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
 
+  const [ newAccount, setNewAccount ] = useState(ethers.Wallet.createRandom())
+
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
+
+
+      {/*  reference https://github.com/bschulte/nes-react/blob/master/example/src/App.js */}
+      <div style={{width:600,margin:"auto",marginTop:32,marginBottom:32}}>
+
+        <Container>
+          We're using containers from nes.css!
+
+          <Button onClick={()=>{
+            scroll.scrollTo(document.getElementById("SOMETHING").getBoundingClientRect().y)
+          }}>Regular</Button>
+          <Button primary>Primary</Button>
+          <Button success>Success</Button>
+          <Button warning>Warning</Button>
+          <Button error>Error</Button>
+          <Button disabled>Disabled</Button>
+        </Container>
+
+        <div style={{marginTop:64,marginBottom:64}}>
+          <img src="/punk5950.png" style={{minWidth:120,imageRendering:"pixelated"}} />
+          <div class="nes-balloon from-left" style={{width:450}}>
+            <p>welcome to Ethereum, generate a private key to begin</p>
+          </div>
+
+          <div class="nes-balloon from-right" style={{width:450}}>
+            <p>hell yeah, let's go</p>
+          </div>
+          <img src="/anonpunk.png" style={{minWidth:120,imageRendering:"pixelated",transform:"scaleX(-1)"}} />
+
+          <div style={{marginTop:32}}>
+
+            <div style={{float:"right"}}>
+              <Button onClick={()=>{setNewAccount(ethers.Wallet.createRandom())}}>Generate</Button> <Button disabled>Save</Button>
+            </div>
+
+            <Address value={newAccount.address} />
+
+
+          </div>
+
+        </div>
+
+
+      </div>
+
 
       <BrowserRouter>
 
@@ -131,6 +185,9 @@ function App(props) {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
+            <div id={"SOMETHING"}>
+              SOMETHING
+            </div>
             <Contract
               name="YourContract"
               signer={userProvider.getSigner()}
@@ -255,5 +312,6 @@ const logoutOfWeb3Modal = async () => {
     window.location.reload();
   }, 1);
 };
+
 
 export default App;
