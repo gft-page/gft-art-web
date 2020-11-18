@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 
 //
-//
-//
+// started from 🏗 scaffold-eth - meta-multi-sig-wallet example https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig
+//    (off-chain signature based multi-sig)
+//  added a very simple streaming mechanism where `onlySelf` can open a withdraw-based stream
 //
 
 pragma solidity ^0.6.7;
