@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Typography, Select, Form, Card, Layout, Affix } from "antd";
+import { Row, Col, Typography, Select, Form, Card, Layout, Affix, Modal, List, Button, Space } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress, usePoller } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useBalance, useLocalStorage } from "./hooks";
 import { Contract, Balance } from "./components";
 import { ethers } from "ethers";
-import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager } from "./views"
+import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager, BridgeXdai } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY, ALCHEMY_KEY } from "./constants";
 const { Header, Content, Footer } = Layout;
 
@@ -32,10 +32,13 @@ function App(props) {
   const [erc20s, setErc20s] = useState({})
   const [myErc20s, setMyErc20s] = useLocalStorage("myErc20s")
 
+  const [showNetworkWarning, setShowNetworkWarning] = useState(false)
+
   const networks = {
-  "xdai": {
+  100: {
     name: "xDAI",
     id: "xdai",
+    chainId: 100,
     price: 1,
     gasPrice: 1000000000,
     color1: "#47a8a5",
@@ -48,9 +51,10 @@ function App(props) {
       {name: "USDC", address: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83", decimals: 6}
     ]
   },
-  "mainnet": {
+  1: {
     name: "ETH",
     id: "mainnet",
+    chainId: 1,
     price: price,
     gasPrice: gasPrice,
     color1: "#626890",
@@ -63,9 +67,10 @@ function App(props) {
       {name: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", decimals: 6}
     ]
   },
-  "rinkeby": {
+  4: {
     name: "Rinkeby",
     id: "rinkeby",
+    chainId: 4,
     color1: "#f6c343",
     color2: "#f4c141",
     gasPrice: 4000000000,
@@ -77,9 +82,10 @@ function App(props) {
       {name: "test", address: "0xc3994c5cbddf7ce38b8a2ec2830335fa8f3eea6a", decimals: 0}
     ]
   },
-  "ropsten": {
+  3: {
     name: "Ropsten",
     id: "ropsten",
+    chainId: 3,
     color1: "#ff4a8d",
     color2: "#fd4889",
     gasPrice: 4100000000,
@@ -88,9 +94,10 @@ function App(props) {
     blockExplorer: "https://ropsten.etherscan.io/",
     url: `https://ropsten.infura.io/v3/${INFURA_ID}`
   },
-  "kovan": {
+  42: {
     name: "Kovan",
     id: "kovan",
+    chainId: 42,
     color1: "#7057ff",
     color2: "#6d53fc",
     gasPrice: 1000000000,
@@ -99,9 +106,10 @@ function App(props) {
     blockExplorer: "https://kovan.etherscan.io/",
     faucet: "https://faucet.kovan.network/"
   },
-  "goerli": {
+  5: {
     name: "Goerli",
     id: "goerli",
+    chainId: 5,
     color1: "#3099f2",
     color2: "#2d95ee",
     gasPrice: 4000000000,
@@ -110,9 +118,10 @@ function App(props) {
     blockExplorer: "https://goerli.etherscan.io/",
     url: `https://goerli.infura.io/v3/${INFURA_ID}`
   },
-  "localhost": {
-    name: "localhost",
+  31337: {
+    name: "local",
     id: "localhost",
+    chainId: 31337,
     color1: "#bbbbbb",
     color2: "#b9b9b9",
     gasPrice: 1000000000,
@@ -128,6 +137,7 @@ function App(props) {
 
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, selectedProvider?selectedProvider:mainnetProvider);
+  const mainnetUserProvider = useUserProvider(injectedProvider, mainnetProvider);
   const address = useUserAddress(userProvider);
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
@@ -144,8 +154,8 @@ useEffect(() => {
   if(network) {
   newProvider = new JsonRpcProvider(networks[network].url);
 } else {
-  newProvider = new JsonRpcProvider(networks['mainnet']['url']);
-  setNetwork('mainnet')
+  newProvider = new JsonRpcProvider(networks[1]['url']);
+  setNetwork(1)
 }
 setSelectedProvider(newProvider)
 getErc20s()
@@ -181,9 +191,41 @@ const getErc20s = async () => {
 }
 
   const loadWeb3Modal = useCallback(async () => {
+
     const provider = await web3Modal.connect();
-    setInjectedProvider(new Web3Provider(provider));
+
+    const newInjectedNetwork = (chainId) => {
+      if(networks[chainId]) {
+        console.log('a network we know!')
+        setNetwork(chainId)
+      } else{
+        console.log('not a network we know')
+        setShowNetworkWarning(true)
+      }
+    }
+
+    provider.on("chainChanged", (chainId: number) => {
+      console.log(chainId);
+      newInjectedNetwork(chainId)
+    });
+
+    const newWeb3Provider = async () => {
+      let newWeb3Provider = new Web3Provider(provider)
+      let newNetwork = await newWeb3Provider.getNetwork()
+      newInjectedNetwork(newNetwork.chainId)
+      setInjectedProvider(newWeb3Provider);
+    }
+
+    newWeb3Provider()
+
+    provider.on("accountsChanged", (accounts: string[]) => {
+      console.log(accounts);
+      newWeb3Provider()
+    });
+
   }, [setInjectedProvider]);
+
+  console.log(address)
 
   useEffect(() => {
     if (web3Modal.cachedProvider) {
@@ -203,7 +245,27 @@ const getErc20s = async () => {
       <Layout style={{minHeight:"100%", display:"flex", flexDirection: "column"}}>
         <Affix offsetTop={0}>
         <Header style={{backgroundColor: network?networks[network].color1:"#626890", height: "fit-content", verticalAlign: "middle"}}>
-          <WalletHeader address={address} network={network} networks={networks} handleChange={handleChange}/>
+          <WalletHeader
+            address={address}
+            network={network}
+            networks={networks}
+            handleChange={handleChange}
+            loadWeb3Modal={loadWeb3Modal}
+            injectedProvider={injectedProvider}
+            logoutOfWeb3Modal={logoutOfWeb3Modal}
+            />
+          <Modal visible={showNetworkWarning} title={"Unknown network"} footer={null} closable={false}>
+            <span>Sorry we don't support this network! Please set one of the following in your connected wallet:</span>
+            {
+              <List
+                size="small"
+                bordered={false}
+                dataSource={Object.values(networks)}
+                renderItem={item => <List.Item>{item.name + " (chainId " + item.chainId + ")"}</List.Item>}
+              />
+            }
+            <Space><span>Alternatively you can disconnect your wallet.</span><Button onClick={logoutOfWeb3Modal}>Logout</Button></Space>
+          </Modal>
         </Header>
         </Affix>
         <Content style={{ padding: '0 50px', margin: 0, flex: 1, justifyContent: "center", height: "fit-content", display:"flex", flexDirection: "column"}}>
@@ -273,16 +335,28 @@ const getErc20s = async () => {
                 />
               </Row>
               </Route>
-                <Route path="/manage-tokens">
-                    <TokenManager
-                      network={network}
-                      networks={networks}
-                      erc20s={erc20s}
-                      myErc20s={myErc20s}
-                      setMyErc20s={setMyErc20s}
-                      userProvider={userProvider}
-                      />
-                </Route>
+              <Route path="/manage-tokens">
+                  <TokenManager
+                    network={network}
+                    networks={networks}
+                    erc20s={erc20s}
+                    myErc20s={myErc20s}
+                    setMyErc20s={setMyErc20s}
+                    userProvider={userProvider}
+                    />
+              </Route>
+              <Route path="/bridge-xdai">
+                <BridgeXdai
+                  address={address}
+                  selectedProvider={selectedProvider}
+                  network={network}
+                  networks={networks}
+                  mainnetProvider={mainnetProvider}
+                  userProvider={userProvider}
+                  mainnetUserProvider={mainnetUserProvider}
+                  gasPrice={gasPrice}
+                  />
+              </Route>
           </Switch>
         </Content>
         <Footer style={{padding: 0, zIndex: 100}}>

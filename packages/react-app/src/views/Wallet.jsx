@@ -43,7 +43,8 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
                           name={item.name}
                           contract={erc20s[item.name]['contract']}
                           address={address}
-                          decimals={erc20s[item.name]['decimals']} />:<Spin/>}
+                          decimals={erc20s[item.name]['decimals']}
+                          withSendButton={true} />:<Spin/>}
                         </Row>
                       </List.Item>)}}
                   />:null}

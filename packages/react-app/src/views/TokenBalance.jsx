@@ -6,10 +6,10 @@ import { parseEther, formatEther, formatUnits } from "@ethersproject/units";
 import { useTokenBalance } from "eth-hooks";
 const { Text } = Typography;
 
-function TokenBalance({name, contract, address, decimals}) {
+function TokenBalance({name, contract, address, decimals, withSendButton}) {
   let balance = useTokenBalance(contract, address)
   let formattedBalance = balance?formatUnits(balance, decimals):"loading..."
-  let sendButton = (balance>0)?<Link to={"/send-token?token="+name}><button type="button" class="nes-btn is-primary">></button></Link>:null
+  let sendButton = (balance>0&&withSendButton)?<Link to={"/send-token?token="+name}><button type="button" class="nes-btn is-primary">></button></Link>:null
 
   return (
     <>

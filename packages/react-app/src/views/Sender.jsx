@@ -53,9 +53,9 @@ function Sender({userProvider, mainnetProvider, network, networks, price, gasPri
                         placeholder="to address"
                       />
                       </Form.Item>
-                      <Form.Item name="amount">
+                      <Form.Item name="amount" id="etherInput">
                       <EtherInput
-                        price={(network&&networks[network].price)?networks[network].price:null}
+                        price={(network&&networks[network].price)?networks[network].price:networks["mainnet"].price}
                       />
                       </Form.Item>
                       <Form.Item >

@@ -67,17 +67,19 @@ export default function EtherInput(props) {
       placeholder={props.placeholder ? props.placeholder : "amount in " + mode}
       autoFocus={props.autoFocus}
       prefix={prefix}
+      id={props.id?props.id:'etherInput'}
       value={display}
       addonAfter={addonAfter}
+      type="number"
       onChange={async e => {
         const newValue = e.target.value;
         if (mode === "USD") {
           const ethValue = parseFloat(newValue) / props.price;
+          setDisplay(newValue);
           setValue(ethValue);
           if (typeof props.onChange === "function") {
             props.onChange(ethValue);
           }
-          setDisplay(newValue);
         } else {
           setValue(newValue);
           if (typeof props.onChange === "function") {
