@@ -151,7 +151,7 @@ function App(props) {
 
 useEffect(() => {
   let newProvider
-  if(network) {
+  if(networks[network]) {
   newProvider = new JsonRpcProvider(networks[network].url);
 } else {
   newProvider = new JsonRpcProvider(networks[1]['url']);
@@ -195,17 +195,15 @@ const getErc20s = async () => {
     const provider = await web3Modal.connect();
 
     const newInjectedNetwork = (chainId) => {
-      if(networks[chainId]) {
-        console.log('a network we know!')
-        setNetwork(chainId)
+      if(networks[chainId] || networks[parseInt(chainId)]) {
+        setShowNetworkWarning(false)
+        setNetwork(networks[chainId]?chainId:parseInt(chainId))
       } else{
-        console.log('not a network we know')
         setShowNetworkWarning(true)
       }
     }
 
-    provider.on("chainChanged", (chainId: number) => {
-      console.log(chainId);
+    provider.on("chainChanged", (chainId) => {
       newInjectedNetwork(chainId)
     });
 
@@ -217,6 +215,9 @@ const getErc20s = async () => {
     }
 
     newWeb3Provider()
+    if(window.ethereum) {
+      window.ethereum.autoRefreshOnNetworkChange = false
+    }
 
     provider.on("accountsChanged", (accounts: string[]) => {
       console.log(accounts);
@@ -224,8 +225,6 @@ const getErc20s = async () => {
     });
 
   }, [setInjectedProvider]);
-
-  console.log(address)
 
   useEffect(() => {
     if (web3Modal.cachedProvider) {
@@ -244,7 +243,7 @@ const getErc20s = async () => {
       <BrowserRouter>
       <Layout style={{minHeight:"100%", display:"flex", flexDirection: "column"}}>
         <Affix offsetTop={0}>
-        <Header style={{backgroundColor: network?networks[network].color1:"#626890", height: "fit-content", verticalAlign: "middle"}}>
+        <Header style={{backgroundColor: (network&&networks[network])?networks[network].color1:"#626890", height: "fit-content", verticalAlign: "middle"}}>
           <WalletHeader
             address={address}
             network={network}
@@ -393,6 +392,7 @@ const web3Modal = new Web3Modal({
 });
 
 const logoutOfWeb3Modal = async () => {
+  console.log('logging out')
   await web3Modal.clearCachedProvider();
   setTimeout(() => {
     window.location.reload();

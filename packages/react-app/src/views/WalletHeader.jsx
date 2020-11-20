@@ -7,8 +7,6 @@ const { Option } = Select;
 
 function WalletHeader({address, network, networks, handleChange, loadWeb3Modal, logoutOfWeb3Modal, injectedProvider}) {
 
-  console.log(injectedProvider?injectedProvider.getNetwork():"no injected provider")
-
   return (
           <Row align="middle" justify="center" gutter={12} style={{padding: 8}}>
               <Col span={8}>
@@ -27,8 +25,8 @@ function WalletHeader({address, network, networks, handleChange, loadWeb3Modal, 
               </Col>
               <Col span={8}>
               <Space>
-                {injectedProvider? <span>{networks[network].name}</span>
-                  : <Select defaultValue={network?networks[network].name:"ETH"} style={{ width: 160 }} onChange={handleChange} size="large">
+                {injectedProvider? <span>{networks[network]?networks[network].name:null}</span>
+                  : <Select defaultValue={networks[network]?networks[network].name:"ETH"} style={{ width: 160 }} onChange={handleChange} size="large">
                     {Object.values(networks).map(n => (
                       <Option key={n.chainId}>{n.name}</Option>
                     ))}

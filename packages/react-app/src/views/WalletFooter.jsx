@@ -9,17 +9,17 @@ function WalletFooter({route, network, networks}) {
             <Menu mode="horizontal" style={{textAlign: "center", bottom: "0px"}}>
               <Menu.Item key="wallet" style={{fontSize: "60px", margin: 16, width:"25%", bottom: "0px"}}>
                 <Link to="/wallet">
-                  <Typography style={{color: network?networks[network].color1:"black"}}>$</Typography>
+                  <Typography style={{color: networks[network]?networks[network].color1:"black"}}>$</Typography>
                 </Link>
               </Menu.Item>
               <Menu.Item key="receive" style={{fontSize: "60px", margin: 16, width:"25%", bottom: "0px"}}>
                 <Link to="/receive">
-                  <Typography style={{color: network?networks[network].color1:"black"}}>↓</Typography>
+                  <Typography style={{color: networks[network]?networks[network].color1:"black"}}>↓</Typography>
                 </Link>
               </Menu.Item>
               <Menu.Item key="settings" style={{fontSize: "60px", margin: 16, width:"25%", bottom: "0px"}}>
                 <Link to="/settings">
-                  <Typography style={{color: network?networks[network].color1:"black"}}>?</Typography>
+                  <Typography style={{color: networks[network]?networks[network].color1:"black"}}>?</Typography>
                 </Link>
               </Menu.Item>
             </Menu>
