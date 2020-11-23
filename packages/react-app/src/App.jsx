@@ -16,7 +16,7 @@ const { Header, Content, Footer } = Layout;
 const DEBUG = true
 
 const mainnetProvider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)//getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, alchemy: ALCHEMY_KEY, quorum: 1 });
-
+const xDaiProvider = new JsonRpcProvider(`https://dai.poa.network`)
 
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
@@ -104,7 +104,10 @@ function App(props) {
     decimals: 3,
     url: `https://kovan.infura.io/v3/${INFURA_ID}`,
     blockExplorer: "https://kovan.etherscan.io/",
-    faucet: "https://faucet.kovan.network/"
+    faucet: "https://faucet.kovan.network/",
+    erc20s: [
+      {name: 'kspoa', address: "0xff94183659f549D6273349696d73686Ee1d2AC83", decimals: 18}
+    ]
   },
   5: {
     name: "Goerli",
@@ -117,6 +120,18 @@ function App(props) {
     faucet: "https://goerli-faucet.slock.it/",
     blockExplorer: "https://goerli.etherscan.io/",
     url: `https://goerli.infura.io/v3/${INFURA_ID}`
+  },
+  77: {
+    name: "Sokol",
+    id: "sokol",
+    chainId: 77,
+    color1: "#6A0DAD",
+    color2: "#6A0DAD",
+    gasPrice: 4000000000,
+    decimals: 3,
+    faucet: "https://faucet.poa.network/",
+    blockExplorer: "https://blockscout.com/poa/sokol/",
+    url: `https://sokol.poa.network`
   },
   31337: {
     name: "local",
@@ -198,13 +213,16 @@ const getErc20s = async () => {
       if(networks[chainId] || networks[parseInt(chainId)]) {
         setShowNetworkWarning(false)
         setNetwork(networks[chainId]?chainId:parseInt(chainId))
+        return true
       } else{
         setShowNetworkWarning(true)
+        return false
       }
     }
 
     provider.on("chainChanged", (chainId) => {
-      newInjectedNetwork(chainId)
+      let knownNetwork = newInjectedNetwork(chainId)
+      if(knownNetwork) newWeb3Provider()
     });
 
     const newWeb3Provider = async () => {
@@ -350,7 +368,6 @@ const getErc20s = async () => {
                   selectedProvider={selectedProvider}
                   network={network}
                   networks={networks}
-                  mainnetProvider={mainnetProvider}
                   userProvider={userProvider}
                   mainnetUserProvider={mainnetUserProvider}
                   gasPrice={gasPrice}

@@ -37,7 +37,7 @@ function Wallet({address, selectedProvider, yourBalance, network, networks, pric
                     dataSource={(myErc20s&&myErc20s[network])?myErc20s[network]:[]}
                     renderItem={item => {
                       return (
-                      <List.Item>
+                      <List.Item style={{padding:0}}>
                         <Row justify="center" align="middle" style={{width:"100%"}}>
                         {(erc20s&&erc20s[item.name])?<TokenBalance
                           name={item.name}

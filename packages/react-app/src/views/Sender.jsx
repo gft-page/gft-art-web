@@ -30,7 +30,7 @@ function Sender({userProvider, mainnetProvider, network, networks, price, gasPri
                           value = parseEther("" + parseFloat(values.amount).toFixed(8));
                         }
 
-                        await tx({
+                        let transaction = await tx({
                           to: values.toAddress,
                           value,
                         });
