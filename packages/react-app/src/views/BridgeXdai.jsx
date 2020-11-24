@@ -11,17 +11,17 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { INFURA_ID } from "../constants";
 const { Text } = Typography;
 
-const mainnetProvider = new JsonRpcProvider(`https://kovan.infura.io/v3/${INFURA_ID}`)//`https://mainnet.infura.io/v3/${INFURA_ID}`)//getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, alchemy: ALCHEMY_KEY, quorum: 1 });
-const xDaiProvider = new JsonRpcProvider(`https://sokol.poa.network`)//`https://dai.poa.network`)
+const mainnetProvider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)//`https://kovan.infura.io/v3/${INFURA_ID}`)//`https://mainnet.infura.io/v3/${INFURA_ID}`)//getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, alchemy: ALCHEMY_KEY, quorum: 1 });
+const xDaiProvider = new JsonRpcProvider(`https://dai.poa.network`)//`https://sokol.poa.network`)//`https://dai.poa.network`)
 
-const daiTokenAddress = '0xff94183659f549D6273349696d73686Ee1d2AC83'//from Igor '0x40a81c34f36EbE2D98baC578d66d3EE952A48f24'//real '0x6B175474E89094C44Da98b954EedeAC495271d0F'
-const xDaiBridgeAddress = '0x867949C3F2f66D827Ed40847FaA7B3a369370e13'//from igor'0xed47976103eBcCF7685e8aF185deD9EcF57E146A'//real '0x7301CFA0e1756B71869E93d4e4Dca5c7d0eb0AA6'
-const mainnetBridgeAddress = '0x99FB1a25caeB9c3a5Bf132686E2fe5e27BC0e2dd'//from igor'0xea7f8c8d2c55ee242f2f22c11f43421e459229b8'//real '0x4aa42145aa6ebf72e164c9bbc74fbd3788045016'
+const daiTokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F' //AMB'0xff94183659f549D6273349696d73686Ee1d2AC83'//from Igor '0x40a81c34f36EbE2D98baC578d66d3EE952A48f24'//real '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+const xDaiBridgeAddress = '0x7301CFA0e1756B71869E93d4e4Dca5c7d0eb0AA6' //AMB'0x867949C3F2f66D827Ed40847FaA7B3a369370e13'//from igor'0xed47976103eBcCF7685e8aF185deD9EcF57E146A'//real '0x7301CFA0e1756B71869E93d4e4Dca5c7d0eb0AA6'
+const mainnetBridgeAddress = '0x4aa42145aa6ebf72e164c9bbc74fbd3788045016' //AMB'0x99FB1a25caeB9c3a5Bf132686E2fe5e27BC0e2dd'//from igor'0xea7f8c8d2c55ee242f2f22c11f43421e459229b8'//real '0x4aa42145aa6ebf72e164c9bbc74fbd3788045016'
 
 const decimals = 18
 
-const xDaiChainId = 77 //100
-const mainnetChainId = 42 //1
+const xDaiChainId = 100 //100
+const mainnetChainId = 1 //1
 
 function BridgeXdai({address, selectedProvider, network, networks, userProvider, mainnetUserProvider, gasPrice}) {
 
@@ -32,6 +32,7 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
   const [fromXdaiMessageHash, setFromXdaiMessageHash] = useState()
   const [fromXdaiMessage, setFromXdaiMessage] = useState()
   const [fromXdaiSignatures, setFromXdaiSignatures] = useState()
+  const [fromXdaiMainTx, setFromXdaiMainTx] = useState()
   const [fromMainTx, setFromMainTx] = useState()
   const [selectedNetwork, setSelectedNetwork] = useState()
 
@@ -87,6 +88,7 @@ const tx = Transactor(userProvider, gasPrice)
   }, [selectedProvider])
 
   const checkForSignatures = async () => {
+    console.log(fromXdaiTx, fromXdaiAmount, fromXdaiAddress)
     if(fromXdaiTx && fromXdaiAmount && fromXdaiAddress) {
       let messageHash = await xDaiHelperContract.getMessageHash(fromXdaiAddress, fromXdaiAmount, fromXdaiTx)
       setFromXdaiMessageHash(messageHash)
@@ -115,6 +117,17 @@ const tx = Transactor(userProvider, gasPrice)
     });
     console.log(transaction)
     setEnteredAmount('')
+    setFromXdaiAmount(parsedValue.toLocaleString('fullwide', {useGrouping:false}))
+    setFromXdaiAddress(address)
+    setFromXdaiTx(transaction.hash)
+  }
+
+  const sendSignaturesToMainnet = async () => {
+    if(fromXdaiMessage && fromXdaiSignatures && network == mainnetChainId) {
+      let mainnetTx = mainnetBridgeContract.executeSignatures(fromXdaiMessage, fromXdaiSignatures)
+      console.log(mainnetTx)
+      setFromXdaiMainTx(mainnetTx.hash)
+    }
   }
 
   const sendDaiToBridge = async () => {
@@ -212,16 +225,36 @@ const tx = Transactor(userProvider, gasPrice)
                 </Col>
               </Row>
               <Row align="middle" justify="center">
-              <Card>
-                <p>1. Send xDai to the bridge <i class="nes-icon is-small star is-empty"></i><i class="nes-icon is-small star"></i></p>
-                <p>2. Wait for the required signatures</p>
-                {fromXdaiMessage?<p>{fromXdaiMessage}</p>:null}
-                {fromXdaiSignatures?<p>{fromXdaiSignatures}</p>:null}
-                <button type="button" class="nes-btn is-primary"
-                onClick={checkForSignatures}
-                >Check</button>
-                <p>3. Execute the signatures on mainnet</p>
-              </Card>
+              {fromXdaiTx?<Card>
+                <p class="nes-text is-success">1. Send xDai to the bridge </p>
+                <div class="nes-field is-inline">
+                    <label>tx</label>
+                    <input type="text" id="tx" class="nes-input" readOnly value={fromXdaiTx}/>
+                </div>
+                <div class="nes-field is-inline">
+                    <label>value</label>
+                    <input type="text" id="value" class="nes-input" readOnly value={formatEther(fromXdaiAmount)}/>
+                </div>
+                <div class="nes-field is-inline">
+                    <label>address</label>
+                    <input type="text" id="address" class="nes-input" readOnly value={fromXdaiAddress}/>
+                </div>
+                <p class={fromXdaiSignatures?"nes-text is-success":null}>2. Wait for the required signatures</p>
+                {fromXdaiMessage?
+                                  <div class="nes-field is-inline">
+                                      <label>message</label>
+                                      <input type="text" id="message" class="nes-input" readOnly value={fromXdaiMessage}/>
+                                  </div>:null}
+                {fromXdaiSignatures?<div class="nes-field is-inline">
+                                      <label>signatures</label>
+                                      <input type="text" id="signatures" class="nes-input" readOnly value={fromXdaiSignatures}/>
+                                    </div>:<button type="button" class="nes-btn is-primary" onClick={checkForSignatures}
+                                            >Check</button>}
+                <p class={fromXdaiMainTx?"nes-text is-success":null}>3. Execute the signatures on mainnet</p>
+                {(fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx)?<button type="button" class="nes-btn is-primary" onClick={sendSignaturesToMainnet}>Go to main!</button>
+                : null }
+                {fromXdaiMainTx?<a href={`https://etherscan.io/tx/${fromXdaiMainTx}`}><span class="nes-text is-primary">Blockexplorer</span></a>:null}
+              </Card>:null}
               </Row>
               </>
 
