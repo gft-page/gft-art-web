@@ -1,15 +1,17 @@
-type Purpose @entity {
+type Haiku @entity {
   id: ID!
-  sender: Sender!
-  purpose: String!
+  owner: Owner!
+  text: String!
+  color: String!
+  tokenId: String!
   createdAt: BigInt!
   transactionHash: String!
 }
 
-type Sender @entity {
+type Owner @entity {
   id: ID!
   address: Bytes!
-  purposes: [Purpose!] @derivedFrom(field: "sender")
+  haikus: [Haiku!] @derivedFrom(field: "owner")
   createdAt: BigInt!
-  purposeCount: BigInt!
+  haikuCount: BigInt!
 }

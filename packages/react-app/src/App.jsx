@@ -4,7 +4,7 @@ import "antd/dist/antd.css";
 import { MailOutlined } from "@ant-design/icons";
 import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu } from "antd";
+import { Row, Col, Button, List, Tabs, Menu, Input } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -14,6 +14,8 @@ import { Transactor } from "./helpers";
 import { parseEther, formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
+import { HuePicker } from 'react-color';
+
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -29,6 +31,9 @@ import { Hints, ExampleUI, Subgraph } from "./views"
 */
 import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
 const { TabPane } = Tabs;
+
+const ipfsAPI = require('ipfs-api');
+const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
 
 const DEBUG = true
 
@@ -48,6 +53,8 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+
+const { TextArea } = Input;
 
 
 
@@ -83,6 +90,8 @@ function App(props) {
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
+  const mintEvents = useEventListener(readContracts, "YourContract", "Mint", localProvider, 1);
+
 
 
   const loadWeb3Modal = useCallback(async () => {
@@ -100,6 +109,10 @@ function App(props) {
   useEffect(() => {
     setRoute(window.location.pathname)
   }, [ window.location.pathname ]);
+
+  const [ yourInput, setYourInput ] = useState()
+  const [ yourPrice, setYourPrice ] = useState()
+  const [ yourColor, setYourColor ] = useState()
 
   return (
     <div className="App">
@@ -161,6 +174,90 @@ function App(props) {
             />
           </Route>
           <Route path="/subgraph">
+            <div style={{width:700, margin:"auto"}}>
+              <TextArea style={{width:700,padding:64, fontSize:32, backgroundColor:yourColor}} rows={3} value={yourInput} onChange={(e)=>{
+                setYourInput(e.target.value)
+              }}/>
+
+              <HuePicker
+              color={ yourColor }
+              onChangeComplete={ (newVal)=>{
+                setYourColor(newVal.hex)
+                console.log("COLOR INCOMING",newVal)
+              } }
+              />
+
+              <Button type={"primary"} onClick={async ()=>{
+                console.log("yourInput",yourInput)
+
+                // let buffer = await Buffer.from([{ color: yourColor, text: yourInput, author: address}]);
+
+                //create an object like {color: XXX, haiku: XXX, author: XXX}
+                let obj = { color: yourColor, text: yourInput, author: address};
+                let buffer = await Buffer.from(JSON.stringify(obj), 'utf-8') //we could fall back to going directly to IPFS if our server is down?
+                console.log("ADDING TO IPFS...",obj)
+                await ipfs.files.add(buffer, function (err, file) {
+                  console.log("ADDED!")
+                  if (err) {
+                    console.log(err);
+                  }
+                  console.log(file)
+                  tx( writeContracts.YourContract.anyoneCanMint(address, file[0].hash, yourColor, yourInput,{
+                    value: parseEther("0.01")
+                  }));
+                })
+              
+
+                //calculate hash before upload looks like "QmZqi...WRX"
+
+                //upload to ipfs
+
+                //write the hash to the contract while wait:
+                
+              }}>Mint</Button>
+            </div>
+
+            <div style={{width:780, margin:"auto"}}>
+              <List
+                size="large"
+                dataSource={mintEvents}
+                renderItem={(item)=>{
+                  console.log("item",item)
+
+                  return (
+                    <List.Item>
+
+
+
+                      <Address
+                        minimized={true}
+                        value={item.to}
+                        blockExplorer={blockExplorer}
+                      />
+                      <TextArea style={{padding:64, fontSize:32, backgroundColor: item.color}} value={item.input} rows={4}/>
+                      <TextArea style={{padding:50, fontSize:10}} rows={1} value={yourPrice} onChange={(e)=>{
+                          setYourPrice(e.target.value)
+                      }}/>
+                      <Button type={"primary"} onClick={async ()=>{
+
+                        
+                        tx( writeContracts.YourContract.anyoneCanMint(address, item.tokenURI, yourColor, yourInput, {
+                          value: parseEther(yourPrice)
+                        }));
+                      
+                      }}>Mint</Button>
+
+                      <Button type={"primary"} onClick={async ()=>{
+
+                        tx( writeContracts.YourContract.burn(item.id));
+                      
+                      }}>Burn</Button>
+
+                    </List.Item>
+                      )
+                    }}
+              />
+            </div>
             <Subgraph
             subgraphUri={props.subgraphUri}
             tx={tx}

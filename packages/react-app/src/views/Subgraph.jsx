@@ -26,18 +26,15 @@ function Subgraph(props) {
 
   const EXAMPLE_GRAPHQL = `
   {
-    purposes(first: 25, orderBy: createdAt, orderDirection: desc) {
+    haikus(first: 10, orderBy: createdAt, orderDirection: desc) {
       id
-      purpose
+      tokenId
+      color
+      text
       createdAt
-      sender {
+      owner {
         id
       }
-    }
-    senders {
-      id
-      address
-      purposeCount
     }
   }
   `
@@ -46,15 +43,16 @@ function Subgraph(props) {
 
   const purposeColumns = [
     {
-      title: 'Purpose',
-      dataIndex: 'purpose',
-      key: 'purpose',
+      title: 'Haiku',
+      dataIndex: 'haiku',
+      key: 'id',
+      render: record => record
     },
     {
-      title: 'Sender',
+      title: 'Owner',
       key: 'id',
       render: (record) => <Address
-                        value={record.sender.id}
+                        value={record.owner.id}
                         ensProvider={props.mainnetProvider}
                         fontSize={16}
                       />
@@ -68,6 +66,9 @@ function Subgraph(props) {
     ];
 
   const [newPurpose, setNewPurpose] = useState("loading...");
+  const [ yourInput, setYourInput ] = useState()
+  const [ yourPrice, setYourPrice ] = useState()
+  const [ yourColor, setYourColor ] = useState()
 
 
   const deployWarning = (
@@ -135,17 +136,8 @@ function Subgraph(props) {
           </div>
 
           <div style={{width:780, margin: "auto", paddingBottom:64}}>
-
-            <div style={{margin:32, textAlign:'right'}}>
-              <Input onChange={(e)=>{setNewPurpose(e.target.value)}} />
-              <Button onClick={()=>{
-                console.log("newPurpose",newPurpose)
-                /* look how you call setPurpose on your contract: */
-                props.tx( props.writeContracts.YourContract.setPurpose(newPurpose) )
-              }}>Set Purpose</Button>
-            </div>
-
-            {data?<Table dataSource={data.purposes} columns={purposeColumns} rowKey={"id"} />:<Typography>{(loading?"Loading...":deployWarning)}</Typography>}
+        
+            {data?<Table dataSource={data.haikus} columns={purposeColumns} rowKey={"id"} />:<Typography>{(loading?"Loading...":deployWarning)}</Typography>}
 
             <div style={{margin:32, height:400, border:"1px solid #888888", textAlign:'left'}}>
               <GraphiQL fetcher={graphQLFetcher} docExplorerOpen={true} query={EXAMPLE_GRAPHQL}/>

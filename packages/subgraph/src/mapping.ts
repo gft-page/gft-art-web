@@ -1,34 +1,38 @@
 import { BigInt, Address } from "@graphprotocol/graph-ts"
 import {
   YourContract,
-  SetPurpose
+  Mint,
+  Burn
 } from "../generated/YourContract/YourContract"
-import { Purpose, Sender } from "../generated/schema"
+import { Haiku, Owner } from "../generated/schema"
 
-export function handleSetPurpose(event: SetPurpose): void {
 
-  let senderString = event.params.sender.toHexString()
+export function storeMint(event: Mint): void {
 
-  let sender = Sender.load(senderString)
+  let ownerString = event.params.to.toHexString()
 
-  if (sender == null) {
-    sender = new Sender(senderString)
-    sender.address = event.params.sender
-    sender.createdAt = event.block.timestamp
-    sender.purposeCount = BigInt.fromI32(1)
+  let owner = Owner.load(ownerString)
+
+  if (owner == null) {
+    owner = new Owner(ownerString)
+    owner.address = event.params.to
+    owner.createdAt = event.block.timestamp
+    owner.haikuCount = BigInt.fromI32(1)
   }
   else {
-    sender.purposeCount = sender.purposeCount.plus(BigInt.fromI32(1))
+    owner.haikuCount = owner.haikuCount.plus(BigInt.fromI32(1))
   }
 
-  let purpose = new Purpose(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
+  let haiku = new Haiku(event.transaction.hash.toHex() + "-" + event.logIndex.toString())
 
-  purpose.purpose = event.params.purpose
-  purpose.sender = senderString
-  purpose.createdAt = event.block.timestamp
-  purpose.transactionHash = event.transaction.hash.toHex()
+  haiku.text = event.params.input
+  haiku.owner = ownerString
+  haiku.createdAt = event.block.timestamp
+  haiku.transactionHash = event.transaction.hash.toHex()
+  haiku.color = event.params.color
+  haiku.tokenId = event.params.tokenURI
 
-  purpose.save()
-  sender.save()
+  haiku.save()
+  owner.save()
 
 }
