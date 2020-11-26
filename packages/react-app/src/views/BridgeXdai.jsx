@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ethers } from "ethers";
 import { SendOutlined, SmileOutlined } from "@ant-design/icons";
-import { Row, Col, List, Typography, Spin, InputNumber, Card, notification, Popover } from "antd";
+import { Row, Col, List, Typography, Spin, InputNumber, Card, notification, Popover, Tooltip } from "antd";
 import { parseEther, formatEther, formatUnits } from "@ethersproject/units";
 import { TokenBalance } from "."
 import { useTokenBalance, useBalance, usePoller } from "eth-hooks";
@@ -256,6 +256,10 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
       <button type="button" class={"nes-btn is-primary"} disabled={enteredAmount==""}
       >↑</button>
       </Popover>
+      <Tooltip title="Switch network to mainnet to turn Dai into xDai">
+      <button type="button" class={"nes-btn"} disabled
+      >↓</button>
+      </Tooltip>
       </>
     )
     } else if(selectedNetwork == mainnetChainId || parseInt(selectedNetwork) == mainnetChainId) {
@@ -273,6 +277,10 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
       <button type="button" class="nes-btn is-primary" disabled={enteredAmount==""}
       onClick={sendDaiToBridge}
       >↓</button>
+      <Tooltip title="Switch network to xDai to turn xDai into Dai">
+      <button type="button" class={"nes-btn"} disabled
+      >↑</button>
+      </Tooltip>
       </>
       )
     } else {
@@ -336,7 +344,8 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
                 : (fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx)?<p class="nes-text is-warning">Switch network to mainnet</p>:null }
                 {fromXdaiMainTx?
                   <>
-                  <a href={`https://etherscan.io/tx/${fromXdaiMainTx}`} target="_blank"><p class="nes-text is-primary">Done! View transaction</p></a>
+                  <a href={`https://etherscan.io/tx/${fromXdaiMainTx}`} target="_blank"><p class="nes-text is-primary">View transaction</p></a>
+                  <p>Once this transaction is confirmed, xDai to Dai briding is complete</p>
                   <button type="button" class="nes-btn"  onClick={resetFromXdaiBridge}>Reset bridge</button>
                   </>
                   :null}

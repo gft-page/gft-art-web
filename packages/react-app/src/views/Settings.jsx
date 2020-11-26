@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Row, Col, Typography, Button, Spin, Space, Table, Descriptions, Card, Popconfirm, Divider } from "antd";
 import { Ramp, GasGauge, PrivateKeyModal } from "../components";
 const { Text, Title } = Typography;
@@ -48,6 +49,9 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
                       >
                     <Button>Reset tokens</Button>
                     </Popconfirm>
+                    <Row align="middle" justify="center">
+                    <Link to="/bridge-xdai" style={{margin: "12px"}}>{"Dai<>xDai bridge"}</Link>
+                    </Row>
                 <Divider/>
                 <Table
                 title={() => <Title level={4}>Network information</Title>}
