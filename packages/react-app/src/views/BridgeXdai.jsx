@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ethers } from "ethers";
 import { SendOutlined, SmileOutlined } from "@ant-design/icons";
-import { Row, Col, List, Typography, Spin, InputNumber, Card } from "antd";
+import { Row, Col, List, Typography, Spin, InputNumber, Card, notification, Popover } from "antd";
 import { parseEther, formatEther, formatUnits } from "@ethersproject/units";
 import { TokenBalance } from "."
-import { useTokenBalance, useBalance } from "eth-hooks";
+import { useTokenBalance, useBalance, usePoller } from "eth-hooks";
 import { Transactor } from "../helpers"
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { INFURA_ID } from "../constants";
@@ -23,12 +23,14 @@ const decimals = 18
 const xDaiChainId = 100 //100
 const mainnetChainId = 1 //1
 
+const minAmountToTransfer = "10"
+
 function BridgeXdai({address, selectedProvider, network, networks, userProvider, mainnetUserProvider, gasPrice}) {
 
   const [enteredAmount, setEnteredAmount] = useState('')
-  const [fromXdaiTx, setFromXdaiTx] = useState("0x1225a647d379b4c6bbabf3c8a2d80c213751d6c0626ac7b10551431afe6810a2")
-  const [fromXdaiAmount, setFromXdaiAmount] = useState("10000000000000000000")
-  const [fromXdaiAddress, setFromXdaiAddress] = useState("0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc")
+  const [fromXdaiTx, setFromXdaiTx] = useState()//"0x5a8606651cd4439a9dc48581cbf962f4ce2c91bc82c618186e02ebd85f508546")//"0x1225a647d379b4c6bbabf3c8a2d80c213751d6c0626ac7b10551431afe6810a2")
+  const [fromXdaiAmount, setFromXdaiAmount] = useState()//"10000000000000000000")
+  const [fromXdaiAddress, setFromXdaiAddress] = useState()//"0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc")
   const [fromXdaiMessageHash, setFromXdaiMessageHash] = useState()
   const [fromXdaiMessage, setFromXdaiMessage] = useState()
   const [fromXdaiSignatures, setFromXdaiSignatures] = useState()
@@ -40,7 +42,8 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
 //  setFromXdaiAmount("10000000000000000000")
 //  setFromXdaiAddress("0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc")
 
-const tx = Transactor(userProvider, gasPrice)
+  const tx = Transactor(userProvider, gasPrice)
+  let userSigner = userProvider.getSigner()
 
   const erc20Abi = [
       // Read-Only Functions
@@ -64,7 +67,8 @@ const tx = Transactor(userProvider, gasPrice)
 //"0x6B175474E89094C44Da98b954EedeAC495271d0F" <- dai contract
   let daiContract = new ethers.Contract(daiTokenAddress, erc20Abi, mainnetProvider);
   let xDaiHelperContract = new ethers.Contract("0x6A92e97A568f5F58590E8b1f56484e6268CdDC51", xDaiHelperAbi, xDaiProvider);
-  let mainnetBridgeContract = new ethers.Contract(mainnetBridgeAddress, mainnetBridgeAbi, userProvider)
+
+  let mainnetBridgeContract = new ethers.Contract(mainnetBridgeAddress, mainnetBridgeAbi, userSigner)
 
   let daiBalance = useTokenBalance(daiContract, address, 3000)
   let xDaiBalance = useBalance(xDaiProvider, address, 3000)
@@ -88,16 +92,21 @@ const tx = Transactor(userProvider, gasPrice)
   }, [selectedProvider])
 
   const checkForSignatures = async () => {
-    console.log(fromXdaiTx, fromXdaiAmount, fromXdaiAddress)
     if(fromXdaiTx && fromXdaiAmount && fromXdaiAddress) {
-      let messageHash = await xDaiHelperContract.getMessageHash(fromXdaiAddress, fromXdaiAmount, fromXdaiTx)
-      setFromXdaiMessageHash(messageHash)
-      let message = await xDaiHelperContract.getMessage(messageHash)
-      setFromXdaiMessage(message)
-      let signatures = await xDaiHelperContract.getSignatures(messageHash)
-      setFromXdaiSignatures(signatures)
+      try {
+        let messageHash = await xDaiHelperContract.getMessageHash(fromXdaiAddress, fromXdaiAmount, fromXdaiTx)
+        setFromXdaiMessageHash(messageHash)
+        let message = await xDaiHelperContract.getMessage(messageHash)
+        setFromXdaiMessage(message)
+        let signatures = await xDaiHelperContract.getSignatures(messageHash)
+        setFromXdaiSignatures(signatures)
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
+
+  usePoller(checkForSignatures, 4000)
 
   const getParsedValue = (v) => {
     let value;
@@ -109,7 +118,22 @@ const tx = Transactor(userProvider, gasPrice)
     return value
   }
 
+  const checkAgainstMinimumTransfer = (v, minTransfer) => {
+    if(parseFloat(v) < parseFloat(minTransfer)) {
+      notification.open({
+        message: 'Amount is less than the minimum allowed transfer',
+        description:
+        `The minimum transfer is ${minTransfer}`,
+      });
+        return false
+    } else {
+        return true
+      }
+  }
+
   const sendXdaiToBridge = async () => {
+    if(checkAgainstMinimumTransfer(enteredAmount, minAmountToTransfer) == false) return
+
     let parsedValue = getParsedValue(enteredAmount)
     let transaction = await tx({
       to: xDaiBridgeAddress,
@@ -120,21 +144,47 @@ const tx = Transactor(userProvider, gasPrice)
     setFromXdaiAmount(parsedValue.toLocaleString('fullwide', {useGrouping:false}))
     setFromXdaiAddress(address)
     setFromXdaiTx(transaction.hash)
+    notification.open({
+      message: 'Sent xDai to the Bridge contract!',
+      description:
+      (<a href={"https://blockscout.com/poa/xdai/tx/"+transaction.hash} target="_blank">{`👀 Sent ${enteredAmount} xDai, view transaction`}</a>),
+    });
   }
 
   const sendSignaturesToMainnet = async () => {
     if(fromXdaiMessage && fromXdaiSignatures && network == mainnetChainId) {
-      let mainnetTx = mainnetBridgeContract.executeSignatures(fromXdaiMessage, fromXdaiSignatures)
+      let mainnetTx = await mainnetBridgeContract.executeSignatures(fromXdaiMessage, fromXdaiSignatures)
       console.log(mainnetTx)
       setFromXdaiMainTx(mainnetTx.hash)
+      notification.open({
+        message: 'Sent signatures to mainnet!',
+        description:
+        (<a href={"https://etherscan.io/tx/"+mainnetTx.hash} target="_blank">{`👀 view transaction`}</a>),
+      });
     }
   }
 
+  const resetFromXdaiBridge = () => {
+    setFromXdaiAmount()
+    setFromXdaiAddress()
+    setFromXdaiTx()
+    setFromXdaiMessage()
+    setFromXdaiMessageHash()
+    setFromXdaiSignatures()
+    setFromXdaiMainTx()
+  }
+
+  const resetFromMainBridge = () => {
+    setFromMainTx()
+  }
+
   const sendDaiToBridge = async () => {
+
+    if(checkAgainstMinimumTransfer(enteredAmount, minAmountToTransfer) == false) return
+
     let parsedValue = getParsedValue(enteredAmount)
     let valueString = parsedValue.toLocaleString('fullwide', {useGrouping:false})
 
-    let userSigner = userProvider.getSigner()
     let daiSenderContract = new ethers.Contract(daiTokenAddress, erc20Abi, userSigner);
     try {
       let erc20tx = await daiSenderContract.transfer(
@@ -142,6 +192,12 @@ const tx = Transactor(userProvider, gasPrice)
         valueString
       );
       console.log(erc20tx)
+      setFromMainTx(erc20tx.hash)
+      notification.open({
+        message: 'Sent Dai to the Bridge contract!',
+        description:
+        (<a href={"https://etherscan.io/tx/"+erc20tx.hash} target="_blank">{`👀 Sent ${enteredAmount} Dai, click to view transaction`}</a>),
+      });
       setEnteredAmount('')
     } catch(e){
       console.log(e)
@@ -151,39 +207,65 @@ const tx = Transactor(userProvider, gasPrice)
 
   let bridgeOption
 
+  const updateEnteredAmount = (entered, maxAmount, minAmount) => {
+    if(parseFloat(maxAmount) < parseFloat(minAmount)) {
+      notification.open({
+        message: 'Balance is less than the minimum allowed transfer',
+        description:
+        `The minimum transfer is ${minAmount}`,
+      });
+      return
+    }
+    if(parseFloat(entered) > parseFloat(maxAmount)) {
+      setEnteredAmount(maxAmount)
+      notification.open({
+        message: `You can't transfer more than your balance!`,
+        description:
+        `Your balance is ${maxAmount}`,
+      });
+    } else {
+      setEnteredAmount(entered)
+    }
+  }
+
   if(selectedNetwork == xDaiChainId || parseInt(selectedNetwork) == xDaiChainId) {
+
+    const fromXdaiPopover = (
+      <div>
+        <p>1. Transfer xDai to the Bridge contract</p>
+        <p>2. Wait for signatures from the Bridge oracles</p>
+        <p>3. Execute Bridge signatures on mainnet (requires mainnet gas fee!)</p>
+        <button type="button" class={"nes-btn is-primary"}
+          onClick={sendXdaiToBridge}
+        >Let's do this!</button>
+      </div>
+      );
+
       bridgeOption = (
       <>
       <div class="nes-field">
-        {xDaiBalance>0?<input type="number" id="xdai_to_dai" class="nes-input" placeholder="xdai to dai"
+        {xDaiBalance>0?<input id="xdai_to_dai" class="nes-input" placeholder="xdai to dai"
           onChange={async e => {
             let maxBalance = formatBalance(xDaiBalance, decimals)
-            if(parseFloat(e.target.value) > parseFloat(maxBalance)) {
-              setEnteredAmount(maxBalance)
-            } else {
-              setEnteredAmount(e.target.value)
-            }
+            updateEnteredAmount(e.target.value, maxBalance, minAmountToTransfer)
           }}
           value={enteredAmount}
         />:<input type="text" id="warning_field" class="nes-input" disabled placeholder="No dai to transfer"/>}
       </div>
+      <Popover content={fromXdaiPopover} title="Transferring xDai to Dai has three steps" trigger="click">
       <button type="button" class={"nes-btn is-primary"} disabled={enteredAmount==""}
-        onClick={sendXdaiToBridge}
       >↑</button>
+      </Popover>
       </>
     )
     } else if(selectedNetwork == mainnetChainId || parseInt(selectedNetwork) == mainnetChainId) {
       bridgeOption = (
       <>
       <div class="nes-field">
-        {daiBalance>0?<input type="number" id="dai_to_xdai" class="nes-input" placeholder="dai to xdai"
+        {daiBalance>0?<input id="dai_to_xdai" class="nes-input" placeholder="dai to xdai"
         onChange={async e => {
           let maxBalance = formatBalance(daiBalance, decimals)
-          if(parseFloat(e.target.value) > parseFloat(maxBalance)) {
-            setEnteredAmount(maxBalance)
-          } else {
-            setEnteredAmount(e.target.value)
-          }
+          updateEnteredAmount(e.target.value, maxBalance, minAmountToTransfer)
         }}
         value={enteredAmount}
         />:<input type="text" id="warning_field" class="nes-input" disabled placeholder="No dai to transfer"/>}
@@ -248,12 +330,25 @@ const tx = Transactor(userProvider, gasPrice)
                 {fromXdaiSignatures?<div class="nes-field is-inline">
                                       <label>signatures</label>
                                       <input type="text" id="signatures" class="nes-input" readOnly value={fromXdaiSignatures}/>
-                                    </div>:<button type="button" class="nes-btn is-primary" onClick={checkForSignatures}
-                                            >Check</button>}
+                                    </div>:<p class="nes-text is-warning">Checking for signatures</p>}
                 <p class={fromXdaiMainTx?"nes-text is-success":null}>3. Execute the signatures on mainnet</p>
-                {(fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx)?<button type="button" class="nes-btn is-primary" onClick={sendSignaturesToMainnet}>Go to main!</button>
-                : null }
-                {fromXdaiMainTx?<a href={`https://etherscan.io/tx/${fromXdaiMainTx}`}><span class="nes-text is-primary">Blockexplorer</span></a>:null}
+                {(fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx&&network==mainnetChainId)?<button type="button" class="nes-btn is-primary" onClick={sendSignaturesToMainnet}>Let's go!</button>
+                : (fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx)?<p class="nes-text is-warning">Switch network to mainnet</p>:null }
+                {fromXdaiMainTx?
+                  <>
+                  <a href={`https://etherscan.io/tx/${fromXdaiMainTx}`} target="_blank"><p class="nes-text is-primary">Done! View transaction</p></a>
+                  <button type="button" class="nes-btn"  onClick={resetFromXdaiBridge}>Reset bridge</button>
+                  </>
+                  :null}
+              </Card>:null}
+              {fromMainTx?<Card>
+                <p class={"nes-text is-success"}>Send DAI to the deposit contract</p>
+                <div class="nes-field is-inline">
+                    <label>txHash</label>
+                    <input type="text" id="message" class="nes-input" readOnly value={fromMainTx}/>
+                </div>
+                <p class={"nes-text"}>It may take several minutes to bridge to xDai</p>
+                <button type="button" class="nes-btn"  onClick={resetFromMainBridge}>Reset bridge</button>
               </Card>:null}
               </Row>
               </>
