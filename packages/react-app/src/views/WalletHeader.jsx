@@ -11,7 +11,7 @@ function WalletHeader({address, network, networks, handleChange, loadWeb3Modal, 
           <Row align="middle" justify="center" gutter={12} style={{padding: 8}}>
               <Col span={8}>
               <Row align="middle" justify="center" gutter={4}>
-                <Link style={{fontSize:60}} to="/wallet"><img alt="Mage logo" src={mage} style={{width: 80, height: 80, imageRendering:"pixelated"}}/></Link>
+                <Link style={{fontSize:60}} to="/wallet"><img alt="Mage logo" src={`https://avatars.dicebear.com/api/human/${address?address:'wizard'}.svg`} style={{width: 80, height: 80, imageRendering:"pixelated"}}/></Link>
               </Row>
               </Col>
               <Col span={8}>

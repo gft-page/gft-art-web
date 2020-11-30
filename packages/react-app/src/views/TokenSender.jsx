@@ -59,6 +59,7 @@ function TokenSender({erc20s, address, network, networks, selectedProvider, main
                     initialValues={{ value: "0", token: token }}
                     onFinish={async (values) => {
                       console.log(values)
+                      if(values.amount && values.toAddress) {
                       setSending(true)
                       const tx = Transactor(selectedProvider);
 
@@ -91,6 +92,13 @@ function TokenSender({erc20s, address, network, networks, selectedProvider, main
                       });
                       setSending(false)
                     }
+                  } else {
+                    notification.open({
+                      message: 'Missing information!',
+                      description:
+                      `Please enter an amount and a destination`,
+                    });
+                  }
                     }}
                     onFinishFailed={errorInfo => {
                       console.log('Failed:', errorInfo);
@@ -103,14 +111,14 @@ function TokenSender({erc20s, address, network, networks, selectedProvider, main
                   ))}
                   </Select>
                   </Form.Item>
-                    <Form.Item name="toAddress">
+                    <Form.Item name="toAddress" required>
                     <AddressInput
                       autoFocus
                       ensProvider={mainnetProvider}
                       placeholder="to address"
                     />
                     </Form.Item>
-                    <Form.Item name="amount">
+                    <Form.Item name="amount" required>
                     <InputNumber size="large" min={0} max={(erc20s&&erc20s[token])?(formattedBalance):null}
                     />
                     </Form.Item>

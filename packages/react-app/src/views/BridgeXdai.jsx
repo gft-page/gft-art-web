@@ -256,7 +256,7 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
       <button type="button" class={"nes-btn is-primary"} disabled={enteredAmount==""}
       >↑</button>
       </Popover>
-      <Tooltip title="Switch network to mainnet to turn Dai into xDai">
+      <Tooltip title="Switch your network to mainnet to turn Dai into xDai">
       <button type="button" class={"nes-btn"} disabled
       >↓</button>
       </Tooltip>
@@ -277,7 +277,7 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
       <button type="button" class="nes-btn is-primary" disabled={enteredAmount==""}
       onClick={sendDaiToBridge}
       >↓</button>
-      <Tooltip title="Switch network to xDai to turn xDai into Dai">
+      <Tooltip title="Switch your network to xDai to turn xDai into Dai">
       <button type="button" class={"nes-btn"} disabled
       >↑</button>
       </Tooltip>

@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Row, Col, Typography, Button, Spin, Space, Table, Descriptions, Card, Popconfirm, Divider } from "antd";
+import { Row, Col, Typography, Button, Spin, Space, Card, Popconfirm, Divider } from "antd";
 import { Ramp, GasGauge, PrivateKeyModal } from "../components";
-const { Text, Title } = Typography;
+const { Text, Title, Paragraph } = Typography;
 
 function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
 
@@ -52,26 +52,24 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
                     <Row align="middle" justify="center">
                     <Link to="/bridge-xdai" style={{margin: "12px"}}>{"Dai<>xDai bridge"}</Link>
                     </Row>
-                <Divider/>
-                <Table
-                title={() => <Title level={4}>Network information</Title>}
-                rowKey="name"
-                dataSource={Object.values(networks)}
-                columns={networkColumns}
-                pagination={false}
-                scroll={{ x: 'max-content' }}
-                expandable={{
-                  expandedRowRender: record => <Descriptions>{
-                    record.erc20s.map(
-                      (r)=>
-                        <Descriptions.Item label={r.name}>
-                          {<a href={record.blockExplorer+"address/"+r.address} target="_blank">{r.address}</a>}
-                        </Descriptions.Item>
-                      )
-                    }</Descriptions>,
-                  rowExpandable: record => record.erc20s,
-                }}
-                />
+                    <Link to="/network-information" style={{margin: "12px"}}>{"Network information"}</Link>
+                    <Divider/>
+                    <Paragraph>
+                    8bit money is an instant ethereum wallet.
+                    </Paragraph>
+                    <Paragraph>
+                    Built with:
+                    </Paragraph>
+                    <Paragraph><a href="https://github.com/austintgriffith/scaffold-eth" target="_blank">scaffold-eth</a></Paragraph>
+                    <Paragraph><a href="https://docs.ethers.io/v5/" target="_blank">ethers</a></Paragraph>
+                    <Paragraph><a href="https://walletconnect.org/" target="_blank">walletconnect</a></Paragraph>
+                    <Paragraph><a href="https://github.com/Web3Modal/web3modal" target="_blank">web3modal</a></Paragraph>
+                    <Paragraph><a href="xdaichain.com" target="_blank">xdai</a></Paragraph>
+                    <Paragraph><a href="https://infura.io" target="_blank">infura</a></Paragraph>
+                    <Paragraph><a href="https://ethgasstation.info/" target="_blank">ethgasstation</a></Paragraph>
+                    <Paragraph><a href="https://nostalgic-css.github.io/NES.css/" target="_blank">nes.css</a></Paragraph>
+                    <Paragraph><a href="https://ant.design" target="_blank">antd</a></Paragraph>
+                    <Paragraph><a href="https://avatars.dicebear.com/" target="_blank">dicebear</a></Paragraph>
               </Card>
   );
 }
