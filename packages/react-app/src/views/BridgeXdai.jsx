@@ -11,36 +11,32 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { INFURA_ID } from "../constants";
 const { Text } = Typography;
 
-const mainnetProvider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)//`https://kovan.infura.io/v3/${INFURA_ID}`)//`https://mainnet.infura.io/v3/${INFURA_ID}`)//getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, alchemy: ALCHEMY_KEY, quorum: 1 });
-const xDaiProvider = new JsonRpcProvider(`https://dai.poa.network`)//`https://sokol.poa.network`)//`https://dai.poa.network`)
+const mainnetProvider = new JsonRpcProvider(`https://mainnet.infura.io/v3/${INFURA_ID}`)
+const xDaiProvider = new JsonRpcProvider(`https://dai.poa.network`)
 
-const daiTokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F' //AMB'0xff94183659f549D6273349696d73686Ee1d2AC83'//from Igor '0x40a81c34f36EbE2D98baC578d66d3EE952A48f24'//real '0x6B175474E89094C44Da98b954EedeAC495271d0F'
-const xDaiBridgeAddress = '0x7301CFA0e1756B71869E93d4e4Dca5c7d0eb0AA6' //AMB'0x867949C3F2f66D827Ed40847FaA7B3a369370e13'//from igor'0xed47976103eBcCF7685e8aF185deD9EcF57E146A'//real '0x7301CFA0e1756B71869E93d4e4Dca5c7d0eb0AA6'
-const mainnetBridgeAddress = '0x4aa42145aa6ebf72e164c9bbc74fbd3788045016' //AMB'0x99FB1a25caeB9c3a5Bf132686E2fe5e27BC0e2dd'//from igor'0xea7f8c8d2c55ee242f2f22c11f43421e459229b8'//real '0x4aa42145aa6ebf72e164c9bbc74fbd3788045016'
+const daiTokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+const xDaiBridgeAddress = '0x7301CFA0e1756B71869E93d4e4Dca5c7d0eb0AA6'
+const mainnetBridgeAddress = '0x4aa42145aa6ebf72e164c9bbc74fbd3788045016'
 
 const decimals = 18
 
-const xDaiChainId = 100 //100
-const mainnetChainId = 1 //1
+const xDaiChainId = 100
+const mainnetChainId = 1
 
 const minAmountToTransfer = "10"
 
 function BridgeXdai({address, selectedProvider, network, networks, userProvider, mainnetUserProvider, gasPrice}) {
 
   const [enteredAmount, setEnteredAmount] = useState('')
-  const [fromXdaiTx, setFromXdaiTx] = useState()//"0x5a8606651cd4439a9dc48581cbf962f4ce2c91bc82c618186e02ebd85f508546")//"0x1225a647d379b4c6bbabf3c8a2d80c213751d6c0626ac7b10551431afe6810a2")
-  const [fromXdaiAmount, setFromXdaiAmount] = useState()//"10000000000000000000")
-  const [fromXdaiAddress, setFromXdaiAddress] = useState()//"0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc")
+  const [fromXdaiTx, setFromXdaiTx] = useState()
+  const [fromXdaiAmount, setFromXdaiAmount] = useState()
+  const [fromXdaiAddress, setFromXdaiAddress] = useState()
   const [fromXdaiMessageHash, setFromXdaiMessageHash] = useState()
   const [fromXdaiMessage, setFromXdaiMessage] = useState()
   const [fromXdaiSignatures, setFromXdaiSignatures] = useState()
   const [fromXdaiMainTx, setFromXdaiMainTx] = useState()
   const [fromMainTx, setFromMainTx] = useState()
   const [selectedNetwork, setSelectedNetwork] = useState()
-
-//  setFromXdaiTx("0x1225a647d379b4c6bbabf3c8a2d80c213751d6c0626ac7b10551431afe6810a2")
-//  setFromXdaiAmount("10000000000000000000")
-//  setFromXdaiAddress("0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc")
 
   const tx = Transactor(userProvider, gasPrice)
   let userSigner = userProvider.getSigner()
@@ -90,6 +86,14 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
   updateNetwork()
 
   }, [selectedProvider])
+
+  useEffect(() => {
+           window.onbeforeunload = confirmExit;
+           function confirmExit()
+           {
+             return "show warning";
+           }
+   }, [])
 
   const checkForSignatures = async () => {
     if(fromXdaiTx && fromXdaiAmount && fromXdaiAddress) {

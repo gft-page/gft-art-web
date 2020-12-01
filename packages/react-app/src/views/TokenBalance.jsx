@@ -12,7 +12,6 @@ function TokenBalance({name, contract, address, decimals, withSendButton, places
   let formattedBalance = balance?formatUnits(balance, decimals):null
   let placesBalance = formattedBalance?Number.parseFloat(formattedBalance).toFixed(places?places:3):"loading..."
 
-
   let sendButton = (balance>0&&withSendButton)?<Link to={"/send-token?token="+name}><button type="button" class="nes-btn is-primary">></button></Link>:null
 
   return (

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Row, Col, Select, Button, Space } from "antd";
 import Blockies from "react-blockies";
-import mage from '../mage.png';
 const { Option } = Select;
 
 function WalletHeader({address, network, networks, handleChange, loadWeb3Modal, logoutOfWeb3Modal, injectedProvider}) {

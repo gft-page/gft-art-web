@@ -37,7 +37,7 @@ function Sender({userProvider, mainnetProvider, network, networks, price, gasPri
                         notification.open({
                           message: '👋 Sending successful!',
                           description:
-                          `👀 Sent ${values.amount} ${network} to ${values['toAddress']}`,
+                          `👀 Sent ${values.amount} ${networks[network].name} to ${values['toAddress']}`,
                         });
                         form.resetFields();
                         setSending(false)

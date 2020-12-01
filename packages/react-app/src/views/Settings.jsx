@@ -39,8 +39,8 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
 
   return (
               <Card style={{ margin: 'auto', maxWidth: "100%"}}>
-                    <PrivateKeyModal address={address}/>
                     {(network&&networks[network].blockExplorer&&address)?<a href={networks[network].blockExplorer+"address/"+address} target="_blank"><Button>Blockexplorer</Button></a>:null}
+                    <PrivateKeyModal address={address}/>
                     <Popconfirm
                         title="Are you sure you want to reset your token settings for all networks?"
                         onConfirm={() => {setMyErc20s({})}}
@@ -55,8 +55,9 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
                     <Link to="/network-information" style={{margin: "12px"}}>{"Network information"}</Link>
                     <Divider/>
                     <Paragraph>
-                    8bit money is an instant ethereum wallet.
+                    8bit money is an experimental ethereum erc20 wallet. Use at your own risk etc.
                     </Paragraph>
+                    <a href="https://github.com/austintgriffith/scaffold-eth/tree/instant-wallet-azf" target="_blank"><i class="nes-octocat animate"></i></a>
                     <Paragraph>
                     Built with:
                     </Paragraph>

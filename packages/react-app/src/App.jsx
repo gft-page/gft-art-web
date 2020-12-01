@@ -34,6 +34,15 @@ function App(props) {
 
   const [showNetworkWarning, setShowNetworkWarning] = useState(false)
 
+  let yourTokenAddress
+  if(DEBUG) {
+    try {
+      yourTokenAddress = require(`./contracts/YourToken.address.js`)
+    } catch (e) {
+      console.log("no YourToken address found, have you deployed?")
+    }
+  }
+
   const networks = {
   100: {
     name: "xDAI",
@@ -64,7 +73,11 @@ function App(props) {
     blockExplorer: "https://etherscan.io/",
     erc20s: [
       {name: "DAI", address: "0x6b175474e89094c44da98b954eedeac495271d0f", decimals: 18},
-      {name: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", decimals: 6}
+      {name: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", decimals: 6},
+      {name: "LINK", address: "0x514910771af9ca656af840dff83e8264ecf986ca", decimals: 18},
+      {name: "AAVE", address: "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9", decimals: 18},
+      {name: "UNI", address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", decimals: 18},
+      {name: "YFI", address: "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e", decimals: 18}
     ]
   },
   4: {
@@ -143,7 +156,7 @@ function App(props) {
     decimals: 3,
     url: "http://localhost:8545",
     erc20s: [
-      {name: "YourToken", address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", decimals: 18}
+      {name: "YourToken", address: yourTokenAddress, decimals: 18}
     ]
   },
   }
