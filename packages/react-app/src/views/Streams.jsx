@@ -10,7 +10,7 @@ import { useBlockNumber } from "eth-hooks";
 const axios = require('axios');
 const { Option } = Select;
 
-const DEBUG = false
+const DEBUG = true
 
 export default function Streams({contractName, ownerEvents, signaturesRequired, address, nonce, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
 
@@ -21,11 +21,16 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
   const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
   if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
 
+  const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
+  if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
+
   const blockNumber = useBlockNumber(localProvider,1777);
   if(DEBUG) console.log("# blockNumber:",blockNumber)
 
   const [streams, setStreams] = useState()
   const [streamInfo, setStreamInfo] = useState()
+  const [streamReason, setStreamReason] = useState()
+  const [streamReasonUp, setStreamReasonUp] = useState()
 
   useEffect(()=>{
       let getStreams = async ()=>{
@@ -35,7 +40,7 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
         for(let s in openStreamEvents){
           if(openStreamEvents[s].to && newStreams.indexOf(openStreamEvents[s].to)<0){
             newStreams.push(openStreamEvents[s].to)
-            console.log("GETTING STREAM BALANC OF ",openStreamEvents[s].to,"from",readContracts)
+            //console.log("GETTING STREAM BALANCE OF ",openStreamEvents[s].to,"from",readContracts)
             try{
               let update = {}
               update.stream = await readContracts[contractName].streams(openStreamEvents[s].to)
@@ -94,6 +99,38 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
     )
   }
 
+  let withdrawalDisplay = ""
+  if(withdrawStreamEvents){
+    withdrawalDisplay = (
+      <div style={{border:"1px solid #cccccc",padding:16, width:400, margin:"auto",marginTop:64}}>
+        <b>Withdrawals:</b>
+        <List
+          title={"Withdrawals"}
+          dataSource={withdrawStreamEvents}
+          renderItem={(item) => {
+            return (
+              <List.Item key={"withdrawal_"+item}>
+              <div>
+                <Address
+                  value={item.to}
+                  ensProvider={mainnetProvider}
+                  fontSize={16}
+                />
+                <Balance
+                  balance={item.amount}
+                  dollarMultiplier={price}
+                />
+              </div>
+              {item.reason}
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+    )
+  }
+
+
   return (
     <div>
       <List
@@ -102,29 +139,73 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
         dataSource={streams}
         renderItem={(item) => {
           let withdrawButtonOrBalance = ""
+
+          let addressDisplay = (
+            <Address
+              value={item}
+              ensProvider={mainnetProvider}
+              blockExplorer={blockExplorer}
+              fontSize={32}
+            />
+          )
+
           if(streamInfo[item] && !streamInfo[item].balance){
             withdrawButtonOrBalance = (
               <div style={{opacity:0.5}}>closed</div>
             )
           } else if(address==item){
-            withdrawButtonOrBalance = (
-              <Button style={{paddingTop:-8}} onClick={()=>{
-                if(streamInfo[item] && streamInfo[item].balance && streamInfo[item].balance.gt(walletBalance)){
-                  notification.info({
-                    message: "Warning: Contract Balance",
-                    description: "It looks like there isn't enough in the contract to withdraw?",
-                    placement: "bottomRight",
-                  });
-                }
-                tx( writeContracts[contractName].streamWithdraw() )
-              }}>
-                { "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2) }
-              </Button>
-            )
+
+
+            if(streamReasonUp){
+
+              addressDisplay = (
+                <Input
+                  placeholder="withdrawal reason or link to PR/work"
+                  value={streamReason}
+                  onChange={(e)=>{
+                    setStreamReason(e.target.value)
+                  }}
+                />
+              )
+
+              withdrawButtonOrBalance = (
+                <Button style={{paddingTop:-8}} type={"primary"} onClick={() => {
+                  if(!streamReason){
+                    notification.info({
+                      message: "Error: Provide Reason",
+                      description: "Please provide a reason or url to work.",
+                      placement: "bottomRight",
+                    });
+                  }else{
+                    if(streamInfo[item] && streamInfo[item].balance && streamInfo[item].balance.gt(walletBalance)){
+                      notification.info({
+                        message: "Warning: Contract Balance",
+                        description: "It looks like there isn't enough in the contract to withdraw?",
+                        placement: "bottomRight",
+                      });
+                    }
+                    tx( writeContracts[contractName].streamWithdraw(streamReason) )
+                    setStreamReason("")
+                    setStreamReasonUp(false)
+                  }
+                }}>
+                  { "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2) }
+                </Button>
+              )
+            }else{
+              withdrawButtonOrBalance = (
+                <Button style={{paddingTop:-8}} onClick={()=>{setStreamReasonUp(true)}}>
+                  { "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2) }
+                </Button>
+              )
+            }
+
+
+
           }else{
             withdrawButtonOrBalance = (
               <Balance
-                balance={streamInfo[item].balance}
+                balance={streamInfo[item]?streamInfo[item].balance:0}
                 dollarMultiplier={price}
               />
             )
@@ -132,18 +213,15 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
 
           return (
             <List.Item key={"stream_"+item}>
-              <Address
-                value={item}
-                ensProvider={mainnetProvider}
-                blockExplorer={blockExplorer}
-                fontSize={32}
-              />
+              {addressDisplay}
               {withdrawButtonOrBalance}
             </List.Item>
           )
 
         }}
       />
+
+      {withdrawalDisplay}
 
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
         <div style={{margin:8,padding:8}}>

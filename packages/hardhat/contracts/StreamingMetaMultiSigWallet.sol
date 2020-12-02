@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 
+//  Off-chain signature gathering multisig that streams funds - @austingriffith
 //
 // started from 🏗 scaffold-eth - meta-multi-sig-wallet example https://github.com/austintgriffith/scaffold-eth/tree/meta-multi-sig
 //    (off-chain signature based multi-sig)
@@ -108,7 +109,7 @@ contract StreamingMetaMultiSigWallet {
 
     event OpenStream( address indexed to, uint256 amount, uint256 frequency );
     event CloseStream( address indexed to );
-    event Withdraw( address indexed to, uint256 amount );
+    event Withdraw( address indexed to, uint256 amount, string reason );
 
     struct Stream {
         uint256 amount;
@@ -117,14 +118,15 @@ contract StreamingMetaMultiSigWallet {
     }
     mapping(address => Stream) public streams;
 
-    function streamWithdraw() public {
+    function streamWithdraw(string memory reason) public {
         require(streams[msg.sender].amount>0,"withdraw: no open stream");
-        _streamWithdraw(msg.sender);
+        _streamWithdraw(msg.sender,reason);
     }
 
-    function _streamWithdraw(address payable to) private {
+    function _streamWithdraw(address payable to, string memory reason) private {
         uint256 totalAmountCanWithdraw = streamBalance(to);
         streams[to].last = block.timestamp;
+        emit Withdraw( to, totalAmountCanWithdraw, reason );
         to.transfer(totalAmountCanWithdraw);
     }
 
@@ -146,7 +148,7 @@ contract StreamingMetaMultiSigWallet {
 
     function closeStream(address to) public onlySelf {
         require(streams[to].amount>0,"closeStream: stream already closed");
-        _streamWithdraw(address(uint160(to)));
+        _streamWithdraw(address(uint160(to)),"");
         delete streams[to];
         emit CloseStream( to );
     }
