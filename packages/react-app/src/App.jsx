@@ -6,10 +6,10 @@ import { Row, Col, Typography, Select, Form, Card, Layout, Affix, Modal, List, B
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress, usePoller } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useBalance, useLocalStorage } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useBalance, useLocalStorage, useContractLoader } from "./hooks";
 import { Contract, Balance } from "./components";
 import { ethers } from "ethers";
-import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager, BridgeXdai, NetworkInformation } from "./views"
+import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager, BridgeXdai, NetworkInformation, Erc20Demo } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY, ALCHEMY_KEY } from "./constants";
 const { Header, Content, Footer } = Layout;
 
@@ -29,17 +29,22 @@ function App(props) {
   const [network, setNetwork] = useLocalStorage("networkName")
   const [selectedProvider, setSelectedProvider] = useState()
 
+  // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
+  const userProvider = useUserProvider(injectedProvider, selectedProvider?selectedProvider:mainnetProvider);
+  const mainnetUserProvider = useUserProvider(injectedProvider, mainnetProvider);
+  const address = useUserAddress(userProvider);
+
   const [erc20s, setErc20s] = useState({})
   const [myErc20s, setMyErc20s] = useLocalStorage("myErc20s")
 
   const [showNetworkWarning, setShowNetworkWarning] = useState(false)
 
-  let yourTokenAddress
-  if(DEBUG) {
-    try {
-      yourTokenAddress = require(`./contracts/YourToken.address.js`)
-    } catch (e) {
-      console.log("no YourToken address found, have you deployed?")
+  const localContracts = useContractLoader(userProvider)
+  let localErc20s = []
+
+  if(localContracts) {
+      for (const [key, value] of Object.entries(localContracts)) {
+      localErc20s.push({name: key, address: value.address, decimals: 18})
     }
   }
 
@@ -155,18 +160,10 @@ function App(props) {
     gasPrice: 1000000000,
     decimals: 3,
     url: "http://localhost:8545",
-    erc20s: [
-      {name: "YourToken", address: yourTokenAddress, decimals: 18}
-    ]
+    erc20s: localErc20s
   },
   }
 
-  // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
-
-  // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
-  const userProvider = useUserProvider(injectedProvider, selectedProvider?selectedProvider:mainnetProvider);
-  const mainnetUserProvider = useUserProvider(injectedProvider, mainnetProvider);
-  const address = useUserAddress(userProvider);
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourBalance = useBalance(selectedProvider, address);
@@ -213,7 +210,6 @@ const getErc20s = async () => {
       const erc20 = new ethers.Contract(element.address, abi, userSigner);
       newErc20s[element.name] = {name: element.name, contract: erc20, decimals: element.decimals, network: networks[network].name}
     });
-    console.log(newErc20s)
     setErc20s(newErc20s)
   }
 }
@@ -357,12 +353,28 @@ const getErc20s = async () => {
             </Route>
               <Route path="/contract">
                 <Row>
-                <Contract
-                  name="YourToken"
+                {network==31337?<Contract
+                  name="Unlimited"
                   signer={userProvider.getSigner()}
                   provider={selectedProvider}
                   address={address}
-                />
+                />:<Card style={{ maxWidth: 600, width: "100%", margin: 'auto'}}>
+                  <Typography>This is for local development, switch to localhost</Typography>
+                </Card>}
+              </Row>
+              </Route>
+              <Route path="/erc20-demo">
+                <Row>
+                {network==31337?
+                  <Erc20Demo
+                    address={address}
+                    selectedProvider={selectedProvider}
+                    localContracts={localContracts}
+                    networks={networks}
+                    network={network}
+                  />:<Card style={{ maxWidth: 600, width: "100%", margin: 'auto'}}>
+                  <Typography>This is for local development, switch to localhost</Typography>
+                </Card>}
               </Row>
               </Route>
               <Route path="/manage-tokens">
@@ -384,6 +396,8 @@ const getErc20s = async () => {
                   userProvider={userProvider}
                   mainnetUserProvider={mainnetUserProvider}
                   gasPrice={gasPrice}
+                  injectedProvider={injectedProvider}
+                  handleChange={handleChange}
                   />
               </Route>
               <Route path="/network-information">

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ethers } from "ethers";
 import { SendOutlined, SmileOutlined } from "@ant-design/icons";
-import { Row, Col, List, Typography, Spin, InputNumber, Card, notification, Popover, Tooltip } from "antd";
+import { Row, Col, List, Typography, Spin, InputNumber, Input, Card, notification, Popover, Tooltip, Modal, Divider } from "antd";
 import { parseEther, formatEther, formatUnits } from "@ethersproject/units";
 import { TokenBalance } from "."
 import { useTokenBalance, useBalance, usePoller } from "eth-hooks";
@@ -25,12 +25,12 @@ const mainnetChainId = 1
 
 const minAmountToTransfer = "10"
 
-function BridgeXdai({address, selectedProvider, network, networks, userProvider, mainnetUserProvider, gasPrice}) {
+function BridgeXdai({address, selectedProvider, network, networks, userProvider, mainnetUserProvider, gasPrice, injectedProvider, handleChange}) {
 
   const [enteredAmount, setEnteredAmount] = useState('')
-  const [fromXdaiTx, setFromXdaiTx] = useState()
-  const [fromXdaiAmount, setFromXdaiAmount] = useState()
-  const [fromXdaiAddress, setFromXdaiAddress] = useState()
+  const [fromXdaiTx, setFromXdaiTx] = useState('0x5a8606651cd4439a9dc48581cbf962f4ce2c91bc82c618186e02ebd85f508546')
+  const [fromXdaiAmount, setFromXdaiAmount] = useState('10000000000000000000')
+  const [fromXdaiAddress, setFromXdaiAddress] = useState('0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc')
   const [fromXdaiMessageHash, setFromXdaiMessageHash] = useState()
   const [fromXdaiMessage, setFromXdaiMessage] = useState()
   const [fromXdaiSignatures, setFromXdaiSignatures] = useState()
@@ -90,8 +90,9 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
   useEffect(() => {
            window.onbeforeunload = confirmExit;
            function confirmExit()
-           {
-             return "show warning";
+           {if(fromXdaiTx||fromXdaiAmount||fromXdaiAddress) {
+               return "show warning";
+             }
            }
    }, [])
 
@@ -319,46 +320,56 @@ function BridgeXdai({address, selectedProvider, network, networks, userProvider,
                 </Col>
               </Row>
               <Row align="middle" justify="center">
-              {fromXdaiTx?<Card>
+              {<Modal visible={fromXdaiTx} footer={null} closable={false}>
                 <p class="nes-text is-success">1. Send xDai to the bridge </p>
                 <div class="nes-field is-inline">
                     <label>tx</label>
-                    <input type="text" id="tx" class="nes-input" readOnly value={fromXdaiTx}/>
+                    <Input type="text" id="tx" readOnly value={fromXdaiTx}/>
                 </div>
                 <div class="nes-field is-inline">
                     <label>value</label>
-                    <input type="text" id="value" class="nes-input" readOnly value={formatEther(fromXdaiAmount)}/>
+                    <Input type="text" id="value" readOnly value={fromXdaiAmount?formatEther(fromXdaiAmount):null}/>
                 </div>
                 <div class="nes-field is-inline">
                     <label>address</label>
-                    <input type="text" id="address" class="nes-input" readOnly value={fromXdaiAddress}/>
+                    <Input type="text" id="address" readOnly value={fromXdaiAddress}/>
                 </div>
+                <Divider/>
                 <p class={fromXdaiSignatures?"nes-text is-success":null}>2. Wait for the required signatures</p>
                 {fromXdaiMessage?
                                   <div class="nes-field is-inline">
                                       <label>message</label>
-                                      <input type="text" id="message" class="nes-input" readOnly value={fromXdaiMessage}/>
+                                      <Input type="text" id="message" readOnly value={fromXdaiMessage}/>
                                   </div>:null}
                 {fromXdaiSignatures?<div class="nes-field is-inline">
                                       <label>signatures</label>
-                                      <input type="text" id="signatures" class="nes-input" readOnly value={fromXdaiSignatures}/>
+                                      <Input type="text" id="signatures" readOnly value={fromXdaiSignatures}/>
                                     </div>:<p class="nes-text is-warning">Checking for signatures</p>}
+                <Divider/>
                 <p class={fromXdaiMainTx?"nes-text is-success":null}>3. Execute the signatures on mainnet</p>
+                <Row  align="middle" justify="center">
                 {(fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx&&network==mainnetChainId)?<button type="button" class="nes-btn is-primary" onClick={sendSignaturesToMainnet}>Let's go!</button>
-                : (fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx)?<p class="nes-text is-warning">Switch network to mainnet</p>:null }
+                : (fromXdaiSignatures&&fromXdaiMessage&&!fromXdaiMainTx)?(injectedProvider?
+                  <p class="nes-text is-warning">Switch your wallet network to mainnet</p>
+                  :<button type="button" class="nes-btn"  onClick={()=> {
+                    console.log(handleChange)
+                    handleChange(1)
+                  }}>Switch to mainnet</button>)
+                :null }
                 {fromXdaiMainTx?
                   <>
                   <a href={`https://etherscan.io/tx/${fromXdaiMainTx}`} target="_blank"><p class="nes-text is-primary">View transaction</p></a>
-                  <p>Once this transaction is confirmed, xDai to Dai briding is complete</p>
+                  <p>Once this transaction is confirmed, xDai to Dai bridging is complete</p>
                   <button type="button" class="nes-btn"  onClick={resetFromXdaiBridge}>Reset bridge</button>
                   </>
                   :null}
-              </Card>:null}
+                </Row>
+              </Modal>}
               {fromMainTx?<Card>
                 <p class={"nes-text is-success"}>Send DAI to the deposit contract</p>
                 <div class="nes-field is-inline">
                     <label>txHash</label>
-                    <input type="text" id="message" class="nes-input" readOnly value={fromMainTx}/>
+                    <Input type="text" id="message" readOnly value={fromMainTx}/>
                 </div>
                 <p class={"nes-text"}>It may take several minutes to bridge to xDai</p>
                 <button type="button" class="nes-btn"  onClick={resetFromMainBridge}>Reset bridge</button>

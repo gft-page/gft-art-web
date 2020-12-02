@@ -3,21 +3,21 @@ pragma solidity >=0.6.0 <0.7.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract YourToken is ERC20 {
+contract Inflating is ERC20 {
 
     using SafeMath for uint256;
     using SafeMath for uint;
 
     uint256 startBlock;
-    uint256 tokensPerBlock = 10000000000000000000;
+    uint256 tokensPerBlock;
 
-    constructor() ERC20("8bitToken", "8BIT") public {
-      _mint(0xE09750abE36beA8B2236E48C84BB9da7Ef5aA07c, 10000000000000000000);
+    constructor() ERC20("INFLATING", "INFL") public {
       startBlock = block.number;
+      tokensPerBlock = 10000000000000000000;
     }
 
-    function mintTokens() public {
-      _mint(msg.sender, 10000000000000000000);
+    function setTokensPerBlock(uint256 _tokensPerBlock) public {
+      tokensPerBlock = _tokensPerBlock;
     }
 
     function outstandingTokens() public view returns(uint256) {
