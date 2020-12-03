@@ -34,6 +34,8 @@ function App(props) {
   const mainnetUserProvider = useUserProvider(injectedProvider, mainnetProvider);
   const address = useUserAddress(userProvider);
 
+  const [avatarType, setAvatarType] = useLocalStorage('avatarType','human')
+
   const [erc20s, setErc20s] = useState({})
   const [myErc20s, setMyErc20s] = useLocalStorage("myErc20s")
 
@@ -279,6 +281,7 @@ const getErc20s = async () => {
             loadWeb3Modal={loadWeb3Modal}
             injectedProvider={injectedProvider}
             logoutOfWeb3Modal={logoutOfWeb3Modal}
+            avatarType={avatarType}
             />
           <Modal visible={showNetworkWarning} title={"Unknown network"} footer={null} closable={false}>
             <span>Sorry we don't support this network! Please set one of the following in your connected wallet:</span>
@@ -336,6 +339,8 @@ const getErc20s = async () => {
                 gasPrice={gasPrice}
                 price={price}
                 setMyErc20s={setMyErc20s}
+                avatarType={avatarType}
+                setAvatarType={setAvatarType}
                 />
             </Route>
             <Route path="/wallet">
@@ -372,6 +377,7 @@ const getErc20s = async () => {
                     localContracts={localContracts}
                     networks={networks}
                     network={network}
+                    mainnetProvider={mainnetProvider}
                   />:<Card style={{ maxWidth: 600, width: "100%", margin: 'auto'}}>
                   <Typography>This is for local development, switch to localhost</Typography>
                 </Card>}

@@ -119,7 +119,9 @@ function TokenSender({erc20s, address, network, networks, selectedProvider, main
                     />
                     </Form.Item>
                     <Form.Item name="amount" required>
-                    <InputNumber size="large" min={0} max={(erc20s&&erc20s[token])?(formattedBalance):null}
+                    <InputNumber size="large"
+                    placeholder="#"
+                    min={0} max={(erc20s&&erc20s[token])?(formattedBalance):null}
                     />
                     </Form.Item>
                     <Form.Item >

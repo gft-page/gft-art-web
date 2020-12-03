@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Row, Col, Typography, Button, Spin, Space, Card, Popconfirm, Divider } from "antd";
+import { Row, Col, Typography, Button, Spin, Space, Card, Popconfirm, Divider, Radio } from "antd";
 import { Ramp, GasGauge, PrivateKeyModal } from "../components";
 const { Text, Title, Paragraph } = Typography;
 
-function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
+function Settings({address, network, networks, gasPrice, price, setMyErc20s, avatarType, setAvatarType}) {
 
   let networkColumns = [{
     title: 'Name',
@@ -39,6 +39,7 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
 
   return (
               <Card style={{ margin: 'auto', maxWidth: "100%"}}>
+                    <Row align="middle" justify="center" style={{margin:"12px"}}>
                     {(network&&networks[network].blockExplorer&&address)?<a href={networks[network].blockExplorer+"address/"+address} target="_blank"><Button>Blockexplorer</Button></a>:null}
                     <PrivateKeyModal address={address}/>
                     <Popconfirm
@@ -49,10 +50,16 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s}) {
                       >
                     <Button>Reset tokens</Button>
                     </Popconfirm>
-                    <Row align="middle" justify="center">
-                    <Link to="/bridge-xdai" style={{margin: "12px"}}>{"Dai<>xDai bridge"}</Link>
                     </Row>
-                    <Link to="/network-information" style={{margin: "12px"}}>{"Network information"}</Link>
+                    <Paragraph><Link to="/bridge-xdai" style={{margin: "12px"}}>{"Dai<>xDai bridge"}</Link></Paragraph>
+                    <Paragraph><Link to="/network-information" style={{margin: "12px"}}>{"Network information"}</Link></Paragraph>
+                    <Typography>Avatar:</Typography>
+                    <Radio.Group
+                        options={['human','male','female']}
+                        optionType="button"
+                        onChange={(e) => { setAvatarType(e.target.value) }}
+                        value={avatarType}
+                      />
                     <Divider/>
                     <Paragraph>
                     8bit money is an experimental ethereum erc20 wallet. Use at your own risk etc.
