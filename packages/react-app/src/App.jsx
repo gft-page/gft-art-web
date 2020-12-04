@@ -369,7 +369,6 @@ const getErc20s = async () => {
               </Row>
               </Route>
               <Route path="/erc20-demo">
-                <Row>
                 {network==31337?
                   <Erc20Demo
                     address={address}
@@ -381,7 +380,6 @@ const getErc20s = async () => {
                   />:<Card style={{ maxWidth: 600, width: "100%", margin: 'auto'}}>
                   <Typography>This is for local development, switch to localhost</Typography>
                 </Card>}
-              </Row>
               </Route>
               <Route path="/manage-tokens">
                   <TokenManager

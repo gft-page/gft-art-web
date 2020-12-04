@@ -28,9 +28,9 @@ const minAmountToTransfer = "10"
 function BridgeXdai({address, selectedProvider, network, networks, userProvider, mainnetUserProvider, gasPrice, injectedProvider, handleChange}) {
 
   const [enteredAmount, setEnteredAmount] = useState('')
-  const [fromXdaiTx, setFromXdaiTx] = useState('0x5a8606651cd4439a9dc48581cbf962f4ce2c91bc82c618186e02ebd85f508546')
-  const [fromXdaiAmount, setFromXdaiAmount] = useState('10000000000000000000')
-  const [fromXdaiAddress, setFromXdaiAddress] = useState('0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc')
+  const [fromXdaiTx, setFromXdaiTx] = useState()//'0x5a8606651cd4439a9dc48581cbf962f4ce2c91bc82c618186e02ebd85f508546')
+  const [fromXdaiAmount, setFromXdaiAmount] = useState()//'10000000000000000000')
+  const [fromXdaiAddress, setFromXdaiAddress] = useState()//'0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc')
   const [fromXdaiMessageHash, setFromXdaiMessageHash] = useState()
   const [fromXdaiMessage, setFromXdaiMessage] = useState()
   const [fromXdaiSignatures, setFromXdaiSignatures] = useState()

@@ -41,6 +41,7 @@
     "graphiql": "^1.0.5",
     "graphql": "^15.3.0",
     "isomorphic-fetch": "^3.0.0",
+    "nes.css": "^2.3.0",
     "qrcode.react": "^1.0.0",
     "react": "^16.14.0",
     "react-blockies": "^1.4.1",

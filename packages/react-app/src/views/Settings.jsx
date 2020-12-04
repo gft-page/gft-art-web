@@ -53,6 +53,7 @@ function Settings({address, network, networks, gasPrice, price, setMyErc20s, ava
                     </Row>
                     <Paragraph><Link to="/bridge-xdai" style={{margin: "12px"}}>{"Dai<>xDai bridge"}</Link></Paragraph>
                     <Paragraph><Link to="/network-information" style={{margin: "12px"}}>{"Network information"}</Link></Paragraph>
+                    {network==31337?<Paragraph><Link to="/erc20-demo" style={{margin: "12px"}}>{"Erc20 Demo"}</Link></Paragraph>:null}
                     <Typography>Avatar:</Typography>
                     <Radio.Group
                         options={['human','male','female']}
