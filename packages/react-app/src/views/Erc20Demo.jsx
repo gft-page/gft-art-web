@@ -10,7 +10,7 @@ import { TokenBalance } from "."
 import { Transactor } from "../helpers";
 const { Text, Title, Paragraph } = Typography;
 
-function Erc20Demo({address, selectedProvider, localContracts, networks, network, mainnetProvider}) {
+function Erc20Demo({address, localContracts, mainnetProvider}) {
 
   const [addressInfoForm] = Form.useForm();
   const [updateForm] = Form.useForm();
@@ -22,6 +22,7 @@ function Erc20Demo({address, selectedProvider, localContracts, networks, network
   const [myBalance, setMyBalance] = useState()
   const [addressBalance, setAddressBalance] = useState()
   const [addressAllowance, setAddressAllowance] = useState()
+  const [myAllowanceOnAddress, setMyAllowanceOnAddress] = useState()
 
   let contractOptions = localContracts?Object.keys(localContracts):[]
   const [selectedContract, setSelectedContract] = useState()
@@ -70,8 +71,10 @@ function Erc20Demo({address, selectedProvider, localContracts, networks, network
     if(selectedContract) {
       let _balanceOf = await makeCall('balanceOf', localContracts[selectedContract], [values.address])
       let _allowanceOf = await makeCall('allowance', localContracts[selectedContract], [address, values.address])
+      let _myAllowanceOn = await makeCall('allowance', localContracts[selectedContract], [values.address, address])
 
       setAddressAllowance(formatUnits(_allowanceOf, decimals))
+      setMyAllowanceOnAddress(formatUnits(_myAllowanceOn, decimals))
       setAddressBalance(formatUnits(_balanceOf, decimals))
     }
   }
@@ -91,13 +94,20 @@ function Erc20Demo({address, selectedProvider, localContracts, networks, network
 
     let selectedFunction = values.function?values.function:defaultUpdateFunction
 
-    let result = await makeCall(selectedFunction, localContracts[selectedContract], args)
-
-    notification.open({
-      message: 'Success',
-      description:
-      `👀 ${selectedFunction}: ${values.amount} to ${values.toAddress}`,
-    });
+    try {
+      let result = await makeCall(selectedFunction, localContracts[selectedContract], args)
+      notification.open({
+        message: 'Success',
+        description:
+        `👀 ${selectedFunction}: ${values.amount} to ${values.toAddress}`,
+      });
+    } catch (e) {
+      notification.open({
+        message: 'Transaction failed',
+        description:
+        `👀 ${e.message}`,
+      });
+    }
   }
 
   return (
@@ -120,6 +130,7 @@ function Erc20Demo({address, selectedProvider, localContracts, networks, network
                 <p>{"TotalSupply: "+totalSupply}</p>
                 <p>{"Balance: "+myBalance}</p>
                 {selectedContract&&localContracts[selectedContract]['mintTokens']?<Button onClick={() => {makeCall('mintTokens', localContracts[selectedContract])}}>Mint</Button>:null}
+                {selectedContract&&localContracts[selectedContract]['burnTokens']?<Button onClick={() => {makeCall('burnTokens', localContracts[selectedContract])}}>Burn</Button>:null}
                 {selectedContract&&localContracts[selectedContract]['outstandingTokens']?<Button onClick={async () => {
                   let result = await makeCall('outstandingTokens', localContracts[selectedContract])
                   let formattedResult = formatUnits(result, decimals)
@@ -182,8 +193,7 @@ function Erc20Demo({address, selectedProvider, localContracts, networks, network
                   onFinish={getAddressInfo}
                   onFinishFailed={errorInfo => {
                     console.log('Failed:', errorInfo);
-                    }}
-                >
+                    }}>
                   <Form.Item name="address">
                     <AddressInput placeholder="address"
                     autoFocus
@@ -195,8 +205,9 @@ function Erc20Demo({address, selectedProvider, localContracts, networks, network
                     <Button type="primary" htmlType="submit">Get address info</Button>
                   </Form.Item>
                 </Form>
-                {addressBalance?<p>{"Address Balance: "+addressBalance}</p>:null}
-                {addressAllowance?<p>{"Address Allowance: "+addressAllowance}</p>:null}
+                {addressBalance?<p>{`Address Balance: ${addressBalance}`}</p>:null}
+                {addressAllowance?<p>{`Address Allowance on my ${selectedContract}: ${addressAllowance}`}</p>:null}
+                {myAllowanceOnAddress?<p>{`My Allowance on address: ${myAllowanceOnAddress}`}</p>:null}
                 </div>
                 </>:null}
               </Card>
