@@ -32,7 +32,7 @@ const { TabPane } = Tabs;
 
 const DEBUG = false
 
-const poolServerUrl = "http://localhost:8001/"
+const poolServerUrl = "http://localhost:49832/"
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"

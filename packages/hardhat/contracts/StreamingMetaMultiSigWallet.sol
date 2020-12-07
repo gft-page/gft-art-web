@@ -118,16 +118,17 @@ contract StreamingMetaMultiSigWallet {
     }
     mapping(address => Stream) public streams;
 
-    function streamWithdraw(string memory reason) public {
+    function streamWithdraw(uint256 amount, string memory reason) public {
         require(streams[msg.sender].amount>0,"withdraw: no open stream");
-        _streamWithdraw(msg.sender,reason);
+        _streamWithdraw(msg.sender,amount,reason);
     }
 
-    function _streamWithdraw(address payable to, string memory reason) private {
+    function _streamWithdraw(address payable to, uint256 amount, string memory reason) private {
         uint256 totalAmountCanWithdraw = streamBalance(to);
-        streams[to].last = block.timestamp;
-        emit Withdraw( to, totalAmountCanWithdraw, reason );
-        to.transfer(totalAmountCanWithdraw);
+        require(totalAmountCanWithdraw>=amount,"withdraw: not enough");
+        streams[to].last = streams[to].last + ((block.timestamp - streams[to].last) * amount / totalAmountCanWithdraw);
+        emit Withdraw( to, amount, reason );
+        to.transfer(amount);
     }
 
     function streamBalance(address to) public view returns (uint256){
@@ -148,7 +149,7 @@ contract StreamingMetaMultiSigWallet {
 
     function closeStream(address to) public onlySelf {
         require(streams[to].amount>0,"closeStream: stream already closed");
-        _streamWithdraw(address(uint160(to)),"");
+        _streamWithdraw(address(uint160(to)),streams[to].amount,"stream closed");
         delete streams[to];
         emit CloseStream( to );
     }

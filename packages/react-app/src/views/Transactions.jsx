@@ -14,7 +14,8 @@ export default function Transactions({poolServerUrl, contractName, signaturesReq
    usePoller(()=>{
      const getTransactions = async ()=>{
        console.log("🛰 Requesting Transaction List")
-       const res = await axios.get(poolServerUrl+readContracts[contractName].address)
+       const res = await axios.get(poolServerUrl+readContracts[contractName].address+"_"+localProvider._network.chainId)
+       console.log("res",res)
        let newTransactions = []
        for(let i in res.data){
          //console.log("look through signatures of ",res.data[i])

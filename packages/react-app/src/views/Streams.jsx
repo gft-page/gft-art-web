@@ -10,7 +10,7 @@ import { useBlockNumber } from "eth-hooks";
 const axios = require('axios');
 const { Option } = Select;
 
-const DEBUG = true
+const DEBUG = false
 
 export default function Streams({contractName, ownerEvents, signaturesRequired, address, nonce, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
 
@@ -31,6 +31,7 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
   const [streamInfo, setStreamInfo] = useState()
   const [streamReason, setStreamReason] = useState()
   const [streamReasonUp, setStreamReasonUp] = useState()
+  const [customStreamAmount, setCustomStreamAmount] = useState();
 
   useEffect(()=>{
       let getStreams = async ()=>{
@@ -44,7 +45,6 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
             try{
               let update = {}
               update.stream = await readContracts[contractName].streams(openStreamEvents[s].to)
-              console.log("STREAM:",update.stream)
               if(update.stream && update.stream.amount.gt(0)){
                 update.balance = await readContracts[contractName].streamBalance(openStreamEvents[s].to)
               }
@@ -100,6 +100,7 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
   }
 
   let withdrawalDisplay = ""
+  let index=0
   if(withdrawStreamEvents){
     withdrawalDisplay = (
       <div style={{border:"1px solid #cccccc",padding:16, width:400, margin:"auto",marginTop:64}}>
@@ -109,7 +110,7 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
           dataSource={withdrawStreamEvents}
           renderItem={(item) => {
             return (
-              <List.Item key={"withdrawal_"+item}>
+              <List.Item key={"withdrawal_"+index++}>
               <div>
                 <Address
                   value={item.to}
@@ -140,6 +141,9 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
         renderItem={(item) => {
           let withdrawButtonOrBalance = ""
 
+          let prettyBalanceDisplay = "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2)
+          let currentButtonDisplay = prettyBalanceDisplay
+
           let addressDisplay = (
             <Address
               value={item}
@@ -157,40 +161,69 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
 
 
             if(streamReasonUp){
+              addressDisplay = ""
+              const formStyle = { padding:8 }
 
-              addressDisplay = (
-                <Input
-                  placeholder="withdrawal reason or link to PR/work"
-                  value={streamReason}
-                  onChange={(e)=>{
-                    setStreamReason(e.target.value)
-                  }}
-                />
-              )
+              currentButtonDisplay = "Withdraw"
 
               withdrawButtonOrBalance = (
-                <Button style={{paddingTop:-8}} type={"primary"} onClick={() => {
-                  if(!streamReason){
-                    notification.info({
-                      message: "Error: Provide Reason",
-                      description: "Please provide a reason or url to work.",
-                      placement: "bottomRight",
-                    });
-                  }else{
-                    if(streamInfo[item] && streamInfo[item].balance && streamInfo[item].balance.gt(walletBalance)){
+                <div>
+                  <div style={formStyle}>
+                    <Input
+                      placeholder="withdrawal reason or link to PR/work"
+                      value={streamReason}
+                      onChange={(e)=>{
+                        setStreamReason(e.target.value)
+                      }}
+                    />
+                  </div>
+                  <div style={formStyle}>
+                    <Input
+                      placeholder={"amount (leave blank for max: "+prettyBalanceDisplay+")"}
+                      value={customStreamAmount}
+                      onChange={(e)=>{
+                        setCustomStreamAmount(e.target.value)
+                      }}
+                    />
+                  </div>
+                  <div style={formStyle}>
+                  <Button style={{paddingTop:-8}} type={"primary"} onClick={() => {
+                    if(!streamReason){
                       notification.info({
-                        message: "Warning: Contract Balance",
-                        description: "It looks like there isn't enough in the contract to withdraw?",
+                        message: "Error: Provide Reason",
+                        description: "Please provide a reason or url to work.",
                         placement: "bottomRight",
                       });
+                    }else{
+
+                      let amountToWithdraw = streamInfo[item].balance
+                      console.log("amountToWithdraw1",amountToWithdraw)
+                      if(customStreamAmount){
+                        let cleaned = parseFloat(customStreamAmount.replace("\$","")).toFixed(8)
+                        //console.log("cleaned",cleaned)
+                        let floatToWithdraw = parseFloat(cleaned/price).toFixed(8)
+                        //console.log("floatToWithdraw",floatToWithdraw)
+                        amountToWithdraw = parseEther(""+floatToWithdraw)
+                        //console.log("amountToWithdraw2",amountToWithdraw)
+                      }
+
+                      if(streamInfo[item] && streamInfo[item].balance && streamInfo[item].balance.gt(walletBalance)){
+                        notification.info({
+                          message: "Warning: Contract Balance",
+                          description: "It looks like there isn't enough in the contract to withdraw?",
+                          placement: "bottomRight",
+                        });
+                      }
+                      tx( writeContracts[contractName].streamWithdraw(amountToWithdraw, streamReason) )
+                      setStreamReason("")
+                      setStreamReasonUp(false)
+                      setCustomStreamAmount("")
                     }
-                    tx( writeContracts[contractName].streamWithdraw(streamReason) )
-                    setStreamReason("")
-                    setStreamReasonUp(false)
-                  }
-                }}>
-                  { "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2) }
-                </Button>
+                  }}>
+                    { currentButtonDisplay }
+                  </Button></div>
+                </div>
+
               )
             }else{
               withdrawButtonOrBalance = (

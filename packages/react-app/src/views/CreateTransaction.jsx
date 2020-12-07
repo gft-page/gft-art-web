@@ -137,7 +137,7 @@ export default function CreateTransaction({poolServerUrl, contractName, address,
             console.log("isOwner",isOwner)
 
             if(isOwner){
-              const res = await axios.post(poolServerUrl, { address: readContracts[contractName].address, nonce: nonce.toNumber(), to, amount, data, hash: newHash, signatures:[ signature ], signers: [ recover ] });
+              const res = await axios.post(poolServerUrl, { chainId: localProvider._network.chainId, address: readContracts[contractName].address, nonce: nonce.toNumber(), to, amount, data, hash: newHash, signatures:[ signature ], signers: [ recover ] });
               // IF SIG IS VALUE ETC END TO SERVER AND SERVER VERIFIES SIG IS RIGHT AND IS SIGNER BEFORE ADDING TY
 
               console.log("RESULT",res.data)
