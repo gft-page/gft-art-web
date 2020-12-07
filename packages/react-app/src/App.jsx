@@ -3,34 +3,18 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu } from "antd";
+import { Row, Col, Button, Menu, Radio, Typography } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useBalance } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
-import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
-import { Hints, ExampleUI, Subgraph, Erc20Sandbox } from "./views"
-/*
-    Welcome to 🏗 scaffold-eth !
-
-    Code:
-    https://github.com/austintgriffith/scaffold-eth
-
-    Support:
-    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
-    or DM @austingriffith on twitter or telegram
-
-    You should get your own Infura.io ID and put it in `constants.js`
-    (this is your connection to the main Ethereum network for ENS etc.)
-*/
+import { Hints, Erc20Sandbox } from "./views"
 import { INFURA_ID } from "./constants";
+const { Title } = Typography;
 
 const DEBUG = true
-
-// 🔭 block explorer URL
-const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
 
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
@@ -62,9 +46,6 @@ function App(props) {
   const userProvider = useUserProvider(injectedProvider, localProvider);
   const address = useUserAddress(userProvider);
 
-  // The transactor wraps transactions and provides notificiations
-  const tx = Transactor(userProvider, gasPrice)
-
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
   if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
@@ -80,6 +61,10 @@ function App(props) {
   // If you want to make 🔐 write transactions to your contracts, use the userProvider:
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
+
+  let contractOptions = writeContracts?Object.keys(writeContracts):[]
+
+  const [selectedContract, setSelectedContract] = useState()
 
 
   const loadWeb3Modal = useCallback(async () => {
@@ -107,25 +92,43 @@ function App(props) {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
+          <Menu.Item key="/">
+            <Link onClick={()=>{setRoute("/")}} to="/">Hints</Link>
+          </Menu.Item>
           <Menu.Item key="/erc20-sandbox">
-            <Link onClick={()=>{setRoute("/erc20-sandbox")}} to="/erc20-sandbox">Erc20 Sandbox</Link>
+            <Link onClick={()=>{setRoute("/erc20-sandbox")}} to="/erc20-sandbox">Example UI</Link>
+          </Menu.Item>
+          <Menu.Item key="/contract">
+            <Link onClick={()=>{setRoute("/contract")}} to="/contract">Contract</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
-          <Route exact path="/">
+        <Route exact path="/">
+          <Hints
+          />
+        </Route>
+          <Route exact path="/erc20-sandbox">
             <Erc20Sandbox
             address={address}
             localContracts={writeContracts}
             mainnetProvider={mainnetProvider}
             />
           </Route>
-          <Route path="/erc20-sandbox">
-            <Erc20Sandbox
-            address={address}
-            localContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-            />
+          <Route path="/contract">
+            <Title level={4}>Select contract:</Title>
+            <Radio.Group
+                options={contractOptions}
+                onChange={(e) => { setSelectedContract(e.target.value)}}
+                value={selectedContract}
+              />
+              {selectedContract?
+              <Contract
+                name={selectedContract}
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={address}
+              />:null}
           </Route>
         </Switch>
       </BrowserRouter>
@@ -142,7 +145,6 @@ function App(props) {
            web3Modal={web3Modal}
            loadWeb3Modal={loadWeb3Modal}
            logoutOfWeb3Modal={logoutOfWeb3Modal}
-           blockExplorer={blockExplorer}
          />
       </div>
 

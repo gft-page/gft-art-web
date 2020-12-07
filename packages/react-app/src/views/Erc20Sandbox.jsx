@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-//import 'antd/dist/antd.css'
-import { SendOutlined, SmileOutlined } from "@ant-design/icons";
-import { Row, Col, List, Typography, Spin, Card, Radio, Form, Button, Input, InputNumber, notification, Divider } from "antd";
-import { Faucet, Balance, Blockie, AddressInput } from "../components";
-import { parseEther, parseUnits, formatEther, formatUnits } from "@ethersproject/units";
+import { Typography, Card, Radio, Form, Button, Input, notification, Divider } from "antd";
+import { Blockie, AddressInput } from "../components";
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { usePoller } from "eth-hooks";
-import { TokenBalance } from "."
-import { Transactor } from "../helpers";
-const { Text, Title, Paragraph } = Typography;
+const { Title, Paragraph } = Typography;
 
 function Erc20Sandbox({address, localContracts, mainnetProvider}) {
 
@@ -30,7 +25,7 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
   useEffect(() => {
     if(!selectedContract) {
     setSelectedContract(contractOptions[0])}
-  },[contractOptions])
+  },[contractOptions, selectedContract])
 
   const makeCall = async (callName, contract, args) => {
     if(contract[callName]) {
@@ -39,6 +34,13 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
         result = await contract[callName](...args)
       } else {
         result = await contract[callName]()
+      }
+      if(result.hash) {
+        notification.open({
+          message: 'Success',
+          description:
+          `👀  ${callName} successful`,
+        });
       }
       return result
     }
@@ -89,18 +91,17 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
     console.log(values)
     let parsedAmount = parseUnits(values.amount,decimals)
     let args
-    if(values.function=='transferFrom') {
+    if(values.function==='transferFrom') {
       args = [values.fromAddress, values.toAddress, parsedAmount]
     } else {
       args = [values.toAddress, parsedAmount]
     }
 
-    console.log(args)
-
     let selectedFunction = values.function?values.function:defaultUpdateFunction
 
     try {
       let result = await makeCall(selectedFunction, localContracts[selectedContract], args)
+      console.log(result)
       notification.open({
         message: 'Success',
         description:
@@ -125,6 +126,9 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
                       setMyBalance()
                       setAddressBalance()
                       setAddressAllowance()
+                      setMyAllowanceOnAddress()
+                      updateForm.resetFields()
+                      addressInfoForm.resetFields()
                       setSelectedContract(e.target.value) }}
                     value={selectedContract}
                   />
@@ -134,7 +138,11 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
                 <Paragraph copyable={{text: localContracts[selectedContract]["address"]}}>{"Contract: " +localContracts[selectedContract]["address"].substring(0,7)}</Paragraph>
                 <p>{"TotalSupply: "+totalSupply}</p>
                 <p>{"Balance: "+myBalance}</p>
-                {selectedContract&&localContracts[selectedContract]['mintTokens']?<Button onClick={() => {makeCall('mintTokens', localContracts[selectedContract])}}>Mint</Button>:null}
+                {selectedContract&&localContracts[selectedContract]['mintTokens']?
+                <Button onClick={async () => {
+                  let result = await makeCall('mintTokens', localContracts[selectedContract])
+                  console.log(result)
+                }}>Mint</Button>:null}
                 {selectedContract&&localContracts[selectedContract]['burnTokens']?<Button onClick={() => {makeCall('burnTokens', localContracts[selectedContract])}}>Burn</Button>:null}
                 {selectedContract&&localContracts[selectedContract]['outstandingTokens']?<Button onClick={async () => {
                   let result = await makeCall('outstandingTokens', localContracts[selectedContract])
@@ -168,15 +176,13 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
                     defaultValue={defaultUpdateFunction}
                   />
                 </Form.Item>
-                {updateFormFunction=="transferFrom"?<Form.Item name="fromAddress" rules={[{ required: updateFormFunction=="transferFrom", message: 'Address to transfer from' }]}>
+                {updateFormFunction==="transferFrom"?<Form.Item name="fromAddress" rules={[{ required: updateFormFunction==="transferFrom", message: 'Address to transfer from' }]}>
                   <AddressInput placeholder="fromAddress"
-                  autoFocus
                   ensProvider={mainnetProvider}
                   />
                 </Form.Item>:null}
                   <Form.Item name="toAddress" rules={[{ required: true, message: 'Please enter an address' }]}>
                     <AddressInput placeholder="address"
-                    autoFocus
                     ensProvider={mainnetProvider}
                     />
                   </Form.Item>
@@ -201,7 +207,6 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
                     }}>
                   <Form.Item name="address">
                     <AddressInput placeholder="address"
-                    autoFocus
                     layout="inline"
                     ensProvider={mainnetProvider}
                     />
@@ -211,7 +216,7 @@ function Erc20Sandbox({address, localContracts, mainnetProvider}) {
                   </Form.Item>
                 </Form>
                 {addressBalance?<p>{`Address Balance: ${addressBalance}`}</p>:null}
-                {addressAllowance?<p>{`Address Allowance on my ${selectedContract}: ${addressAllowance}`}</p>:null}
+                {addressAllowance?<p>{`Address Allowance on my ${selectedContract} tokens: ${addressAllowance}`}</p>:null}
                 {myAllowanceOnAddress?<p>{`My Allowance on address: ${myAllowanceOnAddress}`}</p>:null}
                 </div>
                 </>:null}
