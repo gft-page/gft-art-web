@@ -32,6 +32,7 @@ const { TabPane } = Tabs;
 
 const DEBUG = false
 
+//const poolServerUrl = "https://backend.multisig.holdings:49832/" 
 const poolServerUrl = "http://localhost:49832/"
 
 // 🔭 block explorer URL

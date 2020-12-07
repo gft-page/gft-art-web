@@ -7,15 +7,16 @@ import { ethers } from "ethers";
 import { useContractReader, useEventListener, usePoller } from "../hooks";
 const axios = require('axios');
 
+const DEBUG = false
+
 export default function Transactions({poolServerUrl, contractName, signaturesRequired, address, nonce, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
 
 
    const [ transactions, setTransactions ] = useState();
    usePoller(()=>{
      const getTransactions = async ()=>{
-       console.log("🛰 Requesting Transaction List")
+       if(DEBUG) console.log("🛰 Requesting Transaction List")
        const res = await axios.get(poolServerUrl+readContracts[contractName].address+"_"+localProvider._network.chainId)
-       console.log("res",res)
        let newTransactions = []
        for(let i in res.data){
          //console.log("look through signatures of ",res.data[i])
@@ -89,7 +90,7 @@ export default function Transactions({poolServerUrl, contractName, signaturesReq
       bordered
       dataSource={transactions}
       renderItem={(item) => {
-        console.log("ITE88888M",item)
+        //console.log("ITE88888M",item)
 
         const hasSigned = (item.signers.indexOf(address)>=0)
         const hasEnoughSignatures = (item.signatures.length<=signaturesRequired.toNumber())
