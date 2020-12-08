@@ -32,7 +32,7 @@ const { TabPane } = Tabs;
 
 const DEBUG = false
 
-//const poolServerUrl = "https://backend.multisig.holdings:49832/" 
+//const poolServerUrl = "https://backend.multisig.holdings:49832/"
 const poolServerUrl = "http://localhost:49832/"
 
 // 🔭 block explorer URL
@@ -110,7 +110,14 @@ function App(props) {
   const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired")
   if(DEBUG) console.log("✳️ signaturesRequired:",signaturesRequired)
 
+  //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
+  const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
+  if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
 
+  const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
+  if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
+
+  
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -182,7 +189,8 @@ function App(props) {
               readContracts={readContracts}
               blockExplorer={blockExplorer}
               nonce={nonce}
-              ownerEvents={ownerEvents}
+              withdrawStreamEvents={withdrawStreamEvents}
+              openStreamEvents={openStreamEvents}
               signaturesRequired={signaturesRequired}
             />
           </Route>
