@@ -1,6 +1,6 @@
 # 🏗 scaffold-eth
 
-> is everything you need to get started building decentralized applications powered by smart contracts
+> erc20 edition: this fork gets you started with your very own tokens.
 
 ---
 
