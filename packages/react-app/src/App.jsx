@@ -34,6 +34,7 @@ const DEBUG = false
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //const poolServerUrl = "https://backend.multisig.holdings:49832/"
 const poolServerUrl = "http://localhost:49832/"
 =======
@@ -44,6 +45,10 @@ const poolServerUrl = "https://backend.multisig.holdings:49832/"
 const poolServerUrl = "https://backend.multisig.holdings:49832/"
 //const poolServerUrl = "http://localhost:49832/"
 >>>>>>> bank-buidl-guidl
+=======
+const poolServerUrl = "https://backend.multisig.holdings:49832/"
+//const poolServerUrl = "http://localhost:49832/"
+>>>>>>> 85faa0047bf6ca843160b3b69deacb5ef2ff899e
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -126,17 +131,6 @@ function App(props) {
 
   const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
   if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
-
-
-
-  //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
-  const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
-  if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
-
-  const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
-  if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
-
-
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
