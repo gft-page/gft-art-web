@@ -109,7 +109,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
   let index=0
   if(withdrawStreamEvents){
     withdrawalDisplay = (
-      <div style={{border:"1px solid #cccccc",padding:16, width:400, margin:"auto",marginTop:64}}>
+      <div style={{border:"1px solid #cccccc",padding:16, width:550, margin:"auto",marginTop:64}}>
         <b>Withdrawals:</b>
         <List
           title={"Withdrawals"}
@@ -146,7 +146,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
         dataSource={streams}
         renderItem={(item) => {
           if(!streamInfo) return "..."
-          
+
           let withdrawButtonOrBalance = ""
 
           let prettyBalanceDisplay = "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2)
