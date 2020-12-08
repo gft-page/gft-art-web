@@ -32,13 +32,8 @@ const { TabPane } = Tabs;
 
 const DEBUG = false
 
-<<<<<<< HEAD
-//const poolServerUrl = "https://backend.multisig.holdings:49832/"
-const poolServerUrl = "http://localhost:49832/"
-=======
 const poolServerUrl = "https://backend.multisig.holdings:49832/"
 //const poolServerUrl = "http://localhost:49832/"
->>>>>>> bank-buidl-guidl
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -121,8 +116,6 @@ function App(props) {
 
   const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
   if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
-
-
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
