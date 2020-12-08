@@ -109,7 +109,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
   let index=0
   if(withdrawStreamEvents){
     withdrawalDisplay = (
-      <div style={{border:"1px solid #cccccc",padding:16, width:400, margin:"auto",marginTop:64}}>
+      <div style={{border:"1px solid #cccccc",padding:16, width:550, margin:"auto",marginTop:64}}>
         <b>Withdrawals:</b>
         <List
           title={"Withdrawals"}
@@ -141,7 +141,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
   return (
     <div>
       <List
-        style={{maxWidth:400,margin:"auto",marginTop:32}}
+        style={{maxWidth:550,margin:"auto",marginTop:32}}
         bordered
         dataSource={streams}
         renderItem={(item) => {
