@@ -32,23 +32,8 @@ const { TabPane } = Tabs;
 
 const DEBUG = false
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-//const poolServerUrl = "https://backend.multisig.holdings:49832/"
-const poolServerUrl = "http://localhost:49832/"
-=======
 const poolServerUrl = "https://backend.multisig.holdings:49832/"
 //const poolServerUrl = "http://localhost:49832/"
->>>>>>> bank-buidl-guidl
-=======
-const poolServerUrl = "https://backend.multisig.holdings:49832/"
-//const poolServerUrl = "http://localhost:49832/"
->>>>>>> bank-buidl-guidl
-=======
-const poolServerUrl = "https://backend.multisig.holdings:49832/"
-//const poolServerUrl = "http://localhost:49832/"
->>>>>>> 85faa0047bf6ca843160b3b69deacb5ef2ff899e
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
