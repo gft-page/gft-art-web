@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const directoryName = "build";
 
-const BUCKETNAME = ""; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
+const BUCKETNAME = "bank.scaffoldeth.io"; // <<---- SET YOUR BUCKET NAME AND CREATE aws.json ** see below vvvvvvvvvv
 
 if (!BUCKETNAME) {
   console.log("☢️   Enter a bucket name in packages/react-app/scripts/s3.js ");
