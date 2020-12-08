@@ -33,8 +33,13 @@ const { TabPane } = Tabs;
 const DEBUG = false
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //const poolServerUrl = "https://backend.multisig.holdings:49832/"
 const poolServerUrl = "http://localhost:49832/"
+=======
+const poolServerUrl = "https://backend.multisig.holdings:49832/"
+//const poolServerUrl = "http://localhost:49832/"
+>>>>>>> bank-buidl-guidl
 =======
 const poolServerUrl = "https://backend.multisig.holdings:49832/"
 //const poolServerUrl = "http://localhost:49832/"
@@ -114,6 +119,15 @@ function App(props) {
 
   const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired")
   if(DEBUG) console.log("✳️ signaturesRequired:",signaturesRequired)
+
+  //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
+  const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
+  if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
+
+  const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
+  if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
+
+
 
   //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
   const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
