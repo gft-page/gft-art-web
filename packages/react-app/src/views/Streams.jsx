@@ -141,7 +141,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
   return (
     <div>
       <List
-        style={{maxWidth:400,margin:"auto",marginTop:32}}
+        style={{maxWidth:550,margin:"auto",marginTop:32}}
         bordered
         dataSource={streams}
         renderItem={(item) => {
