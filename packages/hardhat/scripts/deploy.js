@@ -17,11 +17,11 @@ const main = async () => {
   // ! OR CUSTOM DEPLOY
   // * ----------------
   // custom deploy (to use deployed addresses dynamically for example:)
-  
+
   const streamingMetaMultiSigWallet = await deploy("StreamingMetaMultiSigWallet",[
-    31337,
-    [ "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1" ],
-    1
+    1,
+    [ "0x34aA3F359A9D614239015126635CE7732c18fDF3", "0xa81a6a910FeD20374361B35C451a4a44F86CeD46", "0x41E54C0D25F82A4aCA440Ab31407225c6d3Edf64", "0x60Ca282757BA67f3aDbF21F3ba2eBe4Ab3eb01fc", "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1" ],
+    2
   ])
 
 

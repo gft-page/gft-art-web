@@ -1,7 +1,7 @@
 {
-  "short_name": "Scaffold-Eth App",
+  "short_name": "Guild Bank",
   "start_url": ".",
-  "name": "Create Eth App Sample",
+  "name": "Build Guild Bank",
   "icons": [
     {
       "src": "favicon.ico",

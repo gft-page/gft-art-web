@@ -12,17 +12,10 @@ const { Option } = Select;
 
 const DEBUG = false
 
-export default function Streams({contractName, ownerEvents, signaturesRequired, address, nonce, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
+export default function Streams({withdrawStreamEvents, openStreamEvents, contractName, signaturesRequired, address, nonce, userProvider, mainnetProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts, blockExplorer }) {
 
   const walletBalance = useBalance(localProvider, readContracts?readContracts[contractName].address:readContracts);
   if(DEBUG) console.log("💵 walletBalance",walletBalance?formatEther(walletBalance):"...")
-
-  //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
-  const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
-  if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
-
-  const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
-  if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
 
   const blockNumber = useBlockNumber(localProvider,1777);
   if(DEBUG) console.log("# blockNumber:",blockNumber)
@@ -76,6 +69,19 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
 
   let streamDetailForm = ""
   let displayedStream = {}
+
+  let extraDisplay = ""
+
+  if(streamFrequency&&streamFrequency>0){
+    if(streamFrequency>86400){
+      extraDisplay = "("+(streamFrequency/86400).toFixed(2)+" days)"
+    }else if(streamFrequency>3600){
+      extraDisplay = "("+(streamFrequency/3600).toFixed(2)+" hours)"
+    }else if(streamFrequency>60){
+      extraDisplay = "("+(streamFrequency/60).toFixed(2)+" minutes)"
+    }
+  }
+
   if(methodName=="openStream"){
     streamDetailForm = (
       <div>
@@ -89,11 +95,11 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
         </div>
         <div style={{margin:8,padding:8}}>
           every <InputNumber
-            width={200}
+            style={{width:180}}
             placeholder="frequency"
             value={streamFrequency}
             onChange={setStreamFrequency}
-          /> seconds
+          /> seconds <div style={{opacity:0.5,padding:4}}>{extraDisplay}</div>
         </div>
       </div>
     )
@@ -139,6 +145,8 @@ export default function Streams({contractName, ownerEvents, signaturesRequired, 
         bordered
         dataSource={streams}
         renderItem={(item) => {
+          if(!streamInfo) return "..."
+
           let withdrawButtonOrBalance = ""
 
           let prettyBalanceDisplay = "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2)

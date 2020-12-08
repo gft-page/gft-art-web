@@ -32,8 +32,8 @@ const { TabPane } = Tabs;
 
 const DEBUG = false
 
-//const poolServerUrl = "https://backend.multisig.holdings:49832/" 
-const poolServerUrl = "http://localhost:49832/"
+const poolServerUrl = "https://backend.multisig.holdings:49832/"
+//const poolServerUrl = "http://localhost:49832/"
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -46,11 +46,11 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFU
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
+//const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+//const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+//if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
+const localProvider = mainnetProvider ///new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
@@ -109,6 +109,15 @@ function App(props) {
 
   const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired")
   if(DEBUG) console.log("✳️ signaturesRequired:",signaturesRequired)
+
+
+  //event OpenStream( address indexed to, uint256 amount, uint256 frequency );
+  const openStreamEvents = useEventListener(readContracts, contractName, "OpenStream", localProvider, 1);
+  if(DEBUG) console.log("📟 openStreamEvents:",openStreamEvents)
+
+  const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
+  if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
+
 
 
   const loadWeb3Modal = useCallback(async () => {
@@ -182,8 +191,9 @@ function App(props) {
               readContracts={readContracts}
               blockExplorer={blockExplorer}
               nonce={nonce}
-              ownerEvents={ownerEvents}
               signaturesRequired={signaturesRequired}
+              withdrawStreamEvents={withdrawStreamEvents}
+              openStreamEvents={openStreamEvents}
             />
           </Route>
           <Route exact path="/owners">
