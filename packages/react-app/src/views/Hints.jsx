@@ -21,18 +21,18 @@ export default function Hints({yourLocalBalance, mainnetProvider, price, address
       </div>
 
       <div style={{ margin: 32 }}>
+        <span style={{ marginRight: 8 }}>🛰</span>
+        <b>compile / deploy</b> with
+        <span style={{ marginLeft: 4, backgroundColor: "#f1f1f1", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
+          yarn run deploy
+        </span>
+      </div>
+
+      <div style={{ margin: 32 }}>
         <p>💺 <b>Fixed</b> has a fixed supply. Try adding in your address to the constructor() mint statement!</p>
         <p>📈 <b>Unlimited</b> lets anyone mint 10 more tokens. Can you limit that to just one trusted address?</p>
         <p>🔥 <b>Burnable</b> lets any user burn all their tokens. Can you let the user specify the number of tokens to burn?</p>
         <p>🎈 <b>Inflating</b> increases the number of available tokens with every new block. Can you reduce this reward over time?</p>
-      </div>
-
-      <div style={{ margin: 32 }}>
-        <span style={{ marginRight: 8 }}>🛰</span>
-        <b>compile/deploy</b> with
-        <span style={{ marginLeft: 4, backgroundColor: "#f1f1f1", padding: 4, borderRadius: 4, fontWeight: "bolder" }}>
-          yarn run deploy
-        </span>
       </div>
 
       <div style={{ margin: 32 }}>

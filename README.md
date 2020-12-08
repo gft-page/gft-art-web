@@ -20,7 +20,7 @@ yarn install
 
 ```bash
 
-yarn start
+yarn chain
 
 ```
 
@@ -28,7 +28,7 @@ yarn start
 
 ```bash
 
-yarn chain
+yarn deploy
 
 ```
 
@@ -36,7 +36,7 @@ yarn chain
 
 ```bash
 
-yarn deploy
+yarn start
 
 ```
 
@@ -45,15 +45,19 @@ yarn deploy
 - Unlimited lets anyone mint new tokens
 - Burnable allows burning as well as minting
 - Inflating makes new tokens available for minting with every new block
+
 These are built on top of [OpenZeppelin's tried and tested reference contracts](https://docs.openzeppelin.com/contracts/3.x/erc20).
 
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
+📝 Edit your frontend `App.jsx` and `/views` in `packages/react-app/src`
 
 📱 Open http://localhost:3000 to see the app
 
 There are three pages:
 - `Hints` to show you around
-- `Example UI` pulls together some information about the different tokens, as well as allowing you to interact with the
+- `Example UI` pulls together some information about the different tokens, as well as allowing you to interact with the key erc20 functionality (mint, transfer, approve)
+
+> Can you `approve` a metamask address, then use `transferFrom` with that address to take tokens from another wallet?
+
 - `Contract` has the vanilla scaffold-eth Contract component if you want to dig around some more
 
 Take a look around!
