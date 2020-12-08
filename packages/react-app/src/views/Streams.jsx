@@ -146,7 +146,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
         dataSource={streams}
         renderItem={(item) => {
           if(!streamInfo) return "..."
-          
+
           let withdrawButtonOrBalance = ""
 
           let prettyBalanceDisplay = "$" + (parseFloat(formatEther(streamInfo[item]&&streamInfo[item].balance?streamInfo[item].balance:0)) * price).toFixed(2)
