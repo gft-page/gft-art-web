@@ -17,9 +17,13 @@ const main = async () => {
   // ! OR CUSTOM DEPLOY
   // * ----------------
   // custom deploy (to use deployed addresses dynamically for example:)
-  // const exampleToken = await deploy("ExampleToken")
+
+  // const yourContract = await deploy("YourContract")
+
+  // await yourContract.transferOwnership(**YOURADDRESS**)
+
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
-  // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+  // const smartContractWallet = await deploy("SmartContractWallet",[examplePriceOracle.address])
 
   console.log(
     " 💾  Artifacts (address, abi, and args) saved to: ",
