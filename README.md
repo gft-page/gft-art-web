@@ -20,8 +20,6 @@ yarn install
 
 ```
 
-> you might get node-gyp errors, ignore them and run:
-
 ```bash
 
 yarn start
