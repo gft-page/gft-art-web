@@ -1,17 +1,16 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
-import { MailOutlined } from "@ant-design/icons";
-import { getDefaultProvider, InfuraProvider, JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
+import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, List, Tabs, Menu } from "antd";
+import { Row, Col, Button, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useBalance, useEventListener, useExternalContractLoader } from "./hooks";
 import { Balance, Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
-import { parseEther, formatEther } from "@ethersproject/units";
+import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Subgraph, CreateTransaction, Transactions, Owners, Streams, FrontPage } from "./views"
 /*
@@ -26,9 +25,13 @@ import { Subgraph, CreateTransaction, Transactions, Owners, Streams, FrontPage }
 
     You should get your own Infura.io ID and put it in `constants.js`
     (this is your connection to the main Ethereum network for ENS etc.)
+
+
+    📡 EXTERNAL CONTRACTS:
+    You can also bring in contract artifacts in `constants.js`
+    (and then use the `useExternalContractLoader()` hook!)
 */
-import { INFURA_ID, ETHERSCAN_KEY } from "./constants";
-const { TabPane } = Tabs;
+import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 
 const DEBUG = false
 
@@ -107,6 +110,25 @@ function App(props) {
   const ownerEvents = useEventListener(readContracts, contractName, "Owner", localProvider, 1);
   if(DEBUG) console.log("📟 ownerEvents:",ownerEvents)
 
+  // If you want to bring in the mainnet DAI contract it would look like:
+  //const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
+  //console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
+
+
+  // keep track of a variable from the contract in the local React state:
+  const purpose = useContractReader(readContracts,"YourContract", "purpose")
+  console.log("🤗 purpose:",purpose)
+
+  //📟 Listen for broadcast events
+  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
+  console.log("📟 SetPurpose events:",setPurposeEvents)
+
+  /*
+  const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
+  console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
+  */
+
+
   const signaturesRequired = useContractReader(readContracts, contractName, "signaturesRequired")
   if(DEBUG) console.log("✳️ signaturesRequired:",signaturesRequired)
 
@@ -117,7 +139,7 @@ function App(props) {
   const withdrawStreamEvents = useEventListener(readContracts, contractName, "Withdraw", localProvider, 1);
   if(DEBUG) console.log("📟 withdrawStreamEvents:",withdrawStreamEvents)
 
-  
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -132,7 +154,7 @@ function App(props) {
   const [route, setRoute] = useState();
   useEffect(() => {
     setRoute(window.location.pathname)
-  }, [ window.location.pathname ]);
+  }, [setRoute]);
 
   return (
     <div className="App">
@@ -193,6 +215,17 @@ function App(props) {
               openStreamEvents={openStreamEvents}
               signaturesRequired={signaturesRequired}
             />
+
+            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
+            <Contract
+              name="DAI"
+              customContract={mainnetDAIContract}
+              signer={userProvider.getSigner()}
+              provider={mainnetProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+            */ }
           </Route>
           <Route exact path="/owners">
             <Owners
@@ -253,6 +286,8 @@ function App(props) {
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
+              purpose={purpose}
+              setPurposeEvents={setPurposeEvents}
             />
           </Route>
           <Route path="/subgraph">
