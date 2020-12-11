@@ -3,12 +3,12 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu } from "antd";
+import { Row, Col, Button, Menu, List } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { useUserAddress } from "eth-hooks";
+import { useUserAddress, useBlockNumber } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -101,12 +101,11 @@ function App(props) {
   const pair2 = useContractReader({uniswapFactory:uniswapFactory},"uniswapFactory", "allPairs", [2])
   console.log("🤗 pair2:",pair2)
 
-  //📟 Listen for broadcast events
-  const pairCreatedEvents = useEventListener({uniswapFactory:uniswapFactory}, "uniswapFactory", "PairCreated", localProvider, 11433470); // <---- how many blocks back to look.... you will need to walk through these
-  console.log("📟 pairCreatedEvents:",pairCreatedEvents)
+  const blockNumber = useBlockNumber(mainnetProvider);
 
   //📟 Listen for broadcast events
-  //uniswapFactory
+  const pairCreatedEvents = useEventListener({uniswapFactory:uniswapFactory}, "uniswapFactory", "PairCreated", localProvider, blockNumber-100); // <---- how many blocks back to look.... you will need to walk through these
+  console.log("📟 pairCreatedEvents in last 100 blocks:",pairCreatedEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -177,6 +176,35 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
             />
+
+            <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+              <h2>Events:</h2>
+              <List
+                bordered
+                dataSource={pairCreatedEvents}
+                renderItem={(item) => {
+                  return (
+                    <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
+                      <Address
+                        value={item[0]}
+                        ensProvider={mainnetProvider}
+                        fontSize={16}
+                      />
+                      <Address
+                        value={item[1]}
+                        ensProvider={mainnetProvider}
+                        fontSize={16}
+                      />
+                      <Address
+                        value={item[2]}
+                        ensProvider={mainnetProvider}
+                        fontSize={16}
+                      />
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
 
           </Route>
           <Route path="/hints">
