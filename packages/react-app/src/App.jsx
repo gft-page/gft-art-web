@@ -51,7 +51,7 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = mainnetProvider//new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
@@ -89,8 +89,8 @@ function App(props) {
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
   // If you want to bring in the mainnet DAI contract it would look like:
-  //const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  //console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
+  const uniswapFactory = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
+  console.log("uniswapFactory mainnet:",uniswapFactory)
 
 
   // keep track of a variable from the contract in the local React state:
@@ -98,8 +98,7 @@ function App(props) {
   console.log("🤗 purpose:",purpose)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  //uniswapFactory
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -152,24 +151,17 @@ function App(props) {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
 
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
+
             <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
+              name="UNI FACTORY"
+              customContract={uniswapFactory}
               signer={userProvider.getSigner()}
               provider={mainnetProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
-            */ }
+
           </Route>
           <Route path="/hints">
             <Hints
@@ -191,7 +183,7 @@ function App(props) {
               writeContracts={writeContracts}
               readContracts={readContracts}
               purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
+              /* setPurposeEvents={setPurposeEvents} */
             />
           </Route>
           <Route path="/subgraph">
