@@ -94,8 +94,12 @@ function App(props) {
 
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  const pair1 = useContractReader({uniswapFactory:uniswapFactory},"uniswapFactory", "allPairs", [1])
+  console.log("🤗 pair1:",pair1)
+
+  // keep track of a variable from the contract in the local React state:
+  const pair2 = useContractReader({uniswapFactory:uniswapFactory},"uniswapFactory", "allPairs", [2])
+  console.log("🤗 pair2:",pair2)
 
   //📟 Listen for broadcast events
   //uniswapFactory
@@ -127,6 +131,8 @@ function App(props) {
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
+
+
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
@@ -152,6 +158,12 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
 
+            <div>
+              PAIR 1: {pair1}
+            </div>
+            <div>
+              PAIR 2: {pair2}
+            </div>
 
             <Contract
               name="UNI FACTORY"
@@ -182,7 +194,7 @@ function App(props) {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
-              purpose={purpose}
+              /* purpose={purpose} */
               /* setPurposeEvents={setPurposeEvents} */
             />
           </Route>
