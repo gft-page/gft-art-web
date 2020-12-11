@@ -102,6 +102,10 @@ function App(props) {
   console.log("🤗 pair2:",pair2)
 
   //📟 Listen for broadcast events
+  const pairCreatedEvents = useEventListener({uniswapFactory:uniswapFactory}, "uniswapFactory", "PairCreated", localProvider, 11433470); // <---- how many blocks back to look.... you will need to walk through these
+  console.log("📟 pairCreatedEvents:",pairCreatedEvents)
+
+  //📟 Listen for broadcast events
   //uniswapFactory
 
   /*
