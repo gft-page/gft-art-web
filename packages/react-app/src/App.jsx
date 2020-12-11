@@ -43,7 +43,7 @@ const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.c
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 //const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFURA_ID)
+const mainnetProvider = new JsonRpcProvider("http://10.0.0.211:8545/")//https://mainnet.infura.io/v3/"+INFURA_ID)
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
