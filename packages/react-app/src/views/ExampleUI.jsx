@@ -6,7 +6,7 @@ import { SyncOutlined } from '@ant-design/icons';
 import { Address, Balance } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
 
-export default function ExampleUI({purpose, setPurposeEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
+export default function ExampleUI({denominator, allocations, distributions, setPurposeEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
   const [newPurpose, setNewPurpose] = useState("loading...");
 
@@ -15,10 +15,56 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
+
+      <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+        <h2>Allocations:</h2>
+        <List
+          bordered
+          dataSource={allocations}
+          renderItem={(item) => {
+            return (
+              <List.Item key={item.wallet}>
+                <span style={{fontSize:24,padding:8,border:"1px solid #efefef"}}>
+                  { Math.floor( item.ratio * 100 / denominator )+"%" }
+                </span>
+                <Address
+                  value={item.wallet}
+                  ensProvider={mainnetProvider}
+                />
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+
+      <div style={{ width:780, margin: "auto", marginTop:32, paddingBottom:32 }}>
+        <h2>Distributions:</h2>
+        <List
+          bordered
+          dataSource={distributions}
+          renderItem={(item) => {
+            return (
+              <List.Item key={item.wallet}>
+                <Address
+                  value={item.token}
+                  ensProvider={mainnetProvider}
+                />
+                <Address
+                  value={item.wallet}
+                  ensProvider={mainnetProvider}
+                />
+                <Balance
+                  balance={item.amount}
+                />
+
+              </List.Item>
+            )
+          }}
+        />
+      </div>
+
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
         <h2>Example UI:</h2>
-
-        <h4>purpose: {purpose}</h4>
 
         <Divider/>
 
@@ -57,11 +103,6 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
 
         OR
 
-        <Balance
-          address={address}
-          provider={localProvider}
-          dollarMultiplier={price}
-        />
 
         <Divider/>
 
@@ -70,15 +111,6 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
         <h2>Your Balance: {yourLocalBalance?formatEther(yourLocalBalance):"..."}</h2>
 
         <Divider/>
-
-
-
-        Your Contract Address:
-        <Address
-            value={readContracts?readContracts.YourContract.address:readContracts}
-            ensProvider={mainnetProvider}
-            fontSize={16}
-        />
 
         <Divider />
 

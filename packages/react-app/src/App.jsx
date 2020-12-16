@@ -12,7 +12,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components"
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { /*Hints, ExampleUI, Subgraph, */ Allocations, Distributions } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -94,12 +94,20 @@ function App(props) {
 
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  const yourTokenBalance = useContractReader(readContracts,"ExampleToken", "balanceOf", [ address ])
+  console.log("🤗 yourTokenBalance:",yourTokenBalance)
+  const allocatorTokenBalance = useContractReader(readContracts,"ExampleToken", "balanceOf", [ readContracts && readContracts.Allocator.address ])
+  console.log("🤗 allocatorTokenBalance:",allocatorTokenBalance)
+
+  const denominator = useContractReader(readContracts,"Allocator", "denominator")
+  console.log("🤗 denominator:",denominator)
+
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  const allocations = useEventListener(readContracts, "Allocator", "AllocationAdded", localProvider, 1);
+  console.log("📟 allocations:",allocations)
+  const distributions = useEventListener(readContracts, "Allocator", "Distribute", localProvider, 1);
+  console.log("📟 distributions:",distributions)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -132,34 +140,52 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Allocations</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/distributions">
+            <Link onClick={()=>{setRoute("/distributions")}} to="/distributions">Distributions</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
+            <Allocations
+              mainnetProvider={mainnetProvider}
+              allocations={allocations}
+              denominator={denominator}
+            />
+          </Route>
+          <Route path="/distributions">
+            <Distributions
+              writeContracts={writeContracts}
+              tx={tx}
+              mainnetProvider={mainnetProvider}
+              distributions={distributions}
+            />
+          </Route>
+          <Route path="/debug">
             {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="YourContract"
+              name="Allocator"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
-
+            <Contract
+              name="ExampleToken"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
             { /* Uncomment to display and interact with an external contract (DAI on mainnet):
             <Contract
               name="DAI"
@@ -171,6 +197,7 @@ function App(props) {
             />
             */ }
           </Route>
+          {/*
           <Route path="/hints">
             <Hints
               address={address}
@@ -190,8 +217,9 @@ function App(props) {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
-              purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
+              allocations={allocations}
+              distributions={distributions}
+              denominator={denominator}
             />
           </Route>
           <Route path="/subgraph">
@@ -202,6 +230,7 @@ function App(props) {
             mainnetProvider={mainnetProvider}
             />
           </Route>
+          */}
         </Switch>
       </BrowserRouter>
 
@@ -250,7 +279,6 @@ function App(props) {
          <Row align="middle" gutter={[4, 4]}>
            <Col span={24}>
              {
-
                /*  if the local provider has a signer, let's show the faucet:  */
                localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER && price > 1 ? (
                  <Faucet localProvider={localProvider} price={price} ensProvider={mainnetProvider}/>

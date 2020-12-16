@@ -9,7 +9,24 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 16 vvvv
+  const allocator = await deploy("Allocator",[
+    [
+      "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
+      "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+    ],
+    [
+      20,
+      80
+    ]
+  ])
+
+  const exampleToken = await deploy("ExampleToken",[allocator.address])
+
+  const deployerWallet = ethers.provider.getSigner()
+  await deployerWallet.sendTransaction({
+    to: allocator.address,
+    value: ethers.utils.parseEther("10")
+  })
 
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
