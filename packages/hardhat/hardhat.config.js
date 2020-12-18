@@ -188,7 +188,6 @@ task("mine", "Looks for a deployer account that will give leading zeros")
     var EthUtil = require('ethereumjs-util');
     address = "0x" + EthUtil.privateToAddress(wallet._privKey).toString('hex')
 
-
     const rlp = require('rlp');
     const keccak = require('keccak');
 
@@ -204,7 +203,6 @@ task("mine", "Looks for a deployer account that will give leading zeros")
 
 
   }
-
 
   console.log("⛏ Account Mined as " + address + " and set as mnemonic in packages/hardhat")
   console.log("📜 This will create the first contract: 0x"+contract_address);
