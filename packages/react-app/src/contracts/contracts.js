@@ -1,1 +1,1 @@
-module.exports = ["Allocator","ExampleToken"];
+module.exports = ["Allocator","ExampleToken","WETH9"];

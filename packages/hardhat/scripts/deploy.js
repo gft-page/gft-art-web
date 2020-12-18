@@ -9,16 +9,23 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-  const allocator = await deploy("Allocator",[
+  const WETH = await deploy("WETH9")
+
+  const allocator = await deploy("Allocator")
+
+  await allocator.setWETHAddress(WETH.address)
+
+  await allocator.setAllocation(
     [
       "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
-      "0x34aA3F359A9D614239015126635CE7732c18fDF3"
+      "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+      "0xfc837221b69ebe426Cc2C520290bD4d4f8Be0DE8"
     ],
     [
       20,
-      80
-    ]
-  ])
+      80,
+      20
+    ])
 
   const exampleToken = await deploy("ExampleToken",[allocator.address])
 
@@ -27,6 +34,18 @@ const main = async () => {
     to: allocator.address,
     value: ethers.utils.parseEther("10")
   })
+
+  await allocator.setAllocation(
+    [
+      "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",
+      "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+      "0xfc837221b69ebe426Cc2C520290bD4d4f8Be0DE8"
+    ],
+    [
+      1,
+      1,
+      1
+    ])
 
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")

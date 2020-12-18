@@ -4,6 +4,8 @@ pragma experimental ABIEncoderV2;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./WETH9.sol";
 
 /*
 
@@ -29,7 +31,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
       (could add owner but then you might want locked 'periods' too?)
 */
 
-contract Allocator is ReentrancyGuard{
+contract Allocator is ReentrancyGuard, Ownable{
 
   event Distribute( address indexed token, address indexed wallet, uint256 amount );
   event AllocationAdded( address wallet, uint8 ratio );
@@ -41,11 +43,15 @@ contract Allocator is ReentrancyGuard{
 
   Allocation[] public allocations;
   uint8 public denominator = 0;
+  address payable public WETH;
 
   //accepts eth
-  receive() external payable {}
+  receive() external payable {
+    WETH9 wethContract = WETH9(WETH);
+    wethContract.deposit{value:msg.value}();
+  }
 
-  constructor( address[] memory wallets, uint8[] memory ratios ) public {
+  function setAllocation( address[] memory wallets, uint8[] memory ratios ) public onlyOwner {
     require( wallets.length > 0 ,"Not enough wallets");
     require( wallets.length < 256 ,"Too many wallets");
     require( wallets.length == ratios.length ,"Wallet and Ratio length not equal");
@@ -59,30 +65,21 @@ contract Allocator is ReentrancyGuard{
     }
   }
 
+  function setWETHAddress(address payable _WETH) public onlyOwner {
+    WETH = _WETH;
+  }
+
   function distribute(address tokenAddress) public nonReentrant {
-    if(tokenAddress==address(0)){
-      uint256 balance = address(this).balance;
-      for(uint8 a=0;a<allocations.length;a++){
-        uint256 amount = balance * allocations[a].ratio / denominator;
-        address(uint160(allocations[a].wallet)).transfer( amount ); // this could throw and lock funds?
-        // or maybe: (bool success, bytes memory data) = allocations[a].wallet.call{value: amount}()
-        emit Distribute( tokenAddress, allocations[a].wallet, amount );
-      }
-    }else{
-      IERC20 tokenContract = IERC20(tokenAddress);
-      uint256 balance = tokenContract.balanceOf(address(this));
-      for(uint8 a=0;a<allocations.length;a++){
-        uint256 amount = balance * allocations[a].ratio / denominator;
-        tokenContract.transfer( allocations[a].wallet, amount );
-        emit Distribute( tokenAddress, allocations[a].wallet, amount );
-      }
+    IERC20 tokenContract = IERC20(tokenAddress);
+    uint256 balance = tokenContract.balanceOf(address(this));
+    for(uint8 a=0;a<allocations.length;a++){
+      uint256 amount = balance * allocations[a].ratio / denominator;
+      tokenContract.transfer( allocations[a].wallet, amount );
+      emit Distribute( tokenAddress, allocations[a].wallet, amount );
     }
   }
 
   function allocationsLength() public view returns(uint8 count) {
       return uint8(allocations.length);
   }
-
-
-
 }
