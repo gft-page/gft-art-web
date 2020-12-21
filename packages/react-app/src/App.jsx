@@ -153,7 +153,7 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="YourContract"
+              name="MYSTIC"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
