@@ -15,38 +15,44 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "purpose",
-        "type": "string"
+        "internalType": "address[]",
+        "name": "owners",
+        "type": "address[]"
       }
     ],
-    "name": "SetPurpose",
+    "name": "SetOwners",
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "purpose",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
+        "internalType": "address[]",
+        "name": "moreOwners",
+        "type": "address[]"
       }
     ],
-    "stateMutability": "view",
+    "name": "addOwners",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "newPurpose",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "setPurpose",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "owners",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

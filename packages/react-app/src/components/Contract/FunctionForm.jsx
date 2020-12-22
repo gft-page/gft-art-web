@@ -168,9 +168,12 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
             onClick={async () => {
               let innerIndex = 0
               const args = functionInfo.inputs.map((input) => {
+                //["0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1","0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"]
                 const key = functionInfo.name + "_" + input.name + "_" + input.type + "_" + innerIndex++
                 let value = form[key]
-                if(input.type === "bool"){
+                if(input.baseType=="array"){
+                  value = JSON.parse(value)
+                } else if(input.type === "bool"){
                   if(value==='true' || value==='1' || value ==="0x1"|| value ==="0x01"|| value ==="0x0001"){
                     value = 1;
                   }else{
@@ -179,7 +182,6 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
                 }
                 return value
               });
-
 
               let result
               if(functionInfo.stateMutability === "view"||functionInfo.stateMutability === "pure"){

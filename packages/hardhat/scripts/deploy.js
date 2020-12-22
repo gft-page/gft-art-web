@@ -11,6 +11,9 @@ const main = async () => {
 
   const yourContract = await deploy("YourContract") // <-- add in constructor args like line 16 vvvv
 
+  console.log("\n 💁‍♂️ Adding an array on deploy...\n");
+  await yourContract.addOwners(["0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1","0x34aA3F359A9D614239015126635CE7732c18fDF3"])
+
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
   // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
