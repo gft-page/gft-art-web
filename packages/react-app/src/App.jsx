@@ -7,7 +7,7 @@ import { Row, Col, Menu } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader, usePoller } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
@@ -39,7 +39,8 @@ import gfm from 'remark-gfm'
 */
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 
-
+// for polling from the backend
+const axios = require('axios');
 
 
 // 😬 Sorry for all the console logging 🤡
@@ -137,15 +138,41 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [setRoute]);
 
+  const [ targetDialog, setTargetDialog ] = useState()
+  const [ targetDialogIndex, setTargetDialogIndex ] = useState(0)
 
-  const [dialog, setDialog] = useState([
+  usePoller(()=>{
+    const checkIn = async ()=>{
+      console.log("📡 Checking in with server...")
+      const res = await axios.get("http://localhost:38124")
+      setTargetDialog(res.data)
+    }
+    checkIn()
+  },3000)
+
+  const [dialog, setDialog] = useState([]/*[
     { text: "Welcome to [eth.dev](/)!\n\n"+
             "A game for developers learning **Ethereum**.\n\n"
     }
-  ]);
+  ]*/);
+
   const addDialog = (newDialog)=>{setDialog([...dialog,newDialog])}
 
-  useEffect(()=>{
+  usePoller(()=>{
+    if(targetDialog){
+      console.log("💬 targetDialog",targetDialog)
+
+      let lastDialog = dialog[dialog.length-1]
+      console.log("Last dialog ",lastDialog)
+
+      if(!lastDialog || (targetDialog[targetDialogIndex] && lastDialog.id != targetDialog[targetDialogIndex])){
+        addDialog(targetDialog[targetDialogIndex])
+        setTargetDialogIndex(targetDialogIndex+1)
+      }
+    }
+  },1000)
+
+/*  useEffect(()=>{
     if(dialog.length==1){
       console.log("LEN 11111")
     setTimeout(()=>{
@@ -157,9 +184,9 @@ function App(props) {
       )
     },250)
   }
-},[dialog, addDialog])
+},[dialog, addDialog])*/
 
-  useEffect(()=>{
+/*  useEffect(()=>{
     if(dialog.length==2){
       setTimeout(()=>{
         addDialog(
@@ -186,25 +213,24 @@ function App(props) {
       },500)
     }
 
-  },[dialog])
+  },[dialog])*/
 /*response: "Hell yeah, let's go!", color: "#efefef"*/
+
   const display = []
+
   for(let d in dialog){
     console.log("ADD dialog",dialog[d])
     if(dialog[d].response){
       //buttons
       display.push(
         <div style={{width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"right"}}>
-
           <div class="nes-balloon from-right" style={{width:"calc(100% - 160px)"}}>
             <p>{dialog[d].response}</p>
           </div>
-
           <img src="/anonpunk.png" style={{minWidth:"120px",imageRendering:"pixelated",transform:"scaleX(-1)"}} />
         </div>
       )
     }else if(dialog[d].buttons){
-
       let buttonDisplay = []
       for(let b in dialog[d].buttons){
         console.log("BUTTON",dialog[d].buttons[b])
@@ -216,18 +242,13 @@ function App(props) {
           </span>
         )
       }
-
       display.push(
         <div style={{position:"relative",width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"right"}}>
-
           <div class="nes-balloon from-right" style={{opacity:0.5,marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
-
           </div>
-
           <div style={{marginTop:28, marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
             {buttonDisplay}
           </div>
-
         </div>
       )
     }else{
@@ -240,10 +261,7 @@ function App(props) {
         </div>
       )
     }
-
   }
-
-
 
   return (
     <div className="App">
@@ -254,14 +272,17 @@ function App(props) {
 
       <div style={{paddingBottom:"20vmin", cursor:"pointer",paddingTop:"20vmin",}}>
         {display}
-        <Button style={{display:"none"}} onClick={()=>{
-          console.log("ADD")
-          if(Date.now()%2==0){
-             setDialog([...dialog,
-  {
-    text: `A paragraph with *emphasis* and **strong importance**.
+      </div>
 
-> A block quote with ~strikethrough~ and a URL: https://reactjs.org.
+
+{/*<Button style={{display:"none"}} onClick={()=>{
+  console.log("ADD")
+  if(Date.now()%2==0){
+     setDialog([...dialog,
+{
+text: `A paragraph with *emphasis* and **strong importance**.
+
+> A block qguote with ~strikethrough~ and a URL: https://reactjs.org.
 
 * Lists
 * [ ] todo
@@ -269,13 +290,13 @@ function App(props) {
 
 ~~~javascript
 <Button onClick={()=>{
-  /* you can also just craft a transaction and send it to the tx() transactor */
-  tx({
-    to: writeContracts.YourContract.address,
-    value: parseEther("0.001"),
-    data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)",["🤓 Whoa so 1337!"])
-  });
-  /* this should throw an error about "no fallback nor receive function" until you add it */
+
+tx({
+to: writeContracts.YourContract.address,
+value: parseEther("0.001"),
+data: writeContracts.YourContract.interface.encodeFunctionData("setPurpose(string)",["🤓 Whoa so 1337!"])
+});
+
 }}>Another Example</Button>
 ~~~
 
@@ -285,28 +306,27 @@ ls -la
 
 ~~~solidity
 contract YourContract {
-  string public purpose = "🛠 Programming Unstoppable Money";
+string public purpose = "🛠 Programming Unstoppable Money";
 }
 ~~~
 `,
-  }
+}
 ])
-          }else{
-            setDialog([...dialog,
-              {
-                text: "Lorem Ipsum totally whipped 'em. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-              }
-            ])
-          }
+  }else{
+    setDialog([...dialog,
+      {
+        text: "Lorem Ipsum totally whipped 'em. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      }
+    ])
+  }
 
-          setTimeout(()=>{
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-          },1)
-        }}>
-         moreasdf
-        </Button>
-      </div>
-
+  setTimeout(()=>{
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  },1)
+}}>
+ moreasdf
+</Button>
+*/}
 
       <BrowserRouter >
         {/*
