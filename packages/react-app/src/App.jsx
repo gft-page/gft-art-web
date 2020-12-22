@@ -9,7 +9,7 @@ import { useUserAddress, usePoller } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useBalance, useLocalStorage, useContractLoader } from "./hooks";
 import { Contract, Balance } from "./components";
 import { ethers } from "ethers";
-import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager, BridgeXdai, NetworkInformation, Erc20Demo } from "./views"
+import { Receive, TokenSender, Sender, WalletFooter, WalletHeader, Wallet, Settings, TokenManager, BridgeXdai, NetworkInformation, Erc20Demo, Swap } from "./views"
 import { INFURA_ID, ETHERSCAN_KEY, ALCHEMY_KEY } from "./constants";
 const { Header, Content, Footer } = Layout;
 
@@ -402,6 +402,11 @@ const getErc20s = async () => {
                   gasPrice={gasPrice}
                   injectedProvider={injectedProvider}
                   handleChange={handleChange}
+                  />
+              </Route>
+              <Route path="/swap">
+                <Swap
+                  selectedProvider={userProvider}
                   />
               </Route>
               <Route path="/network-information">
