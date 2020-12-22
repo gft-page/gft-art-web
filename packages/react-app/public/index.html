@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=0.6, maximum-scale=1.0, user-scalable=0" />
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Web site created using create-eth-app"
+      content="eth.dev"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -24,9 +25,25 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Ethereum App</title>
+    <title>eth.dev</title>
+    <style>
+      #myVideo {
+        position: fixed;
+        right: -200px;
+        bottom: 0;
+        min-width: 120%;
+        min-height: 100%;
+        opacity:0.6;
+      }
+    </style>
   </head>
+  <!--
+    style="background: url('./pcp2.png');background-repeat: no-repeat;background-size: cover;background-attachment: fixed;"
+  -->
   <body>
+    <video style="z-index:-1;" autoplay muted loop id="myVideo">
+      <source src="./rog.mp4" type="video/mp4">
+    </video>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <!--
@@ -39,5 +56,10 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+
+
   </body>
+
+
+
 </html>
