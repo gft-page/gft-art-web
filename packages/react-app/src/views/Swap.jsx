@@ -26,11 +26,11 @@ const erc20Abi = [
     "function allowance(address _owner, address _spender) public view returns (uint256 remaining)"
 ];
 
-const makeCall = async (callName, contract, args) => {
+const makeCall = async (callName, contract, args, metadata={}) => {
   if(contract[callName]) {
     let result
     if(args) {
-      result = await contract[callName](...args)
+      result = await contract[callName](...args, metadata)
     } else {
       result = await contract[callName]()
     }
@@ -43,7 +43,8 @@ const makeCall = async (callName, contract, args) => {
 let tokens = {'ETH': WETH[DAI.chainId], DAI, USDC, USDT, COMP, MKR, LINK, UNI}
 
 let defaultToken = 'ETH'
-let defaultSlippage = '2'
+let defaultSlippage = '0.5'
+let defaultTimeLimit = 60 * 10
 
 function Swap({ selectedProvider }) {
 
@@ -58,12 +59,13 @@ function Swap({ selectedProvider }) {
   const [routerAllowance, setRouterAllowance] = useState()
   const [fromContract, setFromContract] = useState()
   const [balance, setBalance] = useState()
-  const [slippageTolerance, setSlippageTolerance] = useState(new Percent(defaultSlippage, '100'))
-  const [timeLimit, setTimeLimit] = useState()
+  const [slippageTolerance, setSlippageTolerance] = useState(new Percent(Math.round(defaultSlippage*100).toString(), "10000"))
+  const [timeLimit, setTimeLimit] = useState(defaultTimeLimit)
 
   let blockNumber = useBlockNumber(selectedProvider, 3000)
 
-  let routerContract = new ethers.Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, selectedProvider);
+  let signer = selectedProvider.getSigner()
+  let routerContract = new ethers.Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, signer);
 
   useEffect(() => {
       console.log(tokens[tokenIn],tokens[tokenOut], amountIn, amountOut)
@@ -139,13 +141,63 @@ function Swap({ selectedProvider }) {
   return item['symbol'];
 }) : []) : []
 
+  const updateRouterAllowance = async (newAllowance) => {
+    let signer = selectedProvider.getSigner()
+    let tempContract = new ethers.Contract(tokens[tokenIn].address, erc20Abi, signer);
+    let result = await makeCall('approve', tempContract, [ROUTER_ADDRESS, newAllowance])
+    console.log(result)
+  }
+
   const approveRouter = async () => {
     let approvalAmount = exact == 'in' ? ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals)) : amountInMax.raw.toString()
     console.log(approvalAmount)
-    let signer = selectedProvider.getSigner()
-    let tempContract = new ethers.Contract(tokens[tokenIn].address, erc20Abi, signer);
-    let result = await makeCall('approve', tempContract, [ROUTER_ADDRESS, approvalAmount])
-    console.log(result)
+    updateRouterAllowance(approvalAmount)
+  }
+
+  const removeRouterAllowance = async () => {
+    let approvalAmount = ethers.utils.hexlify(0)
+    console.log(approvalAmount)
+    updateRouterAllowance(approvalAmount)
+  }
+
+  const executeSwap = async () => {
+    let args
+    let metadata = {}
+
+    let call
+    let deadline = Math.floor(Date.now() / 1000) + timeLimit
+    let path = trades[0].route.path.map(function(item) {
+      return item['address'];
+    })
+    console.log(path)
+    let accountList = await selectedProvider.listAccounts()
+    let address = accountList[0]
+
+    if (exact == 'in') {
+      let _amountIn = ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals))
+      let _amountOutMin = ethers.utils.hexlify(ethers.BigNumber.from(amountOutMin.raw.toString()))
+      if (tokenIn == 'ETH') {
+        call = 'swapExactETHForTokens'
+        args = [_amountOutMin, path, address, deadline]
+        metadata['value'] = _amountIn
+      } else {
+        call = tokenOut == 'ETH' ? 'swapExactTokensForETH' : 'swapExactTokensForTokens'
+        args = [_amountIn, _amountOutMin, path, address, deadline]
+      }
+    } else if (exact == 'out') {
+      let _amountOut = ethers.utils.hexlify(parseUnits(amountOut.toString(), tokens[tokenOut].decimals))
+      let _amountInMax = ethers.utils.hexlify(ethers.BigNumber.from(amountInMax.raw.toString()))
+      if (tokenIn == 'ETH') {
+        call = 'swapETHForExactTokens'
+        args = [_amountOut, path, address, deadline]
+        metadata['value'] = _amountInMax
+      } else {
+        call = tokenOut == 'ETH' ? 'swapTokensForExactETH' : 'swapTokensForExactTokens'
+        args = [_amountOut, _amountInMax, path, address, deadline]
+      }
+    }
+    console.log(call, args, metadata)
+    makeCall(call, routerContract, args, metadata)
   }
 
   return (
@@ -203,7 +255,7 @@ function Swap({ selectedProvider }) {
     <InputNumber
       min={0}
       max={3600}
-      defaultValue={60*2}
+      defaultValue={defaultTimeLimit}
       onChange={(value) => {
       console.log(value)
       setTimeLimit(value)
@@ -212,6 +264,8 @@ function Swap({ selectedProvider }) {
     </Row>
     <Row>
     <Button onClick={approveRouter}>Approve</Button>
+    <Button onClick={removeRouterAllowance}>Remove Allowance</Button>
+    <Button onClick={executeSwap}>Swap!</Button>
     </Row>
     <Descriptions title="Workings" column={1}>
       <Descriptions.Item label="exact">{exact}</Descriptions.Item>
