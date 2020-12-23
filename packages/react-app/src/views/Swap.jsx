@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Row, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button } from "antd";
+import { Space, Row, Col, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button, Divider } from "antd";
 import { ChainId, Token, WETH, Fetcher, Trade, Route, TokenAmount, TradeType, Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
-import { useBlockNumber } from "eth-hooks";
+import { useBlockNumber, usePoller } from "eth-hooks";
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 
 const { Option } = Select;
@@ -68,14 +68,11 @@ function Swap({ selectedProvider }) {
   let routerContract = new ethers.Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, signer);
 
   useEffect(() => {
-      console.log(tokens[tokenIn],tokens[tokenOut], amountIn, amountOut)
-    if(tokenIn && tokenOut && (amountIn || amountOut)) {
-      console.log('running')
       getTrades()
-    }
   },[tokenIn, tokenOut, amountIn, amountOut, slippageTolerance, selectedProvider])
 
   const getTrades = async () => {
+    if(tokenIn && tokenOut && (amountIn || amountOut)) {
 
     let pairs = (arr) => arr.map( (v, i) => arr.slice(i + 1).map(w => [v,w]) ).flat();
 
@@ -136,6 +133,9 @@ function Swap({ selectedProvider }) {
     }
     setBalance(newBalance)
   }
+  }
+
+  usePoller(getTrades, 6000)
 
   let route = trades ? (trades.length > 0 ? trades[0].route.path.map(function(item) {
   return item['symbol'];
@@ -200,77 +200,81 @@ function Swap({ selectedProvider }) {
     makeCall(call, routerContract, args, metadata)
   }
 
+  let insufficientBalance = balance ? parseFloat(formatUnits(balance,tokens[tokenIn].decimals)) < amountIn : null
+  let inputIsToken = tokenIn != 'ETH'
+  let insufficientAllowance = !inputIsToken ? false : routerAllowance ? parseFloat(formatUnits(routerAllowance,tokens[tokenIn].decimals)) < amountIn : null
+
+  console.log(insufficientBalance, inputIsToken, insufficientAllowance)
+
   return (
     <Card>
-    <div>Swap it up</div>
-    <Row>
-    <Select defaultValue={defaultToken} onChange={(value) => {
-      console.log(value)
-      setTokenIn(value)
-    }}>
-    {Object.keys(tokens).map(token => (
-      <Option value={token}>{token}</Option>
-    ))}
-    </Select>
-    <InputNumber min={0} value={amountIn} onChange={(e) => {
-      setAmountOut()
-      setAmountIn(e)
-      setExact('in')
-    }}/>
-    </Row>
-    <Row>
-    <Select onChange={(value) => {
-      console.log(value)
-      setTokenOut(value)
-    }}>
-    {Object.keys(tokens).map(token => (
-      <Option value={token}>{token}</Option>
-    ))}
-    </Select>
-    <InputNumber min={0} value={amountOut} onChange={(e) => {
-      setAmountOut(e)
-      setAmountIn()
-      setExact('out')
-    }}/>
-    </Row>
-    <Row>
-    <Typography>Slippage:</Typography>
-    <InputNumber
-      defaultValue={defaultSlippage}
-      min={0}
-      max={100}
-      precision={2}
-      formatter={value => `${value}%`}
-      parser={value => value.replace('%', '')}
-      onChange={(value) => {
+    <Space direction="vertical">
+    <Row justify="center" align="middle">
+      <InputNumber min={0} value={amountIn} onChange={(e) => {
+        setAmountOut()
+        setAmountIn(e)
+        setExact('in')
+      }}/>
+      <Select style={{width: '100px'}} defaultValue={defaultToken} onChange={(value) => {
         console.log(value)
-
-       let slippagePercent = new Percent(Math.round(value*100).toString(), "10000")
-       setSlippageTolerance(slippagePercent)
-     }}
-    />
+        setTokenIn(value)
+      }}>
+      {Object.keys(tokens).map(token => (
+        <Option value={token}>{token}</Option>
+      ))}
+      </Select>
     </Row>
-    <Row>
-    <Typography>Time limit (seconds):</Typography>
-    <InputNumber
-      min={0}
-      max={3600}
-      defaultValue={defaultTimeLimit}
-      onChange={(value) => {
-      console.log(value)
-      setTimeLimit(value)
-     }}
-    />
+    <Row justify="center" align="middle">
+      <span>↓</span>
     </Row>
-    <Row>
-    <Button onClick={approveRouter}>Approve</Button>
-    <Button onClick={removeRouterAllowance}>Remove Allowance</Button>
-    <Button onClick={executeSwap}>Swap!</Button>
+    <Row justify="center" align="middle">
+      <InputNumber min={0} value={amountOut} onChange={(e) => {
+        setAmountOut(e)
+        setAmountIn()
+        setExact('out')
+      }}/>
+      <Select style={{width: '100px'}} onChange={(value) => {
+        console.log(value)
+        setTokenOut(value)
+      }}>
+      {Object.keys(tokens).map(token => (
+        <Option value={token}>{token}</Option>
+      ))}
+      </Select>
     </Row>
+    <Row justify="center" align="middle" gutter={8}>
+      {inputIsToken?<Button disabled={!insufficientAllowance} onClick={approveRouter}>{(!insufficientAllowance&&amountIn&&amountOut)?'Approved':'Approve'}</Button>:null}
+      <Button disabled={insufficientAllowance || insufficientBalance || !amountIn || !amountOut} onClick={executeSwap}>{insufficientBalance?'Insufficient balance':'Swap!'}</Button>
+    </Row>
+    </Space>
+    <Divider/>
     <Descriptions title="Workings" column={1}>
+      <Descriptions.Item label="slippage">{<InputNumber
+        defaultValue={defaultSlippage}
+        min={0}
+        max={100}
+        precision={2}
+        formatter={value => `${value}%`}
+        parser={value => value.replace('%', '')}
+        onChange={(value) => {
+          console.log(value)
+
+         let slippagePercent = new Percent(Math.round(value*100).toString(), "10000")
+         setSlippageTolerance(slippagePercent)
+       }}
+      />}</Descriptions.Item>
+      <Descriptions.Item label="timeLimitInSeconds">{<InputNumber
+              min={0}
+              max={3600}
+              defaultValue={defaultTimeLimit}
+              onChange={(value) => {
+              console.log(value)
+              setTimeLimit(value)
+             }}
+            />}</Descriptions.Item>
       <Descriptions.Item label="exact">{exact}</Descriptions.Item>
       <Descriptions.Item label="balance">{balance?formatUnits(balance,tokens[tokenIn].decimals):null}</Descriptions.Item>
-      <Descriptions.Item label="routerAllowance">{routerAllowance?formatUnits(routerAllowance,tokens[tokenIn].decimals):null}</Descriptions.Item>
+      <Descriptions.Item label="routerAllowance">{routerAllowance?formatUnits(routerAllowance,tokens[tokenIn].decimals):null}{routerAllowance>0?<Button onClick={removeRouterAllowance}>Remove Allowance</Button>:null}</Descriptions.Item>
       <Descriptions.Item label="bestPrice">{trades ? (trades.length > 0 ? trades[0].executionPrice.toSignificant(6) : null) : null}</Descriptions.Item>
       <Descriptions.Item label="nextMidPrice">{trades ? (trades.length > 0 ? trades[0].nextMidPrice.toSignificant(6) : null) : null}</Descriptions.Item>
       <Descriptions.Item label="route">{route.join("->")}</Descriptions.Item>
