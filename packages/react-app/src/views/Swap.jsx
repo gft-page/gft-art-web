@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button, Divider } from "antd";
+import { Space, Row, Col, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button, Divider, Tooltip, Drawer } from "antd";
+import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
 import { ChainId, Token, WETH, Fetcher, Trade, Route, TokenAmount, TradeType, Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
@@ -7,6 +8,7 @@ import { useBlockNumber, usePoller } from "eth-hooks";
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 
 const { Option } = Select;
+const { Text, Link } = Typography;
 
 const DAI = new Token(ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'Dai Stablecoin')
 const USDC = new Token(ChainId.MAINNET, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC', 'USD//C')
@@ -58,9 +60,17 @@ function Swap({ selectedProvider }) {
   const [trades, setTrades] = useState()
   const [routerAllowance, setRouterAllowance] = useState()
   const [fromContract, setFromContract] = useState()
-  const [balance, setBalance] = useState()
+  const [balanceIn, setBalanceIn] = useState()
+  const [balanceOut, setBalanceOut] = useState()
   const [slippageTolerance, setSlippageTolerance] = useState(new Percent(Math.round(defaultSlippage*100).toString(), "10000"))
   const [timeLimit, setTimeLimit] = useState(defaultTimeLimit)
+  const [swapping, setSwapping] = useState(false)
+  const [approving, setApproving] = useState(false)
+  const [settingsVisible, setSettingsVisible] = useState(false)
+
+  const [tokenList, setTokenList] = useState()
+
+  const [invertPrice, setInvertPrice] = useState(false)
 
   let blockNumber = useBlockNumber(selectedProvider, 3000)
 
@@ -68,8 +78,31 @@ function Swap({ selectedProvider }) {
   let routerContract = new ethers.Contract(ROUTER_ADDRESS, IUniswapV2Router02ABI, signer);
 
   useEffect(() => {
+    const getTokenList = async () => {
+      let tokenList = await fetch('https://gateway.ipfs.io/ipns/tokens.uniswap.org')
+      let tokenListJson = await tokenList.json()
+      console.log(tokenListJson)
+      setTokenList(tokenListJson.tokens)
+    }
+    getTokenList()
+  },[])
+
+  useEffect(() => {
       getTrades()
   },[tokenIn, tokenOut, amountIn, amountOut, slippageTolerance, selectedProvider])
+
+  const getBalance = async (_token, _account, _contract) => {
+
+    console.log(_token, [_account], _contract)
+
+    let newBalance
+    if(_token == 'ETH') {
+      newBalance = await selectedProvider.getBalance(_account)
+    } else {
+      newBalance = await makeCall('balanceOf', _contract, [_account])
+    }
+    return newBalance
+  }
 
   const getTrades = async () => {
     if(tokenIn && tokenOut && (amountIn || amountOut)) {
@@ -118,24 +151,28 @@ function Swap({ selectedProvider }) {
 
     console.log(bestTrade, bestTrade[0]? bestTrade[0].inputAmount.toSignificant(6) : null)
 
-    let tempContract = new ethers.Contract(tokens[tokenIn].address, erc20Abi, selectedProvider);
+    let tempContractIn = new ethers.Contract(tokens[tokenIn].address, erc20Abi, selectedProvider);
+    let tempContractOut = new ethers.Contract(tokens[tokenOut].address, erc20Abi, selectedProvider);
     let accountList = await selectedProvider.listAccounts()
     console.log(accountList)
     let allowance
-    let newBalance
+    let newBalanceIn = await getBalance(tokenIn, accountList[0], tempContractIn)
+    let newBalanceOut = await getBalance(tokenOut, accountList[0], tempContractOut)
+
     if(tokenIn == 'ETH') {
-      newBalance = await selectedProvider.getBalance(accountList[0])
       setRouterAllowance()
     } else {
-      allowance = await makeCall('allowance',tempContract,[accountList[0],ROUTER_ADDRESS])
+      allowance = await makeCall('allowance',tempContractIn,[accountList[0],ROUTER_ADDRESS])
       setRouterAllowance(allowance)
-      newBalance = await makeCall('balanceOf',tempContract,[accountList[0]])
     }
-    setBalance(newBalance)
+
+    setBalanceIn(newBalanceIn)
+    setBalanceOut(newBalanceOut)
+
   }
   }
 
-  usePoller(getTrades, 6000)
+  usePoller(getTrades, 9000)
 
   let route = trades ? (trades.length > 0 ? trades[0].route.path.map(function(item) {
   return item['symbol'];
@@ -161,61 +198,100 @@ function Swap({ selectedProvider }) {
   }
 
   const executeSwap = async () => {
-    let args
-    let metadata = {}
+    setSwapping(true)
+    try {
+      let args
+      let metadata = {}
 
-    let call
-    let deadline = Math.floor(Date.now() / 1000) + timeLimit
-    let path = trades[0].route.path.map(function(item) {
-      return item['address'];
-    })
-    console.log(path)
-    let accountList = await selectedProvider.listAccounts()
-    let address = accountList[0]
+      let call
+      let deadline = Math.floor(Date.now() / 1000) + timeLimit
+      let path = trades[0].route.path.map(function(item) {
+        return item['address'];
+      })
+      console.log(path)
+      let accountList = await selectedProvider.listAccounts()
+      let address = accountList[0]
 
-    if (exact == 'in') {
-      let _amountIn = ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals))
-      let _amountOutMin = ethers.utils.hexlify(ethers.BigNumber.from(amountOutMin.raw.toString()))
-      if (tokenIn == 'ETH') {
-        call = 'swapExactETHForTokens'
-        args = [_amountOutMin, path, address, deadline]
-        metadata['value'] = _amountIn
-      } else {
-        call = tokenOut == 'ETH' ? 'swapExactTokensForETH' : 'swapExactTokensForTokens'
-        args = [_amountIn, _amountOutMin, path, address, deadline]
+      if (exact == 'in') {
+        let _amountIn = ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals))
+        let _amountOutMin = ethers.utils.hexlify(ethers.BigNumber.from(amountOutMin.raw.toString()))
+        if (tokenIn == 'ETH') {
+          call = 'swapExactETHForTokens'
+          args = [_amountOutMin, path, address, deadline]
+          metadata['value'] = _amountIn
+        } else {
+          call = tokenOut == 'ETH' ? 'swapExactTokensForETH' : 'swapExactTokensForTokens'
+          args = [_amountIn, _amountOutMin, path, address, deadline]
+        }
+      } else if (exact == 'out') {
+        let _amountOut = ethers.utils.hexlify(parseUnits(amountOut.toString(), tokens[tokenOut].decimals))
+        let _amountInMax = ethers.utils.hexlify(ethers.BigNumber.from(amountInMax.raw.toString()))
+        if (tokenIn == 'ETH') {
+          call = 'swapETHForExactTokens'
+          args = [_amountOut, path, address, deadline]
+          metadata['value'] = _amountInMax
+        } else {
+          call = tokenOut == 'ETH' ? 'swapTokensForExactETH' : 'swapTokensForExactTokens'
+          args = [_amountOut, _amountInMax, path, address, deadline]
+        }
       }
-    } else if (exact == 'out') {
-      let _amountOut = ethers.utils.hexlify(parseUnits(amountOut.toString(), tokens[tokenOut].decimals))
-      let _amountInMax = ethers.utils.hexlify(ethers.BigNumber.from(amountInMax.raw.toString()))
-      if (tokenIn == 'ETH') {
-        call = 'swapETHForExactTokens'
-        args = [_amountOut, path, address, deadline]
-        metadata['value'] = _amountInMax
-      } else {
-        call = tokenOut == 'ETH' ? 'swapTokensForExactETH' : 'swapTokensForExactTokens'
-        args = [_amountOut, _amountInMax, path, address, deadline]
-      }
-    }
-    console.log(call, args, metadata)
-    makeCall(call, routerContract, args, metadata)
+      console.log(call, args, metadata)
+      let result = await makeCall(call, routerContract, args, metadata)
+      console.log(result)
+      notification.open({
+        message: 'Swap complete 🦄',
+        description:
+        `Swapped ${tokenIn} for ${tokenOut}, transaction: ${result.hash}`,
+      });
+      setSwapping(false)
+  } catch (e) {
+    console.log(e)
+    setSwapping(false)
+    notification.open({
+      message: 'Swap unsuccessful',
+      description:
+      `Error: ${e.message}`,
+    });
+  }
   }
 
-  let insufficientBalance = balance ? parseFloat(formatUnits(balance,tokens[tokenIn].decimals)) < amountIn : null
+  let insufficientBalance = balanceIn ? parseFloat(formatUnits(balanceIn,tokens[tokenIn].decimals)) < amountIn : null
   let inputIsToken = tokenIn != 'ETH'
   let insufficientAllowance = !inputIsToken ? false : routerAllowance ? parseFloat(formatUnits(routerAllowance,tokens[tokenIn].decimals)) < amountIn : null
+  let formattedBalanceIn = balanceIn?parseFloat(formatUnits(balanceIn,tokens[tokenIn].decimals)).toPrecision(6):null
+  let formattedBalanceOut = balanceOut?parseFloat(formatUnits(balanceOut,tokens[tokenOut].decimals)).toPrecision(6):null
+
+  let metaIn = tokenList && tokenIn ? tokenList.filter(function (t) {
+  return t.address == tokens[tokenIn].address && t.chainId == ChainId.MAINNET
+})[0] : null
+  let metaOut = tokenList && tokenOut ? tokenList.filter(function (t) {
+  return t.address == tokens[tokenOut].address && t.chainId == ChainId.MAINNET
+  })[0] : null
+
+  const cleanIpfsURI = (uri) => {
+    return (uri).replace('ipfs://','https://ipfs.io/ipfs/')
+  }
+
+  let logoIn = metaIn?cleanIpfsURI(metaIn.logoURI):null
+  let logoOut = metaOut?cleanIpfsURI(metaOut.logoURI):null
+
+  let price = trades&&trades[0]?parseFloat(trades[0].executionPrice.toSignificant(6)):null
+  let priceDescription = price ? (invertPrice ? `${(1/price).toPrecision(6)} ${tokenIn} per ${tokenOut}` : `${price} ${tokenOut} per ${tokenIn}`) : null
+  console.log(priceDescription)
 
   console.log(insufficientBalance, inputIsToken, insufficientAllowance)
 
   return (
-    <Card>
+    <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40'/><Typography>Uniswapper</Typography></Space>} extra={<a onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></a>}>
     <Space direction="vertical">
     <Row justify="center" align="middle">
-      <InputNumber min={0} value={amountIn} onChange={(e) => {
+    <Card size="small" type="inner" title={`From${exact=='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoIn} width='30'/><span>{formattedBalanceIn}</span></Space>} style={{ width: 400, textAlign: 'left' }}>
+      <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amountIn} onChange={(e) => {
         setAmountOut()
         setAmountIn(e)
         setExact('in')
       }}/>
-      <Select style={{width: '100px'}} defaultValue={defaultToken} onChange={(value) => {
+      <Select style={{width: '120px'}} size={'large'} bordered={false} defaultValue={defaultToken} onChange={(value) => {
         console.log(value)
         setTokenIn(value)
       }}>
@@ -223,17 +299,19 @@ function Swap({ selectedProvider }) {
         <Option value={token}>{token}</Option>
       ))}
       </Select>
+    </Card>
     </Row>
     <Row justify="center" align="middle">
-      <span>↓</span>
+      <Tooltip title={route.join("->")}><span>↓</span></Tooltip>
     </Row>
     <Row justify="center" align="middle">
-      <InputNumber min={0} value={amountOut} onChange={(e) => {
+    <Card size="small" type="inner" title={`To${exact=='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoOut} width='30'/><span>{formattedBalanceOut}</span></Space>} style={{ width: 400, textAlign: 'left' }}>
+      <InputNumber style={{width: '160px'}} size={'large'} min={0} value={amountOut} onChange={(e) => {
         setAmountOut(e)
         setAmountIn()
         setExact('out')
       }}/>
-      <Select style={{width: '100px'}} onChange={(value) => {
+      <Select style={{width: '120px'}} size={'large'} bordered={false} onChange={(value) => {
         console.log(value)
         setTokenOut(value)
       }}>
@@ -241,15 +319,28 @@ function Swap({ selectedProvider }) {
         <Option value={token}>{token}</Option>
       ))}
       </Select>
+    </Card>
     </Row>
-    <Row justify="center" align="middle" gutter={8}>
-      {inputIsToken?<Button disabled={!insufficientAllowance} onClick={approveRouter}>{(!insufficientAllowance&&amountIn&&amountOut)?'Approved':'Approve'}</Button>:null}
-      <Button disabled={insufficientAllowance || insufficientBalance || !amountIn || !amountOut} onClick={executeSwap}>{insufficientBalance?'Insufficient balance':'Swap!'}</Button>
+    <Row justify="center" align="middle">
+      {priceDescription?<Space><Text type="secondary">{priceDescription}</Text><a onClick={() => {setInvertPrice(!invertPrice)}}><RetweetOutlined /></a></Space>:null}
+    </Row>
+    <Row justify="center" align="middle">
+    <Space>
+      {inputIsToken?<Button size="large" disabled={!insufficientAllowance} onClick={approveRouter}>{(!insufficientAllowance&&amountIn&&amountOut)?'Approved':'Approve'}</Button>:null}
+      <Button size="large" loading={swapping} disabled={insufficientAllowance || insufficientBalance || !amountIn || !amountOut} onClick={executeSwap}>{insufficientBalance?'Insufficient balance':'Swap!'}</Button>
+    </Space>
     </Row>
     </Space>
-    <Divider/>
-    <Descriptions title="Workings" column={1}>
-      <Descriptions.Item label="slippage">{<InputNumber
+    <Drawer visible={settingsVisible} onClose={() => { setSettingsVisible(false) }} width={300}>
+    <Descriptions title="Details" column={1} style={{textAlign: 'left'}}>
+      <Descriptions.Item label="blockNumber">{blockNumber}</Descriptions.Item>
+      <Descriptions.Item label="routerAllowance"><Space>{routerAllowance?formatUnits(routerAllowance,tokens[tokenIn].decimals):null}{routerAllowance>0?<Button onClick={removeRouterAllowance}>Remove Allowance</Button>:'n/a'}</Space></Descriptions.Item>
+      <Descriptions.Item label="route">{route.join("->")}</Descriptions.Item>
+      <Descriptions.Item label="exact">{exact}</Descriptions.Item>
+      <Descriptions.Item label="bestPrice">{trades ? (trades.length > 0 ? trades[0].executionPrice.toSignificant(6) : null) : null}</Descriptions.Item>
+      <Descriptions.Item label="nextMidPrice">{trades ? (trades.length > 0 ? trades[0].nextMidPrice.toSignificant(6) : null) : null}</Descriptions.Item>
+      <Descriptions.Item label="priceImpact">{trades ? (trades.length > 0 ? trades[0].priceImpact.toSignificant(6) : null) : null}</Descriptions.Item>
+      <Descriptions.Item label="slippageTolerance">{<InputNumber
         defaultValue={defaultSlippage}
         min={0}
         max={100}
@@ -263,6 +354,8 @@ function Swap({ selectedProvider }) {
          setSlippageTolerance(slippagePercent)
        }}
       />}</Descriptions.Item>
+      <Descriptions.Item label="amountInMax">{amountInMax?amountInMax.toExact():null}</Descriptions.Item>
+      <Descriptions.Item label="amountOutMin">{amountOutMin?amountOutMin.toExact():null}</Descriptions.Item>
       <Descriptions.Item label="timeLimitInSeconds">{<InputNumber
               min={0}
               max={3600}
@@ -272,19 +365,8 @@ function Swap({ selectedProvider }) {
               setTimeLimit(value)
              }}
             />}</Descriptions.Item>
-      <Descriptions.Item label="exact">{exact}</Descriptions.Item>
-      <Descriptions.Item label="balance">{balance?formatUnits(balance,tokens[tokenIn].decimals):null}</Descriptions.Item>
-      <Descriptions.Item label="routerAllowance">{routerAllowance?formatUnits(routerAllowance,tokens[tokenIn].decimals):null}{routerAllowance>0?<Button onClick={removeRouterAllowance}>Remove Allowance</Button>:null}</Descriptions.Item>
-      <Descriptions.Item label="bestPrice">{trades ? (trades.length > 0 ? trades[0].executionPrice.toSignificant(6) : null) : null}</Descriptions.Item>
-      <Descriptions.Item label="nextMidPrice">{trades ? (trades.length > 0 ? trades[0].nextMidPrice.toSignificant(6) : null) : null}</Descriptions.Item>
-      <Descriptions.Item label="route">{route.join("->")}</Descriptions.Item>
-      <Descriptions.Item label="priceImpact">{trades ? (trades.length > 0 ? trades[0].priceImpact.toSignificant(6) : null) : null}</Descriptions.Item>
-      <Descriptions.Item label="blockNumber">{blockNumber}</Descriptions.Item>
-      <Descriptions.Item label="slippageTolerance">{slippageTolerance?slippageTolerance.toSignificant(6):null}</Descriptions.Item>
-      <Descriptions.Item label="amountInMax">{amountInMax?amountInMax.toExact():null}</Descriptions.Item>
-      <Descriptions.Item label="amountOutMin">{amountOutMin?amountOutMin.toExact():null}</Descriptions.Item>
-      <Descriptions.Item label="timeLimit">{timeLimit}</Descriptions.Item>
     </Descriptions>
+    </Drawer>
     </Card>
   )
 
