@@ -301,9 +301,8 @@ function App(props) {
                   const res = await axios.post(BACKEND, { next: next });
                 }
 
-                console.log("!!!! CHJECKING ")
+                console.log("!!!!Does this checkin even work? idk probably not... ")
                 checkIn()
-
 
 
               }} >
@@ -314,9 +313,9 @@ function App(props) {
         }
         display.push(
           <div style={{position:"relative",width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"right"}}>
-            <div class="nes-balloon from-right" style={{opacity:0.5,marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
+            <div class="nes-balloon from-right" style={{opacity:0.5,marginLeft:"10vmin",width:"80vmin",left:0,top:0,position:"absolute",height:90}}>
             </div>
-            <div style={{marginTop:28, marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
+            <div style={{marginTop:28, marginLeft:"10vmin", width:"80vmin",left:0,top:0,position:"absolute",height:90}}>
               {buttonDisplay}
             </div>
           </div>
@@ -326,7 +325,7 @@ function App(props) {
       display.push(
         <div style={{width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"left"}}>
           <img src={"/"+dialog[d].actor} style={{minWidth:"120px",imageRendering:"pixelated"}} />
-          <div class="nes-balloon from-left" style={{width:"calc(100% - 160px)"}}>
+          <div className="nes-balloon from-left" style={{width:"calc(100% - 160px)"}}>
             <ReactMarkdown plugins={[gfm]}  renderers={renderers} children={dialog[d].text} />
           </div>
         </div>
@@ -465,6 +464,7 @@ string public purpose = "🛠 Programming Unstoppable Money";
               setPurposeEvents={setPurposeEvents} */
             />
           </Route>
+
           <Route path="/subgraph">
             <Subgraph
             subgraphUri={props.subgraphUri}

@@ -42,9 +42,7 @@ const allDialog = [
   ]},
 ]*/
 
-const allDialog = [{"type":"Text","id":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f","actor":"punk5950.png","name":"hello, welcome to [eth.dev](https://eth.dev)!!! ","next":"6fc0a558-294c-4700-b281-23bb8b770020"},{"type":"Text","id":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf","actor":"punk5950.png","name":"you need to be a good coder","choices":["c74004bb-4469-42d1-9e7d-2cb027dc81aa","960ae9c4-b42e-45ff-b392-f1bf7a56b1c3","04dc29fd-a0a0-4dda-845d-6b2b97d962e9"]},{"type":"Choice","id":"c74004bb-4469-42d1-9e7d-2cb027dc81aa","title":"","name":"I'm leet","next":"9a8c650e-582c-44c4-82ce-2b5b78df0f39"},{"type":"Choice","id":"960ae9c4-b42e-45ff-b392-f1bf7a56b1c3","title":"","name":"I'm no good","next":"d3719e33-4546-4555-8cbc-34a1b6d72648"},{"type":"Node","id":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69","actor":"link","name":"https://eth.build ","next":null},{"type":"Text","id":"9a8c650e-582c-44c4-82ce-2b5b78df0f39","actor":"punk5950.png","name":"awesome, let's get started ","next":"284ca834-4dc4-4917-acb0-c74ef11a0969"},{"type":"Text","id":"284ca834-4dc4-4917-acb0-c74ef11a0969","actor":"punk5950.png","name":"what do you think?","choices":["ee1bfe57-3319-44f8-a1f5-4214d1041782"]},{"type":"Choice","id":"ee1bfe57-3319-44f8-a1f5-4214d1041782","title":"","name":"wait what again?","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"},{"type":"Choice","id":"04dc29fd-a0a0-4dda-845d-6b2b97d962e9","title":"","name":"what?","next":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f"},{"type":"Text","id":"d3719e33-4546-4555-8cbc-34a1b6d72648","actor":"punk5950.png","name":"okay, what to learn?","choices":["e8d57968-204c-4334-9279-3d44ed30d3e2","b02ad027-a59c-4056-a0b9-fe0378ba84be"]},{"type":"Choice","id":"e8d57968-204c-4334-9279-3d44ed30d3e2","title":"","name":"ethbuild","next":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69"},{"type":"Choice","id":"b02ad027-a59c-4056-a0b9-fe0378ba84be","title":"","name":"nah I can do it","next":"9a8c650e-582c-44c4-82ce-2b5b78df0f39"},{"type":"Text","id":"6fc0a558-294c-4700-b281-23bb8b770020","actor":"punk5950.png","name":"more info\n\nwith a [link](https://austingriffith.com)\n\nand maybe\n\n```bash\nchmod +x *.sh\n```","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"}]
-
-  
+const allDialog = [{"type":"Text","id":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f","actor":"punk5950.png","name":"Welcome to [eth.dev](/)!!!\n\nI'm in charge of onboarding around here.","next":"6fc0a558-294c-4700-b281-23bb8b770020"},{"type":"Text","id":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf","actor":"punk5950.png","name":"You in?","choices":["0995adc9-037f-480f-97cf-8e89cd8144ec","aa9a6df8-25d3-4b53-92ab-25ad3b451331"]},{"type":"Choice","id":"aa9a6df8-25d3-4b53-92ab-25ad3b451331","title":"primary","name":"I'm in, let's go!","next":"5da826ed-4413-435f-bf9c-7e3df0cca0e0"},{"type":"Choice","id":"0995adc9-037f-480f-97cf-8e89cd8144ec","title":"warning","name":"I can't code. ","next":"86d9f616-c6d5-4d99-8de8-dec08d26a7db"},{"type":"Text","id":"86d9f616-c6d5-4d99-8de8-dec08d26a7db","actor":"punk5719.png","name":"Sup, noob?\n\nHeard you needed a coding refresher.","next":"da58484b-9e26-49c7-b4ac-688e64d108dc"},{"type":"Text","id":"da58484b-9e26-49c7-b4ac-688e64d108dc","actor":"punk5719.png","name":"Where should we start?","choices":["fbfd22ae-c4f5-4f30-9e46-0977c25412f7","91aba211-839e-4990-9431-b212408d686f"]},{"type":"Choice","id":"fbfd22ae-c4f5-4f30-9e46-0977c25412f7","title":"","name":"JavaScript Intro","next":"eacb8f99-f17a-481c-8dea-6e74c9c93adb"},{"type":"Choice","id":"91aba211-839e-4990-9431-b212408d686f","title":"","name":"React Todo List","next":null},{"type":"Text","id":"5da826ed-4413-435f-bf9c-7e3df0cca0e0","actor":"punk5950.png","name":"Rad!","next":"9d78a412-cb39-4db6-aa47-b9f3e0a09119"},{"type":"Choice","id":"fd168d37-1c4a-43e7-91bc-2855cc0783e7","title":"","name":"What's a keypair?","next":null},{"type":"Text","id":"9d78a412-cb39-4db6-aa47-b9f3e0a09119","actor":"punk5950.png","name":"Next, you need to generate a **key pair** to communicate with the network:\n","choices":["fd168d37-1c4a-43e7-91bc-2855cc0783e7","1cbb8ca6-3123-49c2-b3eb-913f008268f8"]},{"type":"Choice","id":"1cbb8ca6-3123-49c2-b3eb-913f008268f8","title":"success","name":"Generate","next":null},{"type":"Text","id":"eacb8f99-f17a-481c-8dea-6e74c9c93adb","actor":"punk9677.png","name":"Alright dude, let's connect your MetaMask and register an ENS on [app.ens.domains](https://app.ens.domains/)!","next":null},{"type":"Text","id":"6fc0a558-294c-4700-b281-23bb8b770020","actor":"punk5950.png","name":"You'll need to be a *decent* coder to finish these challenges and learn how to build on **Ethereum**.","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"}]
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -91,11 +89,27 @@ app.get("/", function(req, res) {
       responseDialog.buttons = []
 
       for(let c=0;c<currentDialog.choices.length;c++){
+
         let thisChoice = getDialog(currentDialog.choices[c])
+        console.log("thisChoice",thisChoice)
+        let props = {}
+        if(thisChoice.title.indexOf("primary")>=0){
+          props.primary = true
+        }
+        else if(thisChoice.title.indexOf("warning")>=0){
+          props.warning = true
+        }
+        else if(thisChoice.title.indexOf("error")>=0){
+          props.error = true
+        }
+        else if(thisChoice.title.indexOf("success")>=0){
+          props.success = true
+        }
         responseDialog.buttons.push(
           {
             text: thisChoice.name,
-            next: thisChoice.next
+            next: thisChoice.next,
+            props: props
           }
         )
       }
