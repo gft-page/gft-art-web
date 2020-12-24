@@ -143,12 +143,13 @@ function App(props) {
 
   console.log("targetDialog",targetDialog)
 
+  const checkIn = async ()=>{
+    console.log("📡 Checking in with server...")
+    const res = await axios.get(BACKEND)
+    console.log("SET TARGET",JSON.stringify(res.data))
+    setTargetDialog(res.data)
+  }
   usePoller(()=>{
-    const checkIn = async ()=>{
-      console.log("📡 Checking in with server...")
-      const res = await axios.get(BACKEND)
-      setTargetDialog(res.data)
-    }
     checkIn()
   },3000)
 
@@ -158,33 +159,44 @@ function App(props) {
     }
   ]*/);
 
-  const addDialog = (newDialog)=>{setDialog([...dialog,newDialog])}
+  const addDialog = (newDialog)=>{
+    setDialog([...dialog,newDialog])
+    setTimeout(()=>{
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    },1)
+  }
   //const replaceDialog = (newDialog)=>{dialog.pop(); setDialog([...dialog,newDialog])}
 
-  usePoller(()=>{
+  const syncToTarget = ()=>{
     if(targetDialog){
       console.log("💬 targetDialog",targetDialog)
 
       let lastDialog
       let currentBackCount = 1
-      while((!lastDialog || !lastDialog.id) && currentBackCount<dialog.length){
+      //while((!lastDialog || !lastDialog.id) && currentBackCount<dialog.length){
         lastDialog = dialog[dialog.length-(currentBackCount++)]
-      }
+        if(lastDialog && lastDialog.response){
+          lastDialog = dialog[dialog.length-(currentBackCount++)]
+        }
+      //}
       console.log("Last dialog ",lastDialog)
 
       if( !lastDialog ){
+        console.log("Adding t0: ",targetDialog[0])
         addDialog(targetDialog[0])
       }else{
         console.log("👀 looking for lastdialog in the target... ")
         let found = false
         for(let t=0;t<targetDialog.length;t++){
-          if(targetDialog[t].id==lastDialog.id){
+          if(targetDialog[t].id==lastDialog.id && !lastDialog.responded){
             found=true;
             console.log("FOUND AT",t)
             if(t+1 < targetDialog.length){
+              console.log("ADDING t+1: ",targetDialog[t+1])
               addDialog(targetDialog[t+1])
               found=true
             }
+            console.log("BREAK")
             break;
           }
         }
@@ -195,6 +207,9 @@ function App(props) {
         }
       }
     }
+  }
+  usePoller(()=>{
+    syncToTarget()
   },1000)
 
 /*  useEffect(()=>{
@@ -256,37 +271,57 @@ function App(props) {
         </div>
       )
     }else if(dialog[d].buttons){
-      let buttonDisplay = []
-      for(let b in dialog[d].buttons){
-        //console.log("BUTTON",dialog[d].buttons[b])
-        buttonDisplay.push(
-          <span style={{margin:4}}>
-            <Button {...dialog[d].buttons[b].props} onClick={async ()=>{
-              console.log("clicked button:",dialog[d].buttons[b])
-              const newDialog = { response:dialog[d].buttons[b].text }
-              console.log(">>replaceDialog  ",newDialog)
-              const next = dialog[d].buttons[b].next
-              addDialog(newDialog)
-              if(next){
-                const res = await axios.post(BACKEND, { next: next });
-              }
+      if(!dialog[d].responded){
+        let buttonDisplay = []
+        for(let b in dialog[d].buttons){
+          //console.log("BUTTON",dialog[d].buttons[b])
+          buttonDisplay.push(
+            <span style={{margin:4}}>
+              <Button {...dialog[d].buttons[b].props} onClick={async ()=>{
+                console.log("clicked button:",dialog[d].buttons[b])
+                const newDialog = { response:dialog[d].buttons[b].text }
+                console.log(">>replaceDialog  ",newDialog)
+                const next = dialog[d].buttons[b].next
+
+                let allNewDialog = []
+                for(let d=0;d<dialog.length;d++){
+                  let thisDialog = dialog[d]
+                  if(d==dialog.length-1){
+                    thisDialog.responded = true
+                  }
+                  allNewDialog.push(thisDialog)
+                }
+
+                allNewDialog.push(newDialog)
+
+                setDialog(allNewDialog)
+                setTargetDialog()
+
+                if(next){
+                  const res = await axios.post(BACKEND, { next: next });
+                }
+
+                console.log("!!!! CHJECKING ")
+                checkIn()
 
 
-            }} >
-              {dialog[d].buttons[b].text}
-            </Button>
-          </span>
+
+              }} >
+                {dialog[d].buttons[b].text}
+              </Button>
+            </span>
+          )
+        }
+        display.push(
+          <div style={{position:"relative",width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"right"}}>
+            <div class="nes-balloon from-right" style={{opacity:0.5,marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
+            </div>
+            <div style={{marginTop:28, marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
+              {buttonDisplay}
+            </div>
+          </div>
         )
       }
-      display.push(
-        <div style={{position:"relative",width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"right"}}>
-          <div class="nes-balloon from-right" style={{opacity:0.5,marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
-          </div>
-          <div style={{marginTop:28, marginLeft:"10vw",width:"80vw",left:0,top:0,position:"absolute",height:90}}>
-            {buttonDisplay}
-          </div>
-        </div>
-      )
     }else{
       display.push(
         <div style={{width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"left"}}>

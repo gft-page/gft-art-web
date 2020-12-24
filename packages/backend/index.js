@@ -42,8 +42,9 @@ const allDialog = [
   ]},
 ]*/
 
-const allDialog = [{"type":"Text","id":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f","actor":"punk5950.png","name":"hello, woelcom ","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"},{"type":"Text","id":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf","actor":"punk5950.png","name":"you need to be a good coder","choices":["c74004bb-4469-42d1-9e7d-2cb027dc81aa","960ae9c4-b42e-45ff-b392-f1bf7a56b1c3"]},{"type":"Choice","id":"c74004bb-4469-42d1-9e7d-2cb027dc81aa","title":"","name":"I'm leet","next":"9a8c650e-582c-44c4-82ce-2b5b78df0f39"},{"type":"Choice","id":"960ae9c4-b42e-45ff-b392-f1bf7a56b1c3","title":"","name":"I'm no good","next":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69"},{"type":"Node","id":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69","actor":"link","name":"https://eth.build ","next":null},{"type":"Text","id":"9a8c650e-582c-44c4-82ce-2b5b78df0f39","actor":"punk5950.png","name":"awesome, let's get started ","next":"284ca834-4dc4-4917-acb0-c74ef11a0969"},{"type":"Text","id":"284ca834-4dc4-4917-acb0-c74ef11a0969","actor":"punk5950.png","name":"what do you think?","choices":["ee1bfe57-3319-44f8-a1f5-4214d1041782"]},{"type":"Choice","id":"ee1bfe57-3319-44f8-a1f5-4214d1041782","title":"","name":"wait what again?","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"}]
+const allDialog = [{"type":"Text","id":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f","actor":"punk5950.png","name":"hello, welcome to [eth.dev](https://eth.dev)!!! ","next":"6fc0a558-294c-4700-b281-23bb8b770020"},{"type":"Text","id":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf","actor":"punk5950.png","name":"you need to be a good coder","choices":["c74004bb-4469-42d1-9e7d-2cb027dc81aa","960ae9c4-b42e-45ff-b392-f1bf7a56b1c3","04dc29fd-a0a0-4dda-845d-6b2b97d962e9"]},{"type":"Choice","id":"c74004bb-4469-42d1-9e7d-2cb027dc81aa","title":"","name":"I'm leet","next":"9a8c650e-582c-44c4-82ce-2b5b78df0f39"},{"type":"Choice","id":"960ae9c4-b42e-45ff-b392-f1bf7a56b1c3","title":"","name":"I'm no good","next":"d3719e33-4546-4555-8cbc-34a1b6d72648"},{"type":"Node","id":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69","actor":"link","name":"https://eth.build ","next":null},{"type":"Text","id":"9a8c650e-582c-44c4-82ce-2b5b78df0f39","actor":"punk5950.png","name":"awesome, let's get started ","next":"284ca834-4dc4-4917-acb0-c74ef11a0969"},{"type":"Text","id":"284ca834-4dc4-4917-acb0-c74ef11a0969","actor":"punk5950.png","name":"what do you think?","choices":["ee1bfe57-3319-44f8-a1f5-4214d1041782"]},{"type":"Choice","id":"ee1bfe57-3319-44f8-a1f5-4214d1041782","title":"","name":"wait what again?","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"},{"type":"Choice","id":"04dc29fd-a0a0-4dda-845d-6b2b97d962e9","title":"","name":"what?","next":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f"},{"type":"Text","id":"d3719e33-4546-4555-8cbc-34a1b6d72648","actor":"punk5950.png","name":"okay, what to learn?","choices":["e8d57968-204c-4334-9279-3d44ed30d3e2","b02ad027-a59c-4056-a0b9-fe0378ba84be"]},{"type":"Choice","id":"e8d57968-204c-4334-9279-3d44ed30d3e2","title":"","name":"ethbuild","next":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69"},{"type":"Choice","id":"b02ad027-a59c-4056-a0b9-fe0378ba84be","title":"","name":"nah I can do it","next":"9a8c650e-582c-44c4-82ce-2b5b78df0f39"},{"type":"Text","id":"6fc0a558-294c-4700-b281-23bb8b770020","actor":"punk5950.png","name":"more info\n\nwith a [link](https://austingriffith.com)\n\nand maybe\n\n```bash\nchmod +x *.sh\n```","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"}]
 
+  
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -84,7 +85,7 @@ app.get("/", function(req, res) {
       index = currentDialog.next
     } else if(currentDialog.choices){
       let responseDialog = {
-        ...currentDialog
+        id: currentDialog.id+"-choices"
       }
 
       responseDialog.buttons = []
@@ -104,6 +105,8 @@ app.get("/", function(req, res) {
       done=true
     }
   }
+
+  console.log("allCurrentDialog",allCurrentDialog)
 
   res.status(200).send(JSON.stringify(allCurrentDialog))
 });
