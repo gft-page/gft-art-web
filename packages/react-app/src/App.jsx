@@ -42,9 +42,10 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 // for polling from the backend
 const axios = require('axios');
 
+const BACKEND = "http://localhost:38124"
 
 // 😬 Sorry for all the console logging 🤡
-const DEBUG = true
+const DEBUG = false
 
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
@@ -139,12 +140,13 @@ function App(props) {
   }, [setRoute]);
 
   const [ targetDialog, setTargetDialog ] = useState()
-  const [ targetDialogIndex, setTargetDialogIndex ] = useState(0)
+
+  console.log("targetDialog",targetDialog)
 
   usePoller(()=>{
     const checkIn = async ()=>{
       console.log("📡 Checking in with server...")
-      const res = await axios.get("http://localhost:38124")
+      const res = await axios.get(BACKEND)
       setTargetDialog(res.data)
     }
     checkIn()
@@ -157,17 +159,40 @@ function App(props) {
   ]*/);
 
   const addDialog = (newDialog)=>{setDialog([...dialog,newDialog])}
+  //const replaceDialog = (newDialog)=>{dialog.pop(); setDialog([...dialog,newDialog])}
 
   usePoller(()=>{
     if(targetDialog){
       console.log("💬 targetDialog",targetDialog)
 
-      let lastDialog = dialog[dialog.length-1]
+      let lastDialog
+      let currentBackCount = 1
+      while((!lastDialog || !lastDialog.id) && currentBackCount<dialog.length){
+        lastDialog = dialog[dialog.length-(currentBackCount++)]
+      }
       console.log("Last dialog ",lastDialog)
 
-      if(!lastDialog || (targetDialog[targetDialogIndex] && lastDialog.id != targetDialog[targetDialogIndex])){
-        addDialog(targetDialog[targetDialogIndex])
-        setTargetDialogIndex(targetDialogIndex+1)
+      if( !lastDialog ){
+        addDialog(targetDialog[0])
+      }else{
+        console.log("👀 looking for lastdialog in the target... ")
+        let found = false
+        for(let t=0;t<targetDialog.length;t++){
+          if(targetDialog[t].id==lastDialog.id){
+            found=true;
+            console.log("FOUND AT",t)
+            if(t+1 < targetDialog.length){
+              addDialog(targetDialog[t+1])
+              found=true
+            }
+            break;
+          }
+        }
+        console.log("RESULTING FOUND:",found)
+        if(!found){
+          console.log("NEVER FOUND SO ADDING ",targetDialog[0])
+          addDialog(targetDialog[0])
+        }
       }
     }
   },1000)
@@ -219,7 +244,7 @@ function App(props) {
   const display = []
 
   for(let d in dialog){
-    console.log("ADD dialog",dialog[d])
+    //console.log("ADD dialog",dialog[d])
     if(dialog[d].response){
       //buttons
       display.push(
@@ -233,10 +258,21 @@ function App(props) {
     }else if(dialog[d].buttons){
       let buttonDisplay = []
       for(let b in dialog[d].buttons){
-        console.log("BUTTON",dialog[d].buttons[b])
+        //console.log("BUTTON",dialog[d].buttons[b])
         buttonDisplay.push(
           <span style={{margin:4}}>
-            <Button {...dialog[d].buttons[b].props} onClick={dialog[d].buttons[b].click} >
+            <Button {...dialog[d].buttons[b].props} onClick={async ()=>{
+              console.log("clicked button:",dialog[d].buttons[b])
+              const newDialog = { response:dialog[d].buttons[b].text }
+              console.log(">>replaceDialog  ",newDialog)
+              const next = dialog[d].buttons[b].next
+              addDialog(newDialog)
+              if(next){
+                const res = await axios.post(BACKEND, { next: next });
+              }
+
+
+            }} >
               {dialog[d].buttons[b].text}
             </Button>
           </span>
@@ -254,7 +290,7 @@ function App(props) {
     }else{
       display.push(
         <div style={{width:"100%",maxWidth:1024,margin:"auto",paddingRight:16,opacity:9,marginTop:32,marginBottom:32,textAlign:"left"}}>
-          <img src="/punk5950.png" style={{minWidth:"120px",imageRendering:"pixelated"}} />
+          <img src={"/"+dialog[d].actor} style={{minWidth:"120px",imageRendering:"pixelated"}} />
           <div class="nes-balloon from-left" style={{width:"calc(100% - 160px)"}}>
             <ReactMarkdown plugins={[gfm]}  renderers={renderers} children={dialog[d].text} />
           </div>

@@ -6,12 +6,55 @@ var bodyParser = require("body-parser");
 var app = express();
 const ethers = require('ethers')
 
-let chats = {}
+let chats = {} //the current "target" chat (what should be displayed to the user)
+let indexes = {} //where any given user is within the dialog
 
 app.use(cors())
 
+/*
+const allDialog = [
+  {id: 1, punk: 1234, text: "Welcome to [eth.dev](/)!!!"},
+  {id: 2, text: "You need to be a good dev..."},
+  {id: 3, buttons: [
+    {
+      text: "No, I'm not a developer",
+      link: "https://eth.build"
+    },
+    {
+      text: "Yes, I can code!",
+      props:{ primary: true },
+      goto: 4
+    }
+  ]},
+  {id: 4, text: "okay cool, let's continue..."},
+  {id: 5, text: "This is testing the basic flow of dialog."},
+  {id: 6, text: "What would you like to try next?"},
+  {id: 7, buttons: [
+    {
+      text: "No, I'm not a developer",
+      link: "https://eth.build"
+    },
+    {
+      text: "Yes, I can code!",
+      props:{ primary: true },
+      goto: 4
+    }
+  ]},
+]*/
+
+const allDialog = [{"type":"Text","id":"b8992fc0-445f-492d-b0f5-9fe8211f9f9f","actor":"punk5950.png","name":"hello, woelcom ","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"},{"type":"Text","id":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf","actor":"punk5950.png","name":"you need to be a good coder","choices":["c74004bb-4469-42d1-9e7d-2cb027dc81aa","960ae9c4-b42e-45ff-b392-f1bf7a56b1c3"]},{"type":"Choice","id":"c74004bb-4469-42d1-9e7d-2cb027dc81aa","title":"","name":"I'm leet","next":"9a8c650e-582c-44c4-82ce-2b5b78df0f39"},{"type":"Choice","id":"960ae9c4-b42e-45ff-b392-f1bf7a56b1c3","title":"","name":"I'm no good","next":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69"},{"type":"Node","id":"42065e6e-670e-4cc5-8dcf-7db0e5e9ae69","actor":"link","name":"https://eth.build ","next":null},{"type":"Text","id":"9a8c650e-582c-44c4-82ce-2b5b78df0f39","actor":"punk5950.png","name":"awesome, let's get started ","next":"284ca834-4dc4-4917-acb0-c74ef11a0969"},{"type":"Text","id":"284ca834-4dc4-4917-acb0-c74ef11a0969","actor":"punk5950.png","name":"what do you think?","choices":["ee1bfe57-3319-44f8-a1f5-4214d1041782"]},{"type":"Choice","id":"ee1bfe57-3319-44f8-a1f5-4214d1041782","title":"","name":"wait what again?","next":"b96ab52c-af5c-4a39-ab7b-2099267d2ccf"}]
+
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const getDialog = (id)=>{
+  for(let i=0;i<allDialog.length;i++){
+    if(allDialog[i].id==id){
+      return allDialog[i]
+    }
+  }
+}
 
 app.get("/", function(req, res) {
   //we'll use this end point to serve the onboarding chat:
@@ -19,18 +62,50 @@ app.get("/", function(req, res) {
   const tempUserId = ethers.utils.keccak256([req.connection.remoteAddress,req.headers['user-agent']])
   console.log("/ (noob checkin)",tempUserId,req.connection.remoteAddress,req.headers['user-agent'])
 
-  if(!chats[tempUserId]){
-    chats[tempUserId] = [
-      {id: 0, punk: 1234, text: "Welcome to [eth.dev](/)!!!"},
-      {id: 1, text: "You need to be a good dev..."},
-      {id: 2, buttons: [
-        { text: "No, I'm not a developer"},
-        { text: "Yes, I can code!", props:{ primary: true }}
-      ]}
-    ]
+  if(!indexes[tempUserId]){
+    indexes[tempUserId] = allDialog[0].id
   }
 
-  res.status(200).send(JSON.stringify(chats[tempUserId]))
+  let allCurrentDialog = []
+  let done = false
+  let index = indexes[tempUserId]
+  while(!done){
+    let currentDialog = getDialog(index)
+    //console.log("["+currentDialog.id+"]")
+    allCurrentDialog.push(currentDialog)
+
+    if(currentDialog.name){
+      currentDialog.text = currentDialog.name
+      delete currentDialog.name // wtf who named this "name" (ajboni/Talkit did)
+    }
+
+    if(currentDialog.next){
+      //console.log("=>("+currentDialog.next+")")
+      index = currentDialog.next
+    } else if(currentDialog.choices){
+      let responseDialog = {
+        ...currentDialog
+      }
+
+      responseDialog.buttons = []
+
+      for(let c=0;c<currentDialog.choices.length;c++){
+        let thisChoice = getDialog(currentDialog.choices[c])
+        responseDialog.buttons.push(
+          {
+            text: thisChoice.name,
+            next: thisChoice.next
+          }
+        )
+      }
+      allCurrentDialog.push(responseDialog)
+      done=true
+    }else{
+      done=true
+    }
+  }
+
+  res.status(200).send(JSON.stringify(allCurrentDialog))
 });
 /*
 app.get("/:key", function(req, res) {
@@ -38,20 +113,27 @@ app.get("/:key", function(req, res) {
     console.log("/",key)
     res.status(200).send(transactions[key]);
 });
-
+*/
 
 app.post('/', function(request, response){
-    console.log("POOOOST!!!!",request.body);      // your JSON
-    response.send(request.body);    // echo the result back
+    const tempUserId = ethers.utils.keccak256([request.connection.remoteAddress,request.headers['user-agent']])
+    console.log("/ (POST ANSWER) ",tempUserId,request.body)
+    if(request.body.next){
+
+      indexes[tempUserId] = request.body.next
+
+      console.log("updated indexes for ",tempUserId,indexes[tempUserId])
+    }
+      // your JSON
+    /*response.send(request.body);    // echo the result back
     const key = request.body.address+"_"+request.body.chainId
     console.log("key:",key)
     if(!transactions[key]){
         transactions[key] = {}
     }
     transactions[key][request.body.hash] = request.body
-    console.log("transactions",transactions)
+    console.log("transactions",transactions)*/
 });
-*/
 
 if(fs.existsSync('server.key')&&fs.existsSync('server.cert')){
   https.createServer({
