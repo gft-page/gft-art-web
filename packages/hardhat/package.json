@@ -25,6 +25,7 @@
   },
   "scripts": {
     "chain": "hardhat node",
+    "mainnet-fork": "hardhat node --network hardhat",
     "test": "hardhat test --network hardhatevm",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js && hardhat run scripts/publish.js",
