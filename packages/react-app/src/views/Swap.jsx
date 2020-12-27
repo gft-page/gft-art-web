@@ -10,14 +10,6 @@ import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUnisw
 const { Option } = Select;
 const { Text, Link } = Typography;
 
-const DAI = new Token(ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'Dai Stablecoin')
-const USDC = new Token(ChainId.MAINNET, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC', 'USD//C')
-const USDT = new Token(ChainId.MAINNET, '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6, 'USDT', 'Tether USD')
-const COMP = new Token(ChainId.MAINNET, '0xc00e94Cb662C3520282E6f5717214004A7f26888', 18, 'COMP', 'Compound')
-const MKR = new Token(ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR', 'Maker')
-const LINK = new Token(ChainId.MAINNET, '0x514910771AF9Ca656af840dff83E8264EcF986CA', 18, 'LINK', 'ChainLink Token')
-const UNI = new Token(ChainId.MAINNET, '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', 18, 'UNI', 'Uniswap')
-
 export const ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -42,11 +34,15 @@ const makeCall = async (callName, contract, args, metadata={}) => {
   }
 }
 
-let tokens = {'ETH': WETH[DAI.chainId], DAI, USDC, USDT, COMP, MKR, LINK, UNI}
-
 let defaultToken = 'ETH'
 let defaultSlippage = '0.5'
 let defaultTimeLimit = 60 * 10
+
+const tokenListToObject = (array) =>
+   array.reduce((obj, item) => {
+     obj[item.symbol] = new Token(item.chainId, item.address, item.decimals, item.symbol, item.name)
+     return obj
+   }, {})
 
 function Swap({ selectedProvider }) {
 
@@ -68,7 +64,9 @@ function Swap({ selectedProvider }) {
   const [approving, setApproving] = useState(false)
   const [settingsVisible, setSettingsVisible] = useState(false)
 
-  const [tokenList, setTokenList] = useState()
+  const [tokenList, setTokenList] = useState([])
+
+  const [tokens, setTokens] = useState()
 
   const [invertPrice, setInvertPrice] = useState(false)
 
@@ -81,47 +79,41 @@ function Swap({ selectedProvider }) {
     const getTokenList = async () => {
       let tokenList = await fetch('https://gateway.ipfs.io/ipns/tokens.uniswap.org')
       let tokenListJson = await tokenList.json()
-      console.log(tokenListJson)
-      setTokenList(tokenListJson.tokens)
+      let filteredTokens = tokenListJson.tokens.filter(function (t) {
+        return t.chainId == ChainId.MAINNET
+      })
+      let ethToken = WETH[ChainId.MAINNET]
+      ethToken.name = 'Ethereum'
+      ethToken.symbol = 'ETH'
+      ethToken.logoURI = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png"
+      let _tokenList = [ethToken, ...filteredTokens]
+      setTokenList(_tokenList)
+      let _tokens = tokenListToObject(_tokenList)
+      setTokens(_tokens)
     }
     getTokenList()
   },[])
-
-  useEffect(() => {
-      getTrades()
-  },[tokenIn, tokenOut, amountIn, amountOut, slippageTolerance, selectedProvider])
-
-  const getBalance = async (_token, _account, _contract) => {
-
-    console.log(_token, [_account], _contract)
-
-    let newBalance
-    if(_token == 'ETH') {
-      newBalance = await selectedProvider.getBalance(_account)
-    } else {
-      newBalance = await makeCall('balanceOf', _contract, [_account])
-    }
-    return newBalance
-  }
 
   const getTrades = async () => {
     if(tokenIn && tokenOut && (amountIn || amountOut)) {
 
     let pairs = (arr) => arr.map( (v, i) => arr.slice(i + 1).map(w => [v,w]) ).flat();
 
-    let baseTokens = [DAI, USDC, USDT, COMP, WETH[DAI.chainId], MKR, LINK, UNI]
+    let baseTokens = tokenList.filter(function (t) {
+      return ['DAI', 'USDC', 'USDT', 'COMP', 'ETH', 'MKR', 'LINK', tokenIn, tokenOut].includes(t.symbol)
+    }).map((el) => {
+      return new Token(el.chainId, el.address, el.decimals, el.symbol, el.name)
+    })
 
     let listOfPairwiseTokens = pairs(baseTokens)
 
     const getPairs = async (list) => {
-      console.log(selectedProvider)
+
       let listOfPromises = list.map(item => Fetcher.fetchPairData(item[0], item[1], selectedProvider))
       return Promise.all(listOfPromises.map(p => p.catch(() => undefined)));
     }
 
     let listOfPairs = await getPairs(listOfPairwiseTokens)
-
-    console.log(listOfPairs)
 
     let bestTrade
 
@@ -151,50 +143,100 @@ function Swap({ selectedProvider }) {
 
     console.log(bestTrade, bestTrade[0]? bestTrade[0].inputAmount.toSignificant(6) : null)
 
-    let tempContractIn = new ethers.Contract(tokens[tokenIn].address, erc20Abi, selectedProvider);
-    let tempContractOut = new ethers.Contract(tokens[tokenOut].address, erc20Abi, selectedProvider);
-    let accountList = await selectedProvider.listAccounts()
-    console.log(accountList)
-    let allowance
-    let newBalanceIn = await getBalance(tokenIn, accountList[0], tempContractIn)
-    let newBalanceOut = await getBalance(tokenOut, accountList[0], tempContractOut)
+  }
+  }
 
-    if(tokenIn == 'ETH') {
-      setRouterAllowance()
+  useEffect(() => {
+      getTrades()
+  },[tokenIn, tokenOut, amountIn, amountOut, slippageTolerance, selectedProvider])
+
+  const getBalance = async (_token, _account, _contract) => {
+
+    let newBalance
+    if(_token == 'ETH') {
+      newBalance = await selectedProvider.getBalance(_account)
     } else {
-      allowance = await makeCall('allowance',tempContractIn,[accountList[0],ROUTER_ADDRESS])
-      setRouterAllowance(allowance)
+      newBalance = await makeCall('balanceOf', _contract, [_account])
     }
-
-    setBalanceIn(newBalanceIn)
-    setBalanceOut(newBalanceOut)
-
-  }
+    return newBalance
   }
 
-  usePoller(getTrades, 9000)
+  const getAccountInfo = async () => {
+
+    if(tokens) {
+
+      let accountList = await selectedProvider.listAccounts()
+
+      if(tokenIn) {
+        let tempContractIn = new ethers.Contract(tokens[tokenIn].address, erc20Abi, selectedProvider);
+        let newBalanceIn = await getBalance(tokenIn, accountList[0], tempContractIn)
+        setBalanceIn(newBalanceIn)
+
+        let allowance
+
+        if(tokenIn == 'ETH') {
+          setRouterAllowance()
+        } else {
+          allowance = await makeCall('allowance',tempContractIn,[accountList[0],ROUTER_ADDRESS])
+          setRouterAllowance(allowance)
+        }
+        }
+
+      if(tokenOut) {
+        let tempContractOut = new ethers.Contract(tokens[tokenOut].address, erc20Abi, selectedProvider);
+        let newBalanceOut = await getBalance(tokenOut, accountList[0], tempContractOut)
+        setBalanceOut(newBalanceOut)
+      }
+    }
+  }
+
+  usePoller(getAccountInfo, 6000)
 
   let route = trades ? (trades.length > 0 ? trades[0].route.path.map(function(item) {
-  return item['symbol'];
-}) : []) : []
+    return item['symbol'];
+  }) : []) : []
 
   const updateRouterAllowance = async (newAllowance) => {
-    let signer = selectedProvider.getSigner()
+    setApproving(true)
+    try {
     let tempContract = new ethers.Contract(tokens[tokenIn].address, erc20Abi, signer);
     let result = await makeCall('approve', tempContract, [ROUTER_ADDRESS, newAllowance])
     console.log(result)
+    setApproving(false)
+    return true
+  } catch(e) {
+      notification.open({
+        message: 'Approval unsuccessful',
+        description:
+        `Error: ${e.message}`,
+      });
+    }
   }
 
   const approveRouter = async () => {
     let approvalAmount = exact == 'in' ? ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals)) : amountInMax.raw.toString()
     console.log(approvalAmount)
-    updateRouterAllowance(approvalAmount)
+    let approval = updateRouterAllowance(approvalAmount)
+    if(approval) {
+      notification.open({
+        message: 'Token transfer approved',
+        description:
+        `You can now swap up to ${amountIn} ${tokenIn}`,
+      });
+    }
   }
 
   const removeRouterAllowance = async () => {
     let approvalAmount = ethers.utils.hexlify(0)
     console.log(approvalAmount)
-    updateRouterAllowance(approvalAmount)
+    let removal = updateRouterAllowance(approvalAmount)
+    if(removal) {
+      notification.open({
+        message: 'Token approval removed',
+        description:
+        `The router is no longer approved for ${tokenIn}`,
+      });
+    }
   }
 
   const executeSwap = async () => {
@@ -261,12 +303,12 @@ function Swap({ selectedProvider }) {
   let formattedBalanceIn = balanceIn?parseFloat(formatUnits(balanceIn,tokens[tokenIn].decimals)).toPrecision(6):null
   let formattedBalanceOut = balanceOut?parseFloat(formatUnits(balanceOut,tokens[tokenOut].decimals)).toPrecision(6):null
 
-  let metaIn = tokenList && tokenIn ? tokenList.filter(function (t) {
-  return t.address == tokens[tokenIn].address && t.chainId == ChainId.MAINNET
-})[0] : null
-  let metaOut = tokenList && tokenOut ? tokenList.filter(function (t) {
-  return t.address == tokens[tokenOut].address && t.chainId == ChainId.MAINNET
+  let metaIn = tokens && tokenList && tokenIn ? tokenList.filter(function (t) {
+    return t.address == tokens[tokenIn].address
   })[0] : null
+  let metaOut = tokens && tokenList && tokenOut ? tokenList.filter(function (t) {
+    return t.address == tokens[tokenOut].address
+    })[0] : null
 
   const cleanIpfsURI = (uri) => {
     return (uri).replace('ipfs://','https://ipfs.io/ipfs/')
@@ -277,26 +319,38 @@ function Swap({ selectedProvider }) {
 
   let price = trades&&trades[0]?parseFloat(trades[0].executionPrice.toSignificant(6)):null
   let priceDescription = price ? (invertPrice ? `${(1/price).toPrecision(6)} ${tokenIn} per ${tokenOut}` : `${price} ${tokenOut} per ${tokenIn}`) : null
-  console.log(priceDescription)
-
-  console.log(insufficientBalance, inputIsToken, insufficientAllowance)
 
   return (
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40'/><Typography>Uniswapper</Typography></Space>} extra={<a onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></a>}>
     <Space direction="vertical">
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`From${exact=='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoIn} width='30'/><span>{formattedBalanceIn}</span></Space>} style={{ width: 400, textAlign: 'left' }}>
+    <Card size="small" type="inner" title={`From${exact=='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoIn} width='30'/><a onClick={() => {
+      setAmountOut()
+      setAmountIn(formatUnits(balanceIn,tokens[tokenIn].decimals))
+      setExact('in')
+    }}>{formattedBalanceIn}</a></Space>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amountIn} onChange={(e) => {
         setAmountOut()
         setAmountIn(e)
         setExact('in')
       }}/>
-      <Select style={{width: '120px'}} size={'large'} bordered={false} defaultValue={defaultToken} onChange={(value) => {
+      <Select showSearch value={tokenIn} style={{width: '120px'}} size={'large'} bordered={false} defaultValue={defaultToken} onChange={(value) => {
         console.log(value)
+        if(value==tokenOut) {
+          console.log('switch!', tokenIn)
+          setTokenOut(tokenIn)
+          setAmountOut(amountIn)
+          setBalanceOut(balanceIn)
+        }
         setTokenIn(value)
-      }}>
-      {Object.keys(tokens).map(token => (
-        <Option value={token}>{token}</Option>
+        setAmountIn()
+        setExact('out')
+        setBalanceIn()
+      }} filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      } optionFilterProp="children">
+      {tokenList.map(token => (
+        <Option value={token.symbol}>{token.symbol}</Option>
       ))}
       </Select>
     </Card>
@@ -311,12 +365,23 @@ function Swap({ selectedProvider }) {
         setAmountIn()
         setExact('out')
       }}/>
-      <Select style={{width: '120px'}} size={'large'} bordered={false} onChange={(value) => {
-        console.log(value)
+      <Select showSearch value={tokenOut} style={{width: '120px'}} size={'large'} bordered={false} onChange={(value) => {
+        console.log(value, tokenIn, tokenOut)
+        if(value==tokenIn) {
+          console.log('switch!', tokenOut)
+          setTokenIn(tokenOut)
+          setAmountIn(amountOut)
+          setBalanceIn(balanceOut)
+        }
         setTokenOut(value)
-      }}>
-      {Object.keys(tokens).map(token => (
-        <Option value={token}>{token}</Option>
+        setExact('in')
+        setAmountOut()
+        setBalanceOut()
+      }} filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      } optionFilterProp="children">
+      {tokenList.map(token => (
+        <Option value={token.symbol}>{token.symbol}</Option>
       ))}
       </Select>
     </Card>
@@ -326,15 +391,15 @@ function Swap({ selectedProvider }) {
     </Row>
     <Row justify="center" align="middle">
     <Space>
-      {inputIsToken?<Button size="large" disabled={!insufficientAllowance} onClick={approveRouter}>{(!insufficientAllowance&&amountIn&&amountOut)?'Approved':'Approve'}</Button>:null}
+      {inputIsToken?<Button size="large" loading={approving} disabled={!insufficientAllowance} onClick={approveRouter}>{(!insufficientAllowance&&amountIn&&amountOut)?'Approved':'Approve'}</Button>:null}
       <Button size="large" loading={swapping} disabled={insufficientAllowance || insufficientBalance || !amountIn || !amountOut} onClick={executeSwap}>{insufficientBalance?'Insufficient balance':'Swap!'}</Button>
     </Space>
     </Row>
     </Space>
-    <Drawer visible={settingsVisible} onClose={() => { setSettingsVisible(false) }} width={300}>
+    <Drawer visible={settingsVisible} onClose={() => { setSettingsVisible(false) }} width={500}>
     <Descriptions title="Details" column={1} style={{textAlign: 'left'}}>
       <Descriptions.Item label="blockNumber">{blockNumber}</Descriptions.Item>
-      <Descriptions.Item label="routerAllowance"><Space>{routerAllowance?formatUnits(routerAllowance,tokens[tokenIn].decimals):null}{routerAllowance>0?<Button onClick={removeRouterAllowance}>Remove Allowance</Button>:'n/a'}</Space></Descriptions.Item>
+      <Descriptions.Item label="routerAllowance"><Space>{routerAllowance?formatUnits(routerAllowance,tokens[tokenIn].decimals):null}{routerAllowance>0?<Button onClick={removeRouterAllowance}>Remove Allowance</Button>:null}</Space></Descriptions.Item>
       <Descriptions.Item label="route">{route.join("->")}</Descriptions.Item>
       <Descriptions.Item label="exact">{exact}</Descriptions.Item>
       <Descriptions.Item label="bestPrice">{trades ? (trades.length > 0 ? trades[0].executionPrice.toSignificant(6) : null) : null}</Descriptions.Item>
