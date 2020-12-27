@@ -338,6 +338,7 @@ function Swap({ selectedProvider, tokenListURI }) {
     }}>{formattedBalanceIn}</a></Space>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amountIn} onChange={(e) => {
         setAmountOut()
+        setTrades()
         setAmountIn(e)
         setExact('in')
       }}/>
@@ -350,6 +351,7 @@ function Swap({ selectedProvider, tokenListURI }) {
           setBalanceOut(balanceIn)
         }
         setTokenIn(value)
+        setTrades()
         setAmountIn()
         setExact('out')
         setBalanceIn()
@@ -370,6 +372,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       <InputNumber style={{width: '160px'}} size={'large'} min={0} value={amountOut} onChange={(e) => {
         setAmountOut(e)
         setAmountIn()
+        setTrades()
         setExact('out')
       }}/>
       <Select showSearch value={tokenOut} style={{width: '120px'}} size={'large'} bordered={false} onChange={(value) => {
@@ -383,6 +386,7 @@ function Swap({ selectedProvider, tokenListURI }) {
         setTokenOut(value)
         setExact('in')
         setAmountOut()
+        setTrades()
         setBalanceOut()
       }} filterOption={(input, option) =>
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

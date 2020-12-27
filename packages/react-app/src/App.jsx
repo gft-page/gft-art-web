@@ -3,7 +3,7 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Input, Typography } from "antd";
+import { Row, Col, Button, Menu, Input, Typography, Modal, Space } from "antd";
 import { SettingOutlined } from '@ant-design/icons';
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
@@ -57,23 +57,47 @@ function App(props) {
   // The transactor wraps transactions and provides notificiations
   const tx = Transactor(userProvider, gasPrice)
 
-  // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
-  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
-
-  // just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
-
-  /*
-  const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
-  console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
-  */
+  const [showNetworkWarning, setShowNetworkWarning] = useState(false)
 
   const loadWeb3Modal = useCallback(async () => {
-    const provider = await web3Modal.connect();
-    setInjectedProvider(new Web3Provider(provider));
-  }, [setInjectedProvider]);
+
+      const provider = await web3Modal.connect();
+
+      const newInjectedNetwork = async (chainId) => {
+        let localNetwork = await localProvider.getNetwork()
+        if(localNetwork.chainId == chainId) {
+          setShowNetworkWarning(false)
+          return true
+        } else{
+          setShowNetworkWarning(true)
+          return false
+        }
+      }
+
+      const newWeb3Provider = async () => {
+        let newWeb3Provider = new Web3Provider(provider)
+        let newNetwork = await newWeb3Provider.getNetwork()
+        newInjectedNetwork(newNetwork.chainId)
+        setInjectedProvider(newWeb3Provider);
+      }
+
+      newWeb3Provider()
+
+      provider.on("chainChanged", (chainId) => {
+        let knownNetwork = newInjectedNetwork(chainId)
+        if(knownNetwork) newWeb3Provider()
+      });
+
+      if(window.ethereum) {
+        window.ethereum.autoRefreshOnNetworkChange = false
+      }
+
+      provider.on("accountsChanged", (accounts: string[]) => {
+        console.log(accounts);
+        newWeb3Provider()
+      });
+
+    }, [setInjectedProvider]);
 
   useEffect(() => {
     if (web3Modal.cachedProvider) {
@@ -104,6 +128,10 @@ function App(props) {
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item>
         </Menu>
+        <Modal visible={showNetworkWarning} title={"Unknown network"} footer={null} closable={false}>
+          <span>{`Your wallet is not corrected to the right network, please connect to the network at ${localProviderUrlFromEnv}`}</span>
+          <Space><span>Alternatively you can disconnect your wallet.</span><Button onClick={logoutOfWeb3Modal}>Logout</Button></Space>
+        </Modal>
 
         <Switch>
         <Route exact path="/">
@@ -116,7 +144,7 @@ function App(props) {
         </Route>
           <Route path="/hints">
             <Title level={3}>Using the Uniswapper</Title>
-            <Paragraph>Make sure you add your Alchemy API Key to the hardhat forking config</Paragraph>
+            <Paragraph>Add an Alchemy API Key to the hardhat forking config to avoid `archive node` errors</Paragraph>
             <Paragraph>Use the faucet to give yourself some ETH</Paragraph>
             <Paragraph>Click the <SettingOutlined/> on the Swapper widget to view more detailed settings (slippage tolerance, time limit) and other calculations.</Paragraph>
             <Input placeholder="Enter tokenlist URL" value={tokenListURI} onChange={(e) => {
