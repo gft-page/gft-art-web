@@ -106,6 +106,7 @@ function App(props) {
     SNARK: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.SNARK.address, EXTERNAL_CONTRACTS.SNARK.abi ),
     FISHMONGER: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.FISHMONGER.address, EXTERNAL_CONTRACTS.FISHMONGER.abi ),
     COPPER: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.COPPER.address, EXTERNAL_CONTRACTS.COPPER.abi ),
+    PINNER: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.PINNER.address, EXTERNAL_CONTRACTS.PINNER.abi ),
   }
 
   // keep track of a variable from the contract in the local React state:
@@ -164,6 +165,9 @@ function App(props) {
           <Menu.Item key="/bay">
             <Link onClick={()=>{setRoute("/bay")}} to="/bay">bay</Link>
           </Menu.Item>
+          <Menu.Item key="/pinner">
+            <Link onClick={()=>{setRoute("/pinner")}} to="/pinner">pinner</Link>
+          </Menu.Item>
         </Menu>
 
         <Switch>
@@ -175,7 +179,7 @@ function App(props) {
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
-              show={["reelIn","castLine","embark","getShip"]}
+              show={["reelIn","castLine","embark","getShip","setSail", "dropAnchor"]}
             />
           </Route>
 
@@ -224,6 +228,17 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
               show={["sellFish","price","filletPrice"]}
+            />
+          </Route>
+          <Route path="/pinner">
+            <Contract
+              name="PINNER"
+              customContract={externalContracts["PINNER"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["balanceOf","transfer"]}
             />
           </Route>
 
