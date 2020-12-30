@@ -91,9 +91,6 @@ function App(props) {
   const purpose = useContractReader(readContracts,"YourContract", "purpose")
   console.log("🤗 purpose:",purpose)
 
-  //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
 
 
   // Add your external contract addresses and abis to the constants.js file
@@ -117,6 +114,11 @@ function App(props) {
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
+
+  //📟 Listen for broadcast events
+  const fish = useEventListener(externalContracts, "Bay", "Fish", localProvider, 1);
+  console.log("📟 fish",fish)
+
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
