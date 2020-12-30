@@ -117,8 +117,8 @@ function App(props) {
   */
 
   //📟 Listen for broadcast events
-  const fish = useEventListener(externalContracts, "BAY", "Fish", localProvider, 1);
-  console.log("📟 fish",fish)
+  //const fish = useEventListener(externalContracts, "BAY", "Fish", localProvider, 9258613);
+  //console.log("📟 fish",fish)
 
 
   const loadWeb3Modal = useCallback(async () => {
