@@ -115,7 +115,8 @@ function App(props) {
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
   */
-
+  const fish = useEventListener(externalContracts["BAY"], "Fish", localProvider, 9258613);
+  console.log("📟 fish",fish)
   //📟 Listen for broadcast events
   const catchFish = useEventListener(externalContracts["BAY"], "Catch", localProvider, 9258613);
   console.log("📟 catchFish",catchFish)
