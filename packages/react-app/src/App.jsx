@@ -12,7 +12,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components"
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { Hints, ExampleUI, Subgraph, FishFinder } from "./views"
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -111,15 +111,15 @@ function App(props) {
   //console.log("🤗 galleass:",galleass)
 
 
-  /*
-  const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
-  console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
-  */
-  const fish = useEventListener(externalContracts["BAY"], "Fish", localProvider, 9258613);
-  console.log("📟 fish",fish)
-  //📟 Listen for broadcast events
-  const catchFish = useEventListener(externalContracts["BAY"], "Catch", localProvider, 9258613);
-  console.log("📟 catchFish",catchFish)
+  const mainX = useContractReader(externalContracts,"LAND","mainX")
+  const mainY = useContractReader(externalContracts,"LAND","mainY")
+
+
+
+
+
+
+
 
 
   const loadWeb3Modal = useCallback(async () => {
@@ -141,8 +141,21 @@ function App(props) {
   return (
     <div className="App">
 
+
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
+
+
+
+      <div style={{float:"left"}}>
+        <div>
+          MainX: {mainX}
+        </div>
+        <div>
+          MainY: {mainY}
+        </div>
+      </div>
+
 
       <BrowserRouter>
 
@@ -171,9 +184,23 @@ function App(props) {
           <Menu.Item key="/pinner">
             <Link onClick={()=>{setRoute("/pinner")}} to="/pinner">pinner</Link>
           </Menu.Item>
+          <Menu.Item key="/fishfinder">
+            <Link onClick={()=>{setRoute("/fishfinder")}} to="/fishfinder">fishfinder</Link>
+          </Menu.Item>
+
         </Menu>
 
         <Switch>
+
+          <Route path="/fishfinder">
+            <FishFinder
+              externalContracts={externalContracts}
+              localProvider={localProvider}
+            />
+          </Route>
+
+
+
           <Route path="/bay">
             <Contract
               name="BAY"
