@@ -31,13 +31,13 @@ import { Hints, ExampleUI, Subgraph } from "./views"
     You can also bring in contract artifacts in `constants.js`
     (and then use the `useExternalContractLoader()` hook!)
 */
-import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
+import { INFURA_ID, EXTERNAL_CONTRACTS} from "./constants";
 
 // 😬 Sorry for all the console logging 🤡
 const DEBUG = true
 
 // 🔭 block explorer URL
-const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
+const blockExplorer = "https://blockscout.com/poa/xdai/"
 
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
@@ -47,7 +47,7 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFU
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
+const localProviderUrl = "https://dai.poa.network"
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
@@ -58,11 +58,10 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
-  const price = useExchangePrice(mainnetProvider); //1 for xdai
+  const price = 1
 
   /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice("fast"); //1000000000 for xdai
-
+  const gasPrice = 1000000000
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
@@ -88,11 +87,6 @@ function App(props) {
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
-  // If you want to bring in the mainnet DAI contract it would look like:
-  //const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  //console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
-
-
   // keep track of a variable from the contract in the local React state:
   const purpose = useContractReader(readContracts,"YourContract", "purpose")
   console.log("🤗 purpose:",purpose)
@@ -100,6 +94,24 @@ function App(props) {
   //📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
+
+
+  // Add your external contract addresses and abis to the constants.js file
+  const externalContracts = {
+    GALLEASS: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.GALLEASS.address, EXTERNAL_CONTRACTS.GALLEASS.abi ),
+    LAND: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.LAND.address, EXTERNAL_CONTRACTS.LAND.abi ),
+    BAY: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.BAY.address, EXTERNAL_CONTRACTS.BAY.abi ),
+    HARBOR: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.HARBOR.address, EXTERNAL_CONTRACTS.HARBOR.abi ),
+    DOGGER: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.DOGGER.address, EXTERNAL_CONTRACTS.DOGGER.abi ),
+    SNARK: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.SNARK.address, EXTERNAL_CONTRACTS.SNARK.abi ),
+    FISHMONGER: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.FISHMONGER.address, EXTERNAL_CONTRACTS.FISHMONGER.abi ),
+    COPPER: useExternalContractLoader(localProvider, EXTERNAL_CONTRACTS.COPPER.address, EXTERNAL_CONTRACTS.COPPER.abi ),
+  }
+
+  // keep track of a variable from the contract in the local React state:
+  //const galleass = useContractReader(externalContracts,"BAY", "galleass")
+  //console.log("🤗 galleass:",galleass)
+
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -132,33 +144,129 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Galleass</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+          <Menu.Item key="/copper">
+            <Link onClick={()=>{setRoute("/copper")}} to="/copper">copper</Link>
           </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+          <Menu.Item key="/fishmonger">
+            <Link onClick={()=>{setRoute("/fishmonger")}} to="/fishmonger">fishmonger</Link>
           </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/snark">
+            <Link onClick={()=>{setRoute("/snark")}} to="/snark">snark</Link>
+          </Menu.Item>
+          <Menu.Item key="/dogger">
+            <Link onClick={()=>{setRoute("/dogger")}} to="/dogger">dogger</Link>
+          </Menu.Item>
+          <Menu.Item key="/harbor">
+            <Link onClick={()=>{setRoute("/harbor")}} to="/harbor">harbor</Link>
+          </Menu.Item>
+          <Menu.Item key="/bay">
+            <Link onClick={()=>{setRoute("/bay")}} to="/bay">bay</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
+          <Route path="/bay">
+            <Contract
+              name="BAY"
+              customContract={externalContracts["BAY"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["reelIn","castLine","embark","getShip"]}
+            />
+          </Route>
+
+          <Route path="/harbor">
+            <Contract
+              name="HARBOR"
+              customContract={externalContracts["HARBOR"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["buyShip","TIMBERTOBUILDDOGGER"]}
+            />
+          </Route>
+
+          <Route path="/dogger">
+            <Contract
+              name="DOGGER"
+              customContract={externalContracts["DOGGER"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["tokensOfOwner","ownerOf","balanceOf","transfer","getToken"]}
+            />
+          </Route>
+
+          <Route path="/snark">
+            <Contract
+              name="SNARK"
+              customContract={externalContracts["SNARK"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["balanceOf","transfer"]}
+            />
+          </Route>
+
+          <Route path="/fishmonger">
+            <Contract
+              name="FISHMONGER"
+              customContract={externalContracts["FISHMONGER"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["sellFish","price","filletPrice"]}
+            />
+          </Route>
+
           <Route exact path="/">
             {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
+            {/*
             <Contract
-              name="YourContract"
+              name="GALLEASS"
+              customContract={externalContracts["GALLEASS"]}
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
+            */}
+
+            <Contract
+              name="LAND"
+              customContract={externalContracts["LAND"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["mainX","mainY","findTile","getTileLocation"]}
+            />
+
+
+{/*
+
+  <Contract
+    name="YourContract"
+    signer={userProvider.getSigner()}
+    provider={localProvider}
+    address={address}
+    blockExplorer={blockExplorer}
+  />
+
+  */}
+
 
             { /* Uncomment to display and interact with an external contract (DAI on mainnet):
             <Contract
@@ -170,6 +278,19 @@ function App(props) {
               blockExplorer={blockExplorer}
             />
             */ }
+          </Route>
+
+
+          <Route path="/copper">
+            <Contract
+              name="COPPER"
+              customContract={externalContracts["COPPER"]}
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              show={["balanceOf","transfer"]}
+            />
           </Route>
           <Route path="/hints">
             <Hints
