@@ -117,7 +117,7 @@ function App(props) {
   */
 
   //📟 Listen for broadcast events
-  const fish = useEventListener(externalContracts, "Bay", "Fish", localProvider, 1);
+  const fish = useEventListener(externalContracts, "BAY", "Fish", localProvider, 1);
   console.log("📟 fish",fish)
 
 
@@ -317,29 +317,7 @@ function App(props) {
               price={price}
             />
           </Route>
-          <Route path="/exampleui">
-            <ExampleUI
-              address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-              purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
-            />
-          </Route>
-          <Route path="/subgraph">
-            <Subgraph
-            subgraphUri={props.subgraphUri}
-            tx={tx}
-            writeContracts={writeContracts}
-            mainnetProvider={mainnetProvider}
-            />
-          </Route>
+
         </Switch>
       </BrowserRouter>
 
