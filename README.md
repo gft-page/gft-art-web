@@ -24,19 +24,18 @@ yarn start
 
 ```
 
-This branch uses a local fork of mainnet, which is easy to do with Hardhat ([see here to learn more](https://hardhat.org/guides/mainnet-forking.html)):
-- Go to alchemyapi.io and get an API key for mainnet
-- Put that API key into the `forking` URL on line 52 of /packages/hardhat/hardhat.config.js
 - In a second terminal window run:
 
 ```bash
 
-yarn mainnet-fork
+yarn fork
 
 ```
+This branch uses a local fork of mainnet, which is easy to do with Hardhat ([see here to learn more](https://hardhat.org/guides/mainnet-forking.html)). The template configuration uses an Infura node, however this is not a full archive node, so it will only work for an hour or so. To get a long-lasting fork...
+- Go to alchemyapi.io and get an API key for mainnet
+- Replace the Infura URL with an Alchemy URL with your API key (i.e. https://eth-mainnet.alchemyapi.io/v2/<API_KEY_HERE>) into the `fork` script on line 28 of /packages/hardhat/package.json
 
 📱 Open http://localhost:3000 to see the app
 
 Notes:
-- If you connect your metamask, you will need to change the chainId of your localhost network config to be 1
 - This widget uses [tokenlists](https://tokenlists.org/) to import the erc20s of your choice

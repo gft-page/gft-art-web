@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button, Divider, Tooltip, Drawer } from "antd";
+import { Space, Row, Col, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button, Divider, Tooltip, Drawer, Modal } from "antd";
 import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
 import { ChainId, Token, WETH, Fetcher, Trade, Route, TokenAmount, TradeType, Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits } from "@ethersproject/units";
@@ -63,6 +63,7 @@ function Swap({ selectedProvider, tokenListURI }) {
   const [swapping, setSwapping] = useState(false)
   const [approving, setApproving] = useState(false)
   const [settingsVisible, setSettingsVisible] = useState(false)
+  const [swapModalVisible, setSwapModalVisible] = useState(false)
 
   const [tokenList, setTokenList] = useState([])
 
@@ -304,6 +305,19 @@ function Swap({ selectedProvider, tokenListURI }) {
   }
   }
 
+  const showSwapModal = () => {
+    setSwapModalVisible(true);
+  };
+
+  const handleSwapModalOk = () => {
+    setSwapModalVisible(false);
+    executeSwap()
+  };
+
+  const handleSwapModalCancel = () => {
+    setSwapModalVisible(false);
+  };
+
   let insufficientBalance = balanceIn ? parseFloat(formatUnits(balanceIn,tokens[tokenIn].decimals)) < amountIn : null
   let inputIsToken = tokenIn != 'ETH'
   let insufficientAllowance = !inputIsToken ? false : routerAllowance ? parseFloat(formatUnits(routerAllowance,tokens[tokenIn].decimals)) < amountIn : null
@@ -326,6 +340,24 @@ function Swap({ selectedProvider, tokenListURI }) {
 
   let price = trades&&trades[0]?parseFloat(trades[0].executionPrice.toSignificant(6)):null
   let priceDescription = price ? (invertPrice ? `${(1/price).toPrecision(6)} ${tokenIn} per ${tokenOut}` : `${price} ${tokenOut} per ${tokenIn}`) : null
+
+  let priceWidget = (
+    <Space>
+    <Text type="secondary">{priceDescription}</Text>
+    <a onClick={() => {setInvertPrice(!invertPrice)}}><RetweetOutlined /></a>
+    </Space>
+  )
+
+  let swapModal = (
+    <Modal title="Confirm swap" visible={swapModalVisible} onOk={handleSwapModalOk} onCancel={handleSwapModalCancel}>
+      <Row><Space><img src={logoIn} width='30'/>{amountIn}{tokenIn}</Space></Row>
+      <Row justify='center' align='middle' style={{width:30}}><span>↓</span></Row>
+      <Row><Space><img src={logoOut} width='30'/>{amountOut}{tokenOut}</Space></Row>
+      <Divider/>
+      <Row>{priceWidget}</Row>
+      <Row>{trades&&(amountOutMin || amountInMax)?(exact=='in'?`Output is estimated. You will receive at least ${amountOutMin.toSignificant(6)} ${tokenOut} or the transaction will revert.`:`Input is estimated. You will sell at most ${amountInMax.toSignificant(6)} ${tokenIn} or the transaction will revert.`):null}</Row>
+    </Modal>
+  )
 
   return (
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40'/><Typography>Uniswapper</Typography></Space>} extra={<a onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></a>}>
@@ -398,12 +430,13 @@ function Swap({ selectedProvider, tokenListURI }) {
     </Card>
     </Row>
     <Row justify="center" align="middle">
-      {priceDescription?<Space><Text type="secondary">{priceDescription}</Text><a onClick={() => {setInvertPrice(!invertPrice)}}><RetweetOutlined /></a></Space>:null}
+      {priceDescription?priceWidget:null}
     </Row>
     <Row justify="center" align="middle">
     <Space>
       {inputIsToken?<Button size="large" loading={approving} disabled={!insufficientAllowance} onClick={approveRouter}>{(!insufficientAllowance&&amountIn&&amountOut)?'Approved':'Approve'}</Button>:null}
-      <Button size="large" loading={swapping} disabled={insufficientAllowance || insufficientBalance || !amountIn || !amountOut} onClick={executeSwap}>{insufficientBalance?'Insufficient balance':'Swap!'}</Button>
+      <Button size="large" loading={swapping} disabled={insufficientAllowance || insufficientBalance || !amountIn || !amountOut} onClick={showSwapModal}>{insufficientBalance?'Insufficient balance':'Swap!'}</Button>
+      {swapModal}
     </Space>
     </Row>
     </Space>
