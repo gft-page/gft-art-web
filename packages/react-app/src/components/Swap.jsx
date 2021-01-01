@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, InputNumber, Input, Card, notification, Popover, Select, Descriptions, Typography, Button, Divider, Tooltip, Drawer, Modal } from "antd";
+import { Space, Row, InputNumber, Card, notification, Select, Descriptions, Typography, Button, Divider, Tooltip, Drawer, Modal } from "antd";
 import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
-import { ChainId, Token, WETH, Fetcher, Trade, Route, TokenAmount, TradeType, Percent } from '@uniswap/sdk'
+import { ChainId, Token, WETH, Fetcher, Trade, TokenAmount, Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { useBlockNumber, usePoller } from "eth-hooks";
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 
 const { Option } = Select;
-const { Text, Link } = Typography;
+const { Text } = Typography;
 
 export const ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 
@@ -55,7 +55,6 @@ function Swap({ selectedProvider, tokenListURI }) {
   const [amountOutMin, setAmountOutMin] = useState()
   const [trades, setTrades] = useState()
   const [routerAllowance, setRouterAllowance] = useState()
-  const [fromContract, setFromContract] = useState()
   const [balanceIn, setBalanceIn] = useState()
   const [balanceOut, setBalanceOut] = useState()
   const [slippageTolerance, setSlippageTolerance] = useState(new Percent(Math.round(defaultSlippage*100).toString(), "10000"))
@@ -85,7 +84,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       let tokenList = await fetch(_tokenListUri)
       let tokenListJson = await tokenList.json()
       let filteredTokens = tokenListJson.tokens.filter(function (t) {
-        return t.chainId == ChainId.MAINNET
+        return t.chainId === ChainId.MAINNET
       })
       let ethToken = WETH[ChainId.MAINNET]
       ethToken.name = 'Ethereum'
@@ -125,7 +124,7 @@ function Swap({ selectedProvider, tokenListURI }) {
 
     let bestTrade
 
-    if(exact == 'in') {
+    if(exact === 'in') {
       setAmountInMax()
       bestTrade = Trade.bestTradeExactIn(
       listOfPairs.filter(item => item),
@@ -135,7 +134,7 @@ function Swap({ selectedProvider, tokenListURI }) {
         setAmountOut(bestTrade[0].outputAmount.toSignificant(6))
         setAmountOutMin(bestTrade[0].minimumAmountOut(slippageTolerance))
       } else { setAmountOut() }
-    } else if (exact == 'out') {
+    } else if (exact === 'out') {
       setAmountOutMin()
       bestTrade = Trade.bestTradeExactOut(
       listOfPairs.filter(item => item),
@@ -161,7 +160,7 @@ function Swap({ selectedProvider, tokenListURI }) {
   const getBalance = async (_token, _account, _contract) => {
 
     let newBalance
-    if(_token == 'ETH') {
+    if(_token === 'ETH') {
       newBalance = await selectedProvider.getBalance(_account)
     } else {
       newBalance = await makeCall('balanceOf', _contract, [_account])
@@ -182,7 +181,7 @@ function Swap({ selectedProvider, tokenListURI }) {
 
         let allowance
 
-        if(tokenIn == 'ETH') {
+        if(tokenIn === 'ETH') {
           setRouterAllowance()
         } else {
           allowance = await makeCall('allowance',tempContractIn,[accountList[0],ROUTER_ADDRESS])
@@ -222,7 +221,7 @@ function Swap({ selectedProvider, tokenListURI }) {
   }
 
   const approveRouter = async () => {
-    let approvalAmount = exact == 'in' ? ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals)) : amountInMax.raw.toString()
+    let approvalAmount = exact === 'in' ? ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals)) : amountInMax.raw.toString()
     console.log(approvalAmount)
     let approval = updateRouterAllowance(approvalAmount)
     if(approval) {
@@ -262,26 +261,26 @@ function Swap({ selectedProvider, tokenListURI }) {
       let accountList = await selectedProvider.listAccounts()
       let address = accountList[0]
 
-      if (exact == 'in') {
+      if (exact === 'in') {
         let _amountIn = ethers.utils.hexlify(parseUnits(amountIn.toString(), tokens[tokenIn].decimals))
         let _amountOutMin = ethers.utils.hexlify(ethers.BigNumber.from(amountOutMin.raw.toString()))
-        if (tokenIn == 'ETH') {
+        if (tokenIn === 'ETH') {
           call = 'swapExactETHForTokens'
           args = [_amountOutMin, path, address, deadline]
           metadata['value'] = _amountIn
         } else {
-          call = tokenOut == 'ETH' ? 'swapExactTokensForETH' : 'swapExactTokensForTokens'
+          call = tokenOut === 'ETH' ? 'swapExactTokensForETH' : 'swapExactTokensForTokens'
           args = [_amountIn, _amountOutMin, path, address, deadline]
         }
-      } else if (exact == 'out') {
+      } else if (exact === 'out') {
         let _amountOut = ethers.utils.hexlify(parseUnits(amountOut.toString(), tokens[tokenOut].decimals))
         let _amountInMax = ethers.utils.hexlify(ethers.BigNumber.from(amountInMax.raw.toString()))
-        if (tokenIn == 'ETH') {
+        if (tokenIn === 'ETH') {
           call = 'swapETHForExactTokens'
           args = [_amountOut, path, address, deadline]
           metadata['value'] = _amountInMax
         } else {
-          call = tokenOut == 'ETH' ? 'swapTokensForExactETH' : 'swapTokensForExactTokens'
+          call = tokenOut === 'ETH' ? 'swapTokensForExactETH' : 'swapTokensForExactTokens'
           args = [_amountOut, _amountInMax, path, address, deadline]
         }
       }
@@ -319,16 +318,16 @@ function Swap({ selectedProvider, tokenListURI }) {
   };
 
   let insufficientBalance = balanceIn ? parseFloat(formatUnits(balanceIn,tokens[tokenIn].decimals)) < amountIn : null
-  let inputIsToken = tokenIn != 'ETH'
+  let inputIsToken = tokenIn !== 'ETH'
   let insufficientAllowance = !inputIsToken ? false : routerAllowance ? parseFloat(formatUnits(routerAllowance,tokens[tokenIn].decimals)) < amountIn : null
   let formattedBalanceIn = balanceIn?parseFloat(formatUnits(balanceIn,tokens[tokenIn].decimals)).toPrecision(6):null
   let formattedBalanceOut = balanceOut?parseFloat(formatUnits(balanceOut,tokens[tokenOut].decimals)).toPrecision(6):null
 
   let metaIn = tokens && tokenList && tokenIn ? tokenList.filter(function (t) {
-    return t.address == tokens[tokenIn].address
+    return t.address === tokens[tokenIn].address
   })[0] : null
   let metaOut = tokens && tokenList && tokenOut ? tokenList.filter(function (t) {
-    return t.address == tokens[tokenOut].address
+    return t.address === tokens[tokenOut].address
     })[0] : null
 
   const cleanIpfsURI = (uri) => {
@@ -338,36 +337,37 @@ function Swap({ selectedProvider, tokenListURI }) {
   let logoIn = metaIn?cleanIpfsURI(metaIn.logoURI):null
   let logoOut = metaOut?cleanIpfsURI(metaOut.logoURI):null
 
-  let price = trades&&trades[0]?parseFloat(trades[0].executionPrice.toSignificant(6)):null
-  let priceDescription = price ? (invertPrice ? `${(1/price).toPrecision(6)} ${tokenIn} per ${tokenOut}` : `${price} ${tokenOut} per ${tokenIn}`) : null
+  let rawPrice = trades&&trades[0]?trades[0].executionPrice:null
+  let price = rawPrice?rawPrice.toSignificant(7):null
+  let priceDescription = rawPrice ? (invertPrice ? `${(rawPrice.invert()).toSignificant(7)} ${tokenIn} per ${tokenOut}` : `${price} ${tokenOut} per ${tokenIn}`) : null
 
   let priceWidget = (
     <Space>
     <Text type="secondary">{priceDescription}</Text>
-    <a onClick={() => {setInvertPrice(!invertPrice)}}><RetweetOutlined /></a>
+    <Button type="text" onClick={() => {setInvertPrice(!invertPrice)}}><RetweetOutlined /></Button>
     </Space>
   )
 
   let swapModal = (
     <Modal title="Confirm swap" visible={swapModalVisible} onOk={handleSwapModalOk} onCancel={handleSwapModalCancel}>
-      <Row><Space><img src={logoIn} width='30'/>{amountIn}{tokenIn}</Space></Row>
+      <Row><Space><img src={logoIn} alt={logoIn} width='30'/>{amountIn}{tokenIn}</Space></Row>
       <Row justify='center' align='middle' style={{width:30}}><span>↓</span></Row>
-      <Row><Space><img src={logoOut} width='30'/>{amountOut}{tokenOut}</Space></Row>
+      <Row><Space><img src={logoOut} alt={logoOut} width='30'/>{amountOut}{tokenOut}</Space></Row>
       <Divider/>
       <Row>{priceWidget}</Row>
-      <Row>{trades&&(amountOutMin || amountInMax)?(exact=='in'?`Output is estimated. You will receive at least ${amountOutMin.toSignificant(6)} ${tokenOut} or the transaction will revert.`:`Input is estimated. You will sell at most ${amountInMax.toSignificant(6)} ${tokenIn} or the transaction will revert.`):null}</Row>
+      <Row>{trades&&(amountOutMin || amountInMax)?(exact==='in'?`Output is estimated. You will receive at least ${amountOutMin.toSignificant(6)} ${tokenOut} or the transaction will revert.`:`Input is estimated. You will sell at most ${amountInMax.toSignificant(6)} ${tokenIn} or the transaction will revert.`):null}</Row>
     </Modal>
   )
 
   return (
-    <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40'/><Typography>Uniswapper</Typography></Space>} extra={<a onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></a>}>
+    <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40' alt='uniswapLogo'/><Typography>Uniswapper</Typography></Space>} extra={<Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}>
     <Space direction="vertical">
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`From${exact=='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoIn} width='30'/><a onClick={() => {
+    <Card size="small" type="inner" title={`From${exact==='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoIn} alt={logoIn} width='30'/><Button type="link" onClick={() => {
       setAmountOut()
       setAmountIn(formatUnits(balanceIn,tokens[tokenIn].decimals))
       setExact('in')
-    }}>{formattedBalanceIn}</a></Space>} style={{ width: 400, textAlign: 'left' }}>
+    }}>{formattedBalanceIn}</Button></Space>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amountIn} onChange={(e) => {
         setAmountOut()
         setTrades()
@@ -376,7 +376,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       }}/>
       <Select showSearch value={tokenIn} style={{width: '120px'}} size={'large'} bordered={false} defaultValue={defaultToken} onChange={(value) => {
         console.log(value)
-        if(value==tokenOut) {
+        if(value===tokenOut) {
           console.log('switch!', tokenIn)
           setTokenOut(tokenIn)
           setAmountOut(amountIn)
@@ -391,7 +391,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
       } optionFilterProp="children">
       {tokenList.map(token => (
-        <Option value={token.symbol}>{token.symbol}</Option>
+        <Option key={token.symbol} value={token.symbol}>{token.symbol}</Option>
       ))}
       </Select>
     </Card>
@@ -400,7 +400,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       <Tooltip title={route.join("->")}><span>↓</span></Tooltip>
     </Row>
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`To${exact=='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoOut} width='30'/><span>{formattedBalanceOut}</span></Space>} style={{ width: 400, textAlign: 'left' }}>
+    <Card size="small" type="inner" title={`To${exact==='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoOut} width='30' alt={logoOut}/><span>{formattedBalanceOut}</span></Space>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} size={'large'} min={0} value={amountOut} onChange={(e) => {
         setAmountOut(e)
         setAmountIn()
@@ -409,7 +409,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       }}/>
       <Select showSearch value={tokenOut} style={{width: '120px'}} size={'large'} bordered={false} onChange={(value) => {
         console.log(value, tokenIn, tokenOut)
-        if(value==tokenIn) {
+        if(value===tokenIn) {
           console.log('switch!', tokenOut)
           setTokenIn(tokenOut)
           setAmountIn(amountOut)
@@ -424,7 +424,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
       } optionFilterProp="children">
       {tokenList.map(token => (
-        <Option value={token.symbol}>{token.symbol}</Option>
+        <Option key={token.symbol} value={token.symbol}>{token.symbol}</Option>
       ))}
       </Select>
     </Card>
