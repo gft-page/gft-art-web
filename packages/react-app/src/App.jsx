@@ -11,7 +11,7 @@ import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap } from "./components";
 import { Transactor } from "./helpers";
-import { formatEther } from "@ethersproject/units";
+import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints } from "./views"
 
@@ -59,6 +59,10 @@ function App(props) {
 
   const [showNetworkWarning, setShowNetworkWarning] = useState(false)
 
+  if(window.ethereum) {
+    window.ethereum.autoRefreshOnNetworkChange = false
+  }
+
   const loadWeb3Modal = useCallback(async () => {
 
       const provider = await web3Modal.connect();
@@ -87,10 +91,6 @@ function App(props) {
         let knownNetwork = newInjectedNetwork(chainId)
         if(knownNetwork) newWeb3Provider()
       });
-
-      if(window.ethereum) {
-        window.ethereum.autoRefreshOnNetworkChange = false
-      }
 
       provider.on("accountsChanged", (accounts: string[]) => {
         console.log(accounts);
@@ -144,15 +144,15 @@ function App(props) {
         </Route>
           <Route path="/hints">
             <Title level={3}>Using the Uniswapper</Title>
-            <Paragraph>Add an Alchemy API Key to the hardhat forking config to avoid `archive node` errors</Paragraph>
-            <Paragraph>Use the faucet to give yourself some ETH</Paragraph>
+            <Paragraph><Text code>{`<Swap/>`}</Text> is a minimal Uniswap interface, requiring an <a href="https://docs.ethers.io/v5/" target="_blank">ethers.js</a> Provider.</Paragraph>
             <Paragraph>Click the <SettingOutlined/> on the Swapper widget to view more detailed settings (slippage tolerance, time limit) and other calculations.</Paragraph>
+            <Paragraph>Add an <a href="https://alchemyapi.io/" target="_blank">Alchemy API URL</a> to the fork script at <Text code>/packages/hardhat/package.json</Text> to avoid <Text code>archive node</Text> errors</Paragraph>
             <Input placeholder="Enter tokenlist URL" value={tokenListURI} onChange={(e) => {
               console.log(e)
               setTokenListURI(e.target.value) }}
               style={{width:400}}
               />
-            <Paragraph>Enter the token list URI you would like to use. Go to <a href="https://tokenlists.org/" target="_blank">tokenlists.org</a> to learn more</Paragraph>
+            <Paragraph>Enter the token list URI you would like to use (an optional parameter). Go to <a href="https://tokenlists.org/" target="_blank">tokenlists.org</a> to learn more</Paragraph>
           </Route>
         </Switch>
       </BrowserRouter>

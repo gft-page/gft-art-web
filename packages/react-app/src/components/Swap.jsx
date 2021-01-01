@@ -291,7 +291,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       notification.open({
         message: 'Swap complete 🦄',
         description:
-        `Swapped ${tokenIn} for ${tokenOut}, transaction: ${result.hash}`,
+        <><Text>{`Swapped ${tokenIn} for ${tokenOut}, transaction: `}</Text><Text copyable>{result.hash}</Text></>,
       });
       setSwapping(false)
   } catch (e) {
