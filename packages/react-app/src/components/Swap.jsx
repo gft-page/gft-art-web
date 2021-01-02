@@ -35,6 +35,7 @@ const makeCall = async (callName, contract, args, metadata={}) => {
 }
 
 let defaultToken = 'ETH'
+let defaultTokenOut = 'DAI'
 let defaultSlippage = '0.5'
 let defaultTimeLimit = 60 * 10
 
@@ -47,7 +48,7 @@ const tokenListToObject = (array) =>
 function Swap({ selectedProvider, tokenListURI }) {
 
   const [tokenIn, setTokenIn] = useState(defaultToken)
-  const [tokenOut, setTokenOut] = useState()
+  const [tokenOut, setTokenOut] = useState(defaultTokenOut)
   const [exact, setExact] = useState()
   const [amountIn, setAmountIn] = useState()
   const [amountInMax, setAmountInMax] = useState()
@@ -132,7 +133,6 @@ function Swap({ selectedProvider, tokenListURI }) {
       tokens[tokenOut])
       if(bestTrade[0]) {
         setAmountOut(bestTrade[0].outputAmount.toSignificant(6))
-        setAmountOutMin(bestTrade[0].minimumAmountOut(slippageTolerance))
       } else { setAmountOut() }
     } else if (exact === 'out') {
       setAmountOutMin()
@@ -142,13 +142,12 @@ function Swap({ selectedProvider, tokenListURI }) {
       new TokenAmount(tokens[tokenOut], parseUnits(amountOut.toString(), tokens[tokenOut].decimals)))
       if(bestTrade[0]) {
         setAmountIn(bestTrade[0].inputAmount.toSignificant(6))
-        setAmountInMax(bestTrade[0].maximumAmountIn(slippageTolerance))
       } else { setAmountIn() }
     }
 
     setTrades(bestTrade)
 
-    console.log(bestTrade, bestTrade[0]? bestTrade[0].inputAmount.toSignificant(6) : null)
+    console.log(bestTrade)
 
   }
   }
@@ -156,6 +155,16 @@ function Swap({ selectedProvider, tokenListURI }) {
   useEffect(() => {
       getTrades()
   },[tokenIn, tokenOut, amountIn, amountOut, slippageTolerance, selectedProvider])
+
+  useEffect(() => {
+    if(trades && trades[0]) {
+      if(exact === 'in') {
+        setAmountOutMin(trades[0].minimumAmountOut(slippageTolerance))
+      } else if (exact === 'out') {
+        setAmountInMax(trades[0].maximumAmountIn(slippageTolerance))
+      }
+    }
+  }, [slippageTolerance, amountIn, amountOut, trades])
 
   const getBalance = async (_token, _account, _contract) => {
 
@@ -363,11 +372,13 @@ function Swap({ selectedProvider, tokenListURI }) {
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40' alt='uniswapLogo'/><Typography>Uniswapper</Typography></Space>} extra={<Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}>
     <Space direction="vertical">
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`From${exact==='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoIn} alt={logoIn} width='30'/><Button type="link" onClick={() => {
+    <Card size="small" type="inner" title={`From${exact==='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<><img src={logoIn} alt={logoIn} width='30'/><Button type="link" onClick={() => {
       setAmountOut()
       setAmountIn(formatUnits(balanceIn,tokens[tokenIn].decimals))
+      setAmountOutMin()
+      setAmountInMax()
       setExact('in')
-    }}>{formattedBalanceIn}</Button></Space>} style={{ width: 400, textAlign: 'left' }}>
+    }}>{formattedBalanceIn}</Button></>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amountIn} onChange={(e) => {
         setAmountOut()
         setTrades()
@@ -400,7 +411,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       <Tooltip title={route.join("->")}><span>↓</span></Tooltip>
     </Row>
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`To${exact==='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<Space><img src={logoOut} width='30' alt={logoOut}/><span>{formattedBalanceOut}</span></Space>} style={{ width: 400, textAlign: 'left' }}>
+    <Card size="small" type="inner" title={`To${exact==='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<><img src={logoOut} width='30' alt={logoOut}/><Button type="text">{formattedBalanceOut}</Button></>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} size={'large'} min={0} value={amountOut} onChange={(e) => {
         setAmountOut(e)
         setAmountIn()
