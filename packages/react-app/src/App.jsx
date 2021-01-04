@@ -9,10 +9,9 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-//import Hints from "./Hints";
 import { Hints } from "./views"
 
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
@@ -139,6 +138,14 @@ function App(props) {
         <Route exact path="/">
           <Row justify="center">
           <Swap
+            selectedProvider={userProvider}
+            tokenListURI={tokenListURI}
+            />
+          </Row>
+        </Route>
+        <Route exact path="/lend">
+          <Row justify="center">
+          <Lend
             selectedProvider={userProvider}
             tokenListURI={tokenListURI}
             />
