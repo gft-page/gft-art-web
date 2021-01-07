@@ -20,9 +20,11 @@ contract YourContract {
   mapping (address => Commit) public commits;
   
   function commit(bytes32 dataHash, uint64 block_number) public {
+    require(block_number > block.number,"CommitReveal::reveal: Already revealed");
     commits[msg.sender].commit = dataHash;
     commits[msg.sender].block = block_number;
     commits[msg.sender].revealed = false;
+    console.log(block.number, block_number);
     emit CommitHash(msg.sender,commits[msg.sender].commit,commits[msg.sender].block);
   }
 
@@ -41,6 +43,7 @@ contract YourContract {
 
     uint8 random = uint8(uint(keccak256(abi.encodePacked(blockHash,revealHash))))%max;
     emit RevealHash(msg.sender,revealHash,random);
+    console.log("Random: ", random);
   }
 
   function revealAnswer(bytes32 answer,bytes32 salt) public {
