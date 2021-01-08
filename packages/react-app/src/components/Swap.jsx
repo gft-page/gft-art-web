@@ -340,7 +340,12 @@ function Swap({ selectedProvider, tokenListURI }) {
     })[0] : null
 
   const cleanIpfsURI = (uri) => {
+    try {
     return (uri).replace('ipfs://','https://ipfs.io/ipfs/')
+  } catch(e) {
+    console.log(e, uri)
+    return uri
+  }
   }
 
   let logoIn = metaIn?cleanIpfsURI(metaIn.logoURI):null
