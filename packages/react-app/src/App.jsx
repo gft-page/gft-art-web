@@ -14,6 +14,8 @@ import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints } from "./views"
+import { ethers } from "ethers";
+
 
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 const { Text, Title, Paragraph } = Typography;
@@ -114,11 +116,77 @@ function App(props) {
 
   let onLocalChain = localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf("localhost")>=0 && !process.env.REACT_APP_PROVIDER
 
+  // If you want to bring in the mainnet DAI contract it would look like:
+  const mainnetDAIContract = useExternalContractLoader(userProvider, DAI_ADDRESS, DAI_ABI)
+  console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
+
+
+
+
+  const getImpersonatingSigner = async () => {
+    let accountToImpersonate = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+    await localProvider.send("hardhat_impersonateAccount",[accountToImpersonate])
+    const signer = await localProvider.getSigner(accountToImpersonate)
+    console.log(signer.provider.getSigner())
+    const signerbal = await signer.getBalance()
+    console.log(formatEther(signerbal))
+    let transferbal = parseFloat(formatEther(signerbal)) - 0.01
+    let txmisc = signer.sendTransaction({
+      to: "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+      value: parseEther(transferbal.toString())
+    });
+  }
+
+  const getImpersonatingSignerDai = async () => {
+    let accountToImpersonate = "0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+
+
+
+    await localProvider.send("hardhat_impersonateAccount",[accountToImpersonate])
+    const signer = await localProvider.getSigner(accountToImpersonate)
+    console.log(signer.provider.getSigner())
+    const myDaiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
+
+    const myAddress = await signer.getAddress()
+    console.log("myAddress",myAddress)
+    const signerDaiBal = await myDaiContract.balanceOf(myAddress)
+    console.log("vsignerDaiBal",signerDaiBal)
+
+
+
+    console.log(formatEther(signerDaiBal))
+    let transferbal = parseFloat(formatEther(signerDaiBal)) - 0.01
+    let txmisc = tx(myDaiContract.transfer(
+      "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+      parseEther(transferbal.toString())
+    ));
+  }
+
+
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
+
+      <Button onClick={()=>{getImpersonatingSigner()}}>
+        SnatchETH
+      </Button>
+      <Button onClick={()=>{getImpersonatingSignerDai()}}>
+        SnatchDAI
+      </Button>
+      <Button onClick={async ()=>{
+        const signer = await userProvider.getSigner()
+        const myDaiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
+
+
+        console.log("address",address)
+        const signerDaiBal = await myDaiContract.balanceOf(address)
+        console.log("BALANCE:",formatEther(signerDaiBal))
+
+
+      }}>BALANCE?</Button>
 
       <BrowserRouter>
 
