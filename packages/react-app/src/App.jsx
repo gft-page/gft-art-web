@@ -137,7 +137,7 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Reenterancy</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -158,7 +158,14 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="YourContract"
+              name="Reenterancy"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+            <Contract
+              name="Attacker"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
