@@ -17,7 +17,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "localhost";
+const defaultNetwork = "mainnet";
 
 function mnemonic() {
   try {
@@ -38,6 +38,7 @@ module.exports = {
   // (then your frontend will talk to your contracts on the live network!)
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
+
   networks: {
     localhost: {
       url: "http://localhost:8545",
@@ -45,6 +46,7 @@ module.exports = {
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
       */
+      accounts: [ fs.readFileSync("./allocate.deploy.pk").toString().trim() ]
     },
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
@@ -54,9 +56,7 @@ module.exports = {
     },
     mainnet: {
       url: "https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
-      accounts: {
-        mnemonic: mnemonic(),
-      },
+      accounts: [ fs.readFileSync("./allocate.deploy.pk").toString().trim() ],
     },
     ropsten: {
       url: "https://ropsten.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)

@@ -1,11 +1,11 @@
 pragma solidity >=0.6.0 <0.7.0;
 pragma experimental ABIEncoderV2;
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./WETH9.sol";
+import "./IWETH9.sol";
 
 /*
 
@@ -41,13 +41,19 @@ contract Allocator is ReentrancyGuard, Ownable{
     uint8 ratio;
   }
 
+  constructor(address payable _WETH,address newOwner,address[] memory wallets,uint8[] memory ratios) public {
+    setWETHAddress( _WETH );
+    setAllocation( wallets, ratios );
+    transferOwnership( newOwner );
+  }
+
   Allocation[] public allocations;
   uint8 public denominator = 0;
   address payable public WETH;
 
   //accepts eth
   receive() external payable {
-    WETH9 wethContract = WETH9(WETH);
+    IWETH9 wethContract = IWETH9(WETH);
     wethContract.deposit{value:msg.value}();
   }
 

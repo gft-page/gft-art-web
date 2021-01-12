@@ -8,7 +8,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -51,7 +51,7 @@ const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.n
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = mainnetProvider//new JsonRpcProvider(localProviderUrlFromEnv);
 
 
 
@@ -152,6 +152,16 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
+
+            <div style={{padding:32}}>
+              <Address
+                value={readContracts && readContracts.Allocator.address}
+                ensProvider={mainnetProvider}
+                fontSize={32}
+              />
+            </div>
+
+
             <Allocations
               mainnetProvider={mainnetProvider}
               allocations={allocations}

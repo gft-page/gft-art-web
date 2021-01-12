@@ -1,5 +1,31 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_WETH",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "wallets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "ratios",
+        "type": "uint8[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
