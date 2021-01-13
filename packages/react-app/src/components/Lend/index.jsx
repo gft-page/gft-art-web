@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Space, Row, InputNumber, Card, notification, Select, Descriptions, List, Typography, Button, Divider, Tooltip, Drawer, Modal, Table } from "antd";
 import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
 import { ChainId, Token, WETH, Fetcher, Trade, TokenAmount, Percent } from '@uniswap/sdk'
-import { parseUnits, formatUnits } from "@ethersproject/units";
+import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { useBlockNumber, usePoller } from "eth-hooks";
 import { abi as IAddressProvider } from './abis/LendingPoolAddressProvider.json'
 import { abi as IDataProvider } from './abis/ProtocolDataProvider.json'
 import { abi as ILendingPool } from './abis/LendingPool.json'
 import { abi as IErc20 } from './abis/erc20.json'
+import { abi as IPriceOracle } from './abis/PriceOracle.json'
 import AaveAction from "./AaveAction"
 
 const { Option } = Select;
@@ -17,20 +18,7 @@ const { Text } = Typography;
 export const POOL_ADDRESSES_PROVIDER_ADDRESS = '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
 const PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
 const LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
-
-const makeCall = async (callName, contract, args, metadata={}) => {
-  if(contract[callName]) {
-    let result
-    if(args) {
-      result = await contract[callName](...args, metadata)
-    } else {
-      result = await contract[callName]()
-    }
-    return result
-  } else {
-    console.log('no call of that name!')
-  }
-}
+const PRICE_ORACLE = '0xa50ba011c48153de246e5192c8f9258a2ba79ca9'
 
 function Lend({ selectedProvider, tokenListURI }) {
 
@@ -44,11 +32,13 @@ function Lend({ selectedProvider, tokenListURI }) {
 
   const [reserveTokens, setReserveTokens] = useState()
   const [assetData, setAssetData] = useState({})
+  const [assetPrices, setAssetPrices] = useState({})
 
   let signer = selectedProvider.getSigner()
   let addressProviderContract = new ethers.Contract(POOL_ADDRESSES_PROVIDER_ADDRESS, IAddressProvider, signer);
   let dataProviderContract = new ethers.Contract(PROTOCOL_DATA_PROVIDER, IDataProvider, signer);
   let lendingPoolContract = new ethers.Contract(LENDING_POOL, ILendingPool, signer);
+  let priceOracleContract = new ethers.Contract(PRICE_ORACLE, IPriceOracle, signer);
 
   const getReserveData = async () => {
     if(reserveTokens) {
@@ -66,6 +56,23 @@ function Lend({ selectedProvider, tokenListURI }) {
   useEffect(() => {
     getReserveData()
   }, [reserveTokens])
+
+  const getPriceData = async () => {
+    if(reserveTokens) {
+      let assetAddresses = reserveTokens.map(a => a.tokenAddress)
+      console.log(assetAddresses)
+      let prices = await priceOracleContract.getAssetsPrices(assetAddresses)
+      console.log(prices)
+      let _assetPrices = {}
+      for (let i = 0; i < prices.length; i++) {
+        let _symbol = reserveTokens[i]['symbol']
+        _assetPrices[_symbol] = prices[i]
+      }
+      setAssetPrices(_assetPrices)
+    }
+  }
+
+  console.log(assetPrices)
 
   const checkUserConfiguration = async (_configuration) => {
     if(_configuration && reserveTokens) {
@@ -156,11 +163,32 @@ function Lend({ selectedProvider, tokenListURI }) {
     title: 'Name',
     dataIndex: 'symbol',
     key: 'symbol',
+    fixed: 'left',
   },
   {
     title: 'Liquidity',
     key: 'availableLiquidity',
-    render: value => formatUnits(value.availableLiquidity, value.decimals),
+    render: value => parseFloat(formatUnits(value.availableLiquidity, value.decimals)).toFixed(2),
+  },
+  {
+    title: 'Deposit rate',
+    key: 'depositRate',
+    render: value => parseFloat(formatUnits(value.liquidityRate, 25)).toPrecision(4),
+  },
+  {
+    title: 'Variable rate',
+    key: 'variableRate',
+    render: value => parseFloat(formatUnits(value.variableBorrowRate, 25)).toPrecision(4),
+  },
+  {
+    title: 'Stable rate',
+    key: 'stableRate',
+    render: value => parseFloat(formatUnits(value.stableBorrowRate, 25)).toPrecision(4),
+  },
+  {
+    title: 'Price (ETH)',
+    key: 'price',
+    render: value => assetPrices[value.symbol]&&formatEther(assetPrices[value.symbol]),
   },
   {
     title: 'Deposited',
@@ -178,32 +206,20 @@ function Lend({ selectedProvider, tokenListURI }) {
     render: value => (userAssetData[value.symbol])&&formatUnits(userAssetData[value.symbol]['currentVariableDebt'], value.decimals),
   },
   {
-    title: 'Deposit',
-    key: 'deposit',
-    render: value => <AaveAction type="deposit" symbol={value.symbol} assetAddress={value.tokenAddress} decimals={value.decimals} signer={signer} lendingPoolContract={lendingPoolContract} userAssetData={userAssetData[value.symbol]}/>
-  },
-  {
-    title: 'Withdraw',
-    key: 'withdraw',
+    title: 'Actions',
+    key: 'actions',
     render: value => {
-      return (Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('collateral')).includes(value.symbol)&&(
-        <AaveAction type="withdraw" symbol={value.symbol} assetAddress={value.tokenAddress} decimals={value.decimals} signer={signer} lendingPoolContract={lendingPoolContract} userAssetData={userAssetData[value.symbol]}/>
-      ))
-      }
-  },
-  {
-    title: 'Borrow',
-    key: 'borrow',
-    render: value => <AaveAction type="borrow" symbol={value.symbol} assetAddress={value.tokenAddress} decimals={value.decimals} signer={signer} lendingPoolContract={lendingPoolContract} stableRateEnabled={value.stableBorrowRateEnabled} userAssetData={userAssetData[value.symbol]}/>
-  },
-  {
-    title: 'Repay',
-    key: 'repay',
-    render: value => {
-      return (Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('debt')).includes(value.symbol)&&(
-        <AaveAction type="repay" symbol={value.symbol} assetAddress={value.tokenAddress} decimals={value.decimals} signer={signer} lendingPoolContract={lendingPoolContract} stableRateEnabled={value.stableBorrowRateEnabled} userAssetData={userAssetData[value.symbol]}/>
-      ))
-      }
+      return (<>
+      <AaveAction type="deposit" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+      {(Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('collateral')).includes(value.symbol)&&(
+        <AaveAction type="withdraw" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+      ))}
+      {(userAccountData&&userAccountData.availableBorrowsETH>0)&&<AaveAction type="borrow" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
+      {(Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('debt')).includes(value.symbol)&&(
+        <AaveAction type="repay" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+      ))}
+      </>)
+    }
   },
 ];
 
@@ -226,9 +242,11 @@ function Lend({ selectedProvider, tokenListURI }) {
     <Card title={`Hello friend do you want to lend?!`} extra={<Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}>
     <Button onClick={getAaveInfo}>Get Aave info</Button>
     <Button onClick={getUserInfo}>Get User info</Button>
-    {userConfiguration&&<Typography>{`Account configuration: ${parseInt(userConfiguration.toString(), 10).toString(2)}`}</Typography>}
+    <Button onClick={getPriceData}>Get Price info</Button>
+    <Divider/>
     {userAccountDisplay}
-    <Table dataSource={Object.values(assetData)} columns={columns} pagination={false}/>
+    {userConfiguration&&<Typography>{`Account configuration: ${parseInt(userConfiguration.toString(), 10).toString(2)}`}</Typography>}
+    <Table dataSource={Object.values(assetData)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
     </Card>
   )
 
