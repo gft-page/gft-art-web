@@ -1,6 +1,8 @@
 # 🏗 scaffold-eth
 
-> is everything you need to get started building decentralized applications powered by smart contracts
+### IPFS Example
+
+> add and get text from IPFS 
 
 ---
 
