@@ -1,8 +1,6 @@
 # 🏗 scaffold-eth
 
-### Solidity v8 Underflow Example
-
-> v0.8.0 throws on underflow, no more safemath?
+### Address Painting
 
 ---
 
@@ -42,20 +40,6 @@ yarn deploy
 
 ```
 
-👀 [HartHat Config](https://github.com/austintgriffith/scaffold-eth/blob/v8-underflow-example/packages/hardhat/hardhat.config.js) updated to `0.8.0` in `hardhat.config.js` in `packages/hardhat`
+> get funds from the faucet and then `double click` a spot...
 
-
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-
-![image](https://user-images.githubusercontent.com/2653167/104815866-99cd8b80-57d4-11eb-8a88-a7cd71590a8e.png)
-
-
-📝 Edit your frontend `App.jsx` in `packages/react-app/src`
-
-📱 Open http://localhost:3000 to see the app
-
----
-
-Solidity version 8 throws an error when we underflow:
-
-![image](https://user-images.githubusercontent.com/2653167/104815764-caf98c00-57d3-11eb-9bf9-e0d1909c9422.png)
+![image](https://user-images.githubusercontent.com/2653167/104827506-90b3dd00-581b-11eb-8643-bbb0ed0c1a08.png)
