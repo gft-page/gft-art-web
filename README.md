@@ -42,7 +42,13 @@ yarn deploy
 
 ```
 
+👀 [HartHat Config](https://github.com/austintgriffith/scaffold-eth/blob/v8-underflow-example/packages/hardhat/hardhat.config.js) updated to `0.8.0` in `hardhat.config.js` in `packages/hardhat`
+
+
 🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
+
+![image](https://user-images.githubusercontent.com/2653167/104815866-99cd8b80-57d4-11eb-8a88-a7cd71590a8e.png)
+
 
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
 
