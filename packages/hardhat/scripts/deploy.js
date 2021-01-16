@@ -12,7 +12,8 @@ const main = async () => {
 
   const yourContract = await deploy("YourContract") // <-- add in constructor args like line 16 vvvv
 
-
+  console.log(" setting 0,0 ")
+  await yourContract.set(0,0,"0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1","0x64ed34")
 
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")

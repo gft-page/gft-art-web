@@ -3,16 +3,19 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu } from "antd";
+import { Row, Col, Button, Menu, List } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
+
+
+import Blockies from 'react-blockies';
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -99,12 +102,13 @@ function App(props) {
   //
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  let SIZE = useContractReader(readContracts,"YourContract", "SIZE")
+  SIZE = SIZE && SIZE.toNumber()
+  console.log("🤗 SIZE:",SIZE)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  const updateEvents = useEventListener(readContracts, "YourContract", "Update", localProvider, 1);
+  console.log("📟 updateEvents:",updateEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -127,43 +131,136 @@ function App(props) {
     setRoute(window.location.pathname)
   }, [setRoute]);
 
+
+  let renderSize = window.innerWidth/SIZE
+
+  let butons = []
+
+
+  let defaultColor = "#eeeeee"
+
+  const [target, setTarget] = useState([-1,-1]);
+  console.log("target",target)
+
+  for(let x=0;x<SIZE;x++){
+    for(let y=0;y<SIZE;y++){
+
+
+      const targeted = ( x==target[0] && y==target[1] )
+
+
+      let renderTarget = ""
+      if(targeted){
+        console.log("targeted",targeted,x,y)
+        renderTarget = (
+          <Blockies
+            seed={address && address.toLowerCase()}
+            size={8}
+            scale={renderSize/8}
+          />
+        )
+      }
+
+      butons.push(
+        <div
+
+        onClick={()=>{
+          console.log("NEW TARGET",target,x,y,target[0],target[1])
+
+          if(target && target[0] == x && target[1] == y){
+            console.log("TX!!!!!!!!!")
+            tx( writeContracts.YourContract.set(x,y,address,"0xFF0000") )
+
+          }
+
+          setTarget([x,y])
+        }}
+
+        style={{opacity:0.5,position:"absolute",left:x*renderSize,top:y*renderSize,width:renderSize,height:renderSize,backgroundColor:defaultColor}}>
+          {renderTarget}
+        </div>
+
+      )
+    }
+  }
+
+  let owners = []
+
+  for(let e in updateEvents){
+    console.log(updateEvents[e])
+    owners.push(
+      <div style={{position:"absolute",left:updateEvents[e].x.toNumber()*renderSize,top:updateEvents[e].y.toNumber()*renderSize,width:renderSize,height:renderSize}}>
+
+      <Blockies
+        seed={updateEvents[e] && updateEvents[e].owner && updateEvents[e].owner.toLowerCase()}
+        size={8}
+        scale={renderSize/8}
+      />
+      </div>
+    )
+
+  }
+
+
   return (
     <div className="App">
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
 
-      <BrowserRouter>
+      {butons}
+      {owners}
 
-        <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
-          </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
-          </Menu.Item>
-        </Menu>
+
+      <BrowserRouter>
+        {/*
+
+          <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
+            <Menu.Item key="/">
+              <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            </Menu.Item>
+            <Menu.Item key="/hints">
+              <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
+            </Menu.Item>
+            <Menu.Item key="/exampleui">
+              <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+            </Menu.Item>
+            <Menu.Item key="/subgraph">
+              <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+            </Menu.Item>
+          </Menu>
+
+        */}
+
 
         <Switch>
           <Route exact path="/">
+
+
+
             {/*
+
+
+              <Contract
+                name="YourContract"
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+                show={["set"]}
+              />
+
+
+
+
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
+
+
+
+
 
             { /* Uncomment to display and interact with an external contract (DAI on mainnet):
             <Contract
@@ -177,12 +274,7 @@ function App(props) {
             */ }
           </Route>
           <Route path="/hints">
-            <Hints
-              address={address}
-              yourLocalBalance={yourLocalBalance}
-              mainnetProvider={mainnetProvider}
-              price={price}
-            />
+
           </Route>
           <Route path="/exampleui">
             <ExampleUI
@@ -195,8 +287,8 @@ function App(props) {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
-              purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
+              /*purpose={purpose}
+              setPurposeEvents={setPurposeEvents}*/
             />
           </Route>
           <Route path="/subgraph">
