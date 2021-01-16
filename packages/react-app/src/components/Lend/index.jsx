@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, InputNumber, Card, notification, Select, Descriptions, List, Typography, Button, Divider, Tooltip, Drawer, Modal, Table } from "antd";
+import { Space, Row, Col, InputNumber, Card, notification, Select, Statistic, Descriptions, List, Typography, Button, Divider, Tooltip, Drawer, Modal, Table } from "antd";
 import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
 import { ChainId, Token, WETH, Fetcher, Trade, TokenAmount, Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
@@ -41,6 +41,7 @@ function Lend({ selectedProvider, tokenListURI }) {
   let priceOracleContract = new ethers.Contract(PRICE_ORACLE, IPriceOracle, signer);
 
   const getReserveData = async () => {
+    console.log('getting reserve data')
     if(reserveTokens) {
       reserveTokens.forEach(async (asset) => {
         let _reserveData = await dataProviderContract.getReserveData(asset.tokenAddress)
@@ -53,11 +54,15 @@ function Lend({ selectedProvider, tokenListURI }) {
     }
   }
 
+
   useEffect(() => {
     getReserveData()
+    getPriceData()
   }, [reserveTokens])
 
+
   const getPriceData = async () => {
+    console.log('getting price data')
     if(reserveTokens) {
       let assetAddresses = reserveTokens.map(a => a.tokenAddress)
       console.log(assetAddresses)
@@ -72,8 +77,6 @@ function Lend({ selectedProvider, tokenListURI }) {
     }
   }
 
-  console.log(assetPrices)
-
   const checkUserConfiguration = async (_configuration) => {
     if(_configuration && reserveTokens) {
       let _userActiveAssets = {}
@@ -83,7 +86,6 @@ function Lend({ selectedProvider, tokenListURI }) {
       for (let i = 0; i < reversedBits.length; i++) {
         let _assetIndex = Math.floor(i/2)
         if(reversedBits[i]==="1") {
-          console.log(i, _assetIndex, reserveTokens[_assetIndex], i % 2, reversedBits[i]);
           let _type = i%2===0?"debt":"collateral"
           let _symbol = reserveTokens[_assetIndex]['symbol']
           let _newAsset
@@ -93,7 +95,6 @@ function Lend({ selectedProvider, tokenListURI }) {
           _userAssetList[_symbol] = _newAsset
         }
       }
-      console.log(_userAssetList)
       setUserAssetList(_userAssetList)
     }
   }
@@ -115,7 +116,6 @@ function Lend({ selectedProvider, tokenListURI }) {
           console.log(_data)
         }
         _asset[asset.symbol] = _data
-        console.log(_asset)
         setUserAssetData(userAssetData => {
           return {...userAssetData, ..._asset}})
       })
@@ -142,21 +142,19 @@ function Lend({ selectedProvider, tokenListURI }) {
     setUserConfiguration(_userConfiguration)
   }
 
-  const withdraw = async (_assetAddress, _signer) => {
-    console.log("withdrawing")
-    let address = await _signer.getAddress()
-    let withdraw = await lendingPoolContract.functions.withdraw(_assetAddress, ethers.constants.MaxUint256, address)
-    console.log(withdraw)
-  }
-
-    const getAaveInfo = async () => {
-      console.log('getting Aave Info')
-      let address = await signer.getAddress()
+  const getReserveTokens = async () => {
+    if(!reserveTokens && dataProviderContract && selectedProvider) {
+      console.log('getting Reserve Tokens')
       let _reserveTokens = await dataProviderContract.getAllReservesTokens()//.getReserveData("0x6B175474E89094C44Da98b954EedeAC495271d0F")//makeCall('getAddress', addressProviderContract, ["0x1"])
       console.log(_reserveTokens)
       setReserveTokens(_reserveTokens)
     }
+  }
 
+  usePoller(getReserveTokens, 3000)
+  usePoller(getReserveData, 15000)
+  usePoller(getPriceData, 15000)
+  usePoller(getUserInfo, 6000)
 
   const columns = [
   {
@@ -226,26 +224,35 @@ function Lend({ selectedProvider, tokenListURI }) {
   let userAccountDisplay
   if(userAccountData) {
     userAccountDisplay = (
-      <Descriptions title="User Info">
-        <Descriptions.Item label={"availableBorrowsETH"}>{formatUnits(userAccountData.availableBorrowsETH,18)}</Descriptions.Item>
-        <Descriptions.Item label={"totalCollateralETH"}>{formatUnits(userAccountData.totalCollateralETH,18)}</Descriptions.Item>
-        <Descriptions.Item label={"totalDebtETH"}>{formatUnits(userAccountData.totalDebtETH,18)}</Descriptions.Item>
-        <Descriptions.Item label={"currentLiquidationThreshold"}>{userAccountData.currentLiquidationThreshold.toString()}</Descriptions.Item>
-        <Descriptions.Item label={"ltv"}>{userAccountData.ltv.toString()}</Descriptions.Item>
-        <Descriptions.Item label={"healthFactor"}>{userAccountData.healthFactor.toString()}</Descriptions.Item>
+      <>
+      <Row gutter={16} justify="center" align="middle">
+      <Col span={8}>
+        <Statistic title={"collateral"} value={parseFloat(formatUnits(userAccountData.totalCollateralETH,18)).toFixed(3)}/>
+      </Col>
+      <Col span={8}>
+        <Statistic title={"debt"} value={parseFloat(formatUnits(userAccountData.totalDebtETH,18)).toFixed(3)}/>
+      </Col>
+      <Col span={8}>
+        <Statistic title={"allowance"} value={parseFloat(formatUnits(userAccountData.availableBorrowsETH,18)).toFixed(3)}/>
+      </Col>
+      </Row>
+      <Drawer visible={settingsVisible} onClose={() => { setSettingsVisible(false) }} width={500}>
+      <Descriptions title="Account Details" column={1} style={{textAlign: 'left'}}>
+        <Descriptions.Item label={"currentLiquidationThreshold"}>{new Percent(userAccountData.currentLiquidationThreshold.toString(), "10000").toFixed(2)}</Descriptions.Item>
+        <Descriptions.Item label={"ltv"}>{new Percent(userAccountData.ltv.toString(), "10000").toFixed(2)}</Descriptions.Item>
+        <Descriptions.Item label={"healthFactor"}>{parseFloat(formatUnits(userAccountData.healthFactor,18)).toFixed(3)}</Descriptions.Item>
+        {userConfiguration&&<Descriptions.Item label={`Account configuration`}>{parseInt(userConfiguration.toString(), 10).toString(2)}</Descriptions.Item>}
       </Descriptions>
+      </Drawer>
+      </>
   )
   }
 
 
   return (
-    <Card title={`Hello friend do you want to lend?!`} extra={<Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}>
-    <Button onClick={getAaveInfo}>Get Aave info</Button>
-    <Button onClick={getUserInfo}>Get User info</Button>
-    <Button onClick={getPriceData}>Get Price info</Button>
-    <Divider/>
+    <Card title={<Space><img src="https://ipfs.io/ipfs/QmWzL3TSmkMhbqGBEwyeFyWVvLmEo3F44HBMFnmTUiTfp1" width='40' alt='aaveLogo'/><Typography>Aave Lender</Typography></Space>} extra={<Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}>
     {userAccountDisplay}
-    {userConfiguration&&<Typography>{`Account configuration: ${parseInt(userConfiguration.toString(), 10).toString(2)}`}</Typography>}
+    <Divider/>
     <Table dataSource={Object.values(assetData)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
     </Card>
   )
