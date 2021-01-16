@@ -1,50 +1,20 @@
 [
   {
     "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "purpose",
-        "type": "string"
-      }
-    ],
-    "name": "SetPurpose",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "purpose",
+    "name": "counter",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "uint8",
         "name": "",
-        "type": "string"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "newPurpose",
-        "type": "string"
-      }
-    ],
-    "name": "setPurpose",
+    "inputs": [],
+    "name": "dec",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
