@@ -16,7 +16,7 @@ const PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
 const LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
 const PRICE_ORACLE = '0xa50ba011c48153de246e5192c8f9258a2ba79ca9'
 
-function Lend({ selectedProvider, tokenListURI, ethPrice }) {
+function Lend({ selectedProvider, ethPrice }) {
 
   const [settingsVisible, setSettingsVisible] = useState(false)
 

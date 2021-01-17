@@ -150,7 +150,6 @@ function App(props) {
           <Row justify="center">
           <Lend
             selectedProvider={userProvider}
-            tokenListURI={tokenListURI}
             ethPrice={price}
             />
           </Row>
