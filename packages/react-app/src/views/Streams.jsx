@@ -116,7 +116,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
           dataSource={withdrawStreamEvents}
           renderItem={(item) => {
             return (
-              <List.Item key={"withdrawal_"+index++}>
+              <List.Item key={"withdrawal_"+item.to+item.amount+index}>
               <div>
                 <Address
                   value={item.to}
