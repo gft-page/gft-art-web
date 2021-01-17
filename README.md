@@ -23,30 +23,11 @@ yarn install
 yarn start
 
 ```
-
-> in a second terminal window:
-
-```bash
-
-yarn chain
-
-```
-
-> in a third terminal window:
-
-```bash
-
-yarn deploy
-
-```
-
-🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
+> Contracts already deployed to xdai chain. You can edit GridGame.sol and redeploy.
 
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
 
 📱 Open http://localhost:3000 to see the app
-
-📚 Keep [solidity by example](https://solidity-by-example.org) handy and check out the [Solidity globals and units](https://solidity.readthedocs.io/en/v0.6.6/units-and-global-variables.html)
 
 > With everything up your app will look like this:
 
