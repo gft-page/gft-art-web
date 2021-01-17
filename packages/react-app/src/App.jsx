@@ -8,7 +8,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useBalance } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Network } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -26,7 +26,7 @@ import { Hints, ExampleUI, Subgraph } from "./views"
     You should get your own Infura.io ID and put it in `constants.js`
     (this is your connection to the main Ethereum network for ENS etc.)
 */
-import { INFURA_ID } from "./constants";
+import { INFURA_ID, NETWORKS } from "./constants";
 
 const DEBUG = true
 
@@ -51,6 +51,8 @@ const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
 function App(props) {
   const [injectedProvider, setInjectedProvider] = useState();
+  const [localProvider, setLocalProvider] = useState(new JsonRpcProvider(localProviderUrlFromEnv));
+  
   /* 💵 this hook will get the price of ETH from 🦄 Uniswap: */
   const price = useExchangePrice(mainnetProvider); //1 for xdai
 
@@ -65,6 +67,13 @@ function App(props) {
 
   // The transactor wraps transactions and provides notificiations
   const tx = Transactor(userProvider, gasPrice)
+
+  // Network change handler
+  // Currently only local and xDai switching
+  const handleNetworkChange = (e) => { 
+    //console.log(`Network changed to ${e}`)
+    setLocalProvider(new JsonRpcProvider(e))
+  }
 
   // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
   const yourLocalBalance = useBalance(localProvider, address);
@@ -225,7 +234,22 @@ function App(props) {
            </Col>
          </Row>
        </div>
-
+      {/* Add network(s) to show user active network */}
+      <div 
+        style={{
+          borderRadius: '25px',
+          position: 'fixed', 
+          textAlign: 'left', 
+          right: 10, 
+          bottom: 30, 
+          padding: 5 
+        }}
+      >      
+      <Network
+          networks={NETWORKS}
+          handleNetworkChange={handleNetworkChange}
+        />
+      </div>
     </div>
   );
 }
