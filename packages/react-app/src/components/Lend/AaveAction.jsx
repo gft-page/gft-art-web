@@ -128,6 +128,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
 
   let modal = (
     <Modal title={`${type.charAt(0).toUpperCase() + type.slice(1)} ${assetData&&assetData.symbol}`} visible={modalVisible} onOk={handleModalOk} onCancel={handleModalCancel} okButtonProps={{ disabled: poolNeedsAllowance, loading: transacting }}>
+    <Space>
     <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amount} onChange={(e) => {
       setAmount(e)
       setUseMax(false)
@@ -141,10 +142,11 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
         setBorrowType(value)
         setMaxAmount()
       }}>
-        {assetData&&<Option value="1">Stable</Option>}
+        {(assetData&&assetData.stableBorrowRateEnabled)&&<Option value="1">Stable</Option>}
         <Option value="2">Variable</Option>
       </Select>
     )}
+    </Space>
     <Divider/>
       {(balance&&assetData)&&<Row>{`Your wallet balance is ${balance&&formatUnits(balance, assetData.decimals)} ${assetData.symbol}`}</Row>}
       {(assetData&&userAssetData)&&<Row>{`Your deposit balance ${userAssetData['currentATokenBalance']&&formatUnits(userAssetData['currentATokenBalance'], assetData.decimals)} ${assetData.symbol}`}</Row>}
