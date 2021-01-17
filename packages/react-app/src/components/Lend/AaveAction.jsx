@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, InputNumber, Card, notification, Checkbox, Select, Descriptions, List, Typography, Button, Divider, Tooltip, Drawer, Modal, Table } from "antd";
-import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
+import { Space, Row, InputNumber, notification, Checkbox, Statistic, Select, Typography, Button, Divider, Modal } from "antd";
 import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { abi as IErc20 } from './abis/erc20.json'
@@ -8,10 +7,11 @@ import { abi as IErc20 } from './abis/erc20.json'
 const { Option } = Select;
 const { Text } = Typography;
 
-function AaveAction({ assetData, userAssetData, userAccountData, signer, lendingPoolContract, type, assetPrice  }) {
+function AaveAction({ assetData, userAssetData, userAccountData, signer, lendingPoolContract, type, assetPrice, setLiveAsset  }) {
 
   const [modalVisible, setModalVisible] = useState(false)
   const [transacting, setTransacting] = useState(false)
+  const [approving, setApproving] = useState(false)
 
   const [amount, setAmount] = useState(0)
   const [useMax, setUseMax] = useState(false)
@@ -37,11 +37,27 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
 
   const approve = async (_amount) => {
     console.log("approving",_amount)
+    try {
+    setApproving(true)
     let tokenContract = new ethers.Contract(assetData.tokenAddress, IErc20, signer);
     let address = await signer.getAddress()
     let amountToApprove = _amount==="0"?ethers.constants.MaxUint256:parseUnits(_amount,assetData.decimals)
     let approval = await tokenContract.approve(lendingPoolContract.address, amountToApprove)
     console.log('approval', approval)
+    setApproving(false)
+    notification.open({
+      message: 'Token transfer approved',
+      description:
+      `Aave can now move up to ${formatUnits(amountToApprove,assetData.decimals)} ${assetData.symbol}`,
+    }) } catch (e) {
+      console.log(e)
+      setApproving(false)
+      notification.open({
+        message: 'Approval failed',
+        description:
+        `${assetData.symbol} approval did not take place`,
+      })
+    }
     getTokenBalance()
   }
 
@@ -51,6 +67,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
     let amountToDeposit = parseUnits(_amount,assetData.decimals)
     let deposit = await lendingPoolContract.deposit(assetData.tokenAddress, amountToDeposit, address, 0)
     console.log('deposit', deposit)
+    return deposit
   }
 
   const withdraw = async (_amount) => {
@@ -59,6 +76,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
     let amountToWithdraw = useMax?ethers.constants.MaxUint256:parseUnits(_amount,assetData.decimals)
     let withdraw = await lendingPoolContract.withdraw(assetData.tokenAddress, amountToWithdraw, address)
     console.log(withdraw)
+    return withdraw
   }
 
   const borrow = async (_amount) => {
@@ -67,6 +85,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
     let amountToBorrow = parseUnits(_amount,assetData.decimals)
     let borrow = await lendingPoolContract.borrow(assetData.tokenAddress, amountToBorrow, borrowType, 0, address)
     console.log('borrow', borrow)
+    return borrow
   }
 
   const repay = async (_amount) => {
@@ -76,10 +95,12 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
     console.log(useMax,ethers.constants.MaxUint256, amountToRepay)
     let repay = await lendingPoolContract.repay(assetData.tokenAddress, amountToRepay, borrowType, address)
     console.log('repay', repay)
+    return repay
   }
 
   const showModal = () => {
     setModalVisible(true);
+    setLiveAsset(assetData.symbol)
   };
 
   const handleModalOk = async () => {
@@ -96,25 +117,37 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
     } if(type==="repay") {
       _transaction = await repay(_amount)
     }
+    notification.open({
+      message: `${type} complete 👻`,
+      description:
+      <><Text>{`${type}: ${amount} ${assetData.symbol}, transaction: `}</Text><Text copyable>{_transaction.hash}</Text></>,
+    });
+    getTokenBalance()
     setModalVisible(false);
     setTransacting(false)
   } catch(e) {
     console.log(e)
+    notification.open({
+      message: `${type} failed 🙁`,
+      description:
+      <><Text>{`${type}: ${amount} ${assetData.symbol} did not take place`}</Text></>,
+    });
     setTransacting(false)
   }
   };
 
-  const setMaxAmount = () => {
+  const updateMaxAmount = () => {
     if(useMax&&userAssetData&&type==="withdraw") {
       setAmount(parseFloat(formatUnits(userAssetData['currentATokenBalance'], assetData.decimals)))
     } if(useMax&&userAssetData&&type==="repay") {
-      let _repayAmount = borrowType=="2" ? userAssetData['currentVariableDebt'] : userAssetData['currentStableDebt']
+      let _repayAmount = borrowType==="2" ? userAssetData['currentVariableDebt'] : userAssetData['currentStableDebt']
       setAmount(parseFloat(formatUnits(_repayAmount, assetData.decimals)))
     }
   }
 
   const handleModalCancel = () => {
     setModalVisible(false);
+    setLiveAsset("none")
   };
 
   let poolNeedsAllowance = ['borrow','withdraw'].includes(type) ? false : (poolAllowance&&amount) ? parseFloat(formatUnits(poolAllowance, assetData.decimals)) < amount : true
@@ -127,42 +160,66 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
   let maxValue = (type === 'borrow') ? maxBorrow : (type === 'withdraw') ? maxWithdraw : null
 
   let modal = (
-    <Modal title={`${type.charAt(0).toUpperCase() + type.slice(1)} ${assetData&&assetData.symbol}`} visible={modalVisible} onOk={handleModalOk} onCancel={handleModalCancel} okButtonProps={{ disabled: poolNeedsAllowance, loading: transacting }}>
-    <Space>
-    <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amount} onChange={(e) => {
-      setAmount(e)
-      setUseMax(false)
-    }} disabled={useMax}/>
-    {['withdraw','repay'].includes(type)&&<Checkbox checked={useMax} onChange={()=>{
-      setMaxAmount()
-      setUseMax(!useMax)
-    }}>Maximum</Checkbox>}
-    {["borrow","repay"].includes(type)&&(
-      <Select defaultValue="2" style={{ width: 120 }} onChange={(value) => {
-        setBorrowType(value)
-        setMaxAmount()
-      }}>
-        {(assetData&&assetData.stableBorrowRateEnabled)&&<Option value="1">Stable</Option>}
-        <Option value="2">Variable</Option>
-      </Select>
-    )}
-    </Space>
-    <Divider/>
-      {(balance&&assetData)&&<Row>{`Your wallet balance is ${balance&&formatUnits(balance, assetData.decimals)} ${assetData.symbol}`}</Row>}
-      {(assetData&&userAssetData)&&<Row>{`Your deposit balance ${userAssetData['currentATokenBalance']&&formatUnits(userAssetData['currentATokenBalance'], assetData.decimals)} ${assetData.symbol}`}</Row>}
-      {(assetData&&userAssetData)&&<Row>{`Your variable debt is ${userAssetData['currentVariableDebt']&&formatUnits(userAssetData['currentVariableDebt'], assetData.decimals)} ${assetData.symbol}`}</Row>}
-      {(assetData&&userAssetData)&&<Row>{`Your stable debt is ${userAssetData['currentStableDebt']&&formatUnits(userAssetData['currentStableDebt'], assetData.decimals)} ${assetData.symbol}`}</Row>}
-      {(poolAllowance&&poolNeedsAllowance&&assetData)&&<Row>{`The pool's allowance is ${poolAllowance&&formatUnits(poolAllowance, assetData.decimals)} ${assetData.symbol}`}</Row>}
-      {(assetPrice&&maxBorrow)&&<Row>{`Maximum borrow is ${maxBorrow} ${assetData.symbol}`}</Row>}
-      {(assetPrice&&requiredCollateralETH)&&<Row>{`requiredCollateralETH is ${requiredCollateralETH}`}</Row>}
-      {(assetPrice&&maxWithdrawETH)&&<Row>{`maxWithdrawETH is ${maxWithdrawETH}`}</Row>}
-      {(assetPrice&&maxWithdraw)&&<Row>{`Maximum withdraw is ${maxWithdraw} ${assetData.symbol}`}</Row>}
-      {(poolNeedsAllowance&&amount)?(
+    <Modal title={`${type.charAt(0).toUpperCase() + type.slice(1)} ${assetData&&assetData.symbol}`}
+      visible={modalVisible}
+      onCancel={handleModalCancel}
+      width={800}
+      footer={[
+        <Button key="back" onClick={handleModalCancel}>
+          cancel
+        </Button>,
+        <Button key="submit" type="primary" disabled={poolNeedsAllowance} loading={transacting} onClick={handleModalOk}>
+          {type}
+        </Button>,
+      ]}
+      >
+      <Row>
+        <Space>
+          {(balance&&assetData)&&<Statistic title={`Wallet balance`} value={balance&&formatUnits(balance, assetData.decimals)} suffix={assetData.symbol}/>}
+          {(assetData)&&<Statistic title={`Deposited`} value={(userAssetData&&userAssetData['currentATokenBalance'])?parseFloat(formatUnits(userAssetData['currentATokenBalance'], assetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={assetData.symbol}/>}
+          {(assetData)&&<Statistic title={`Variable debt`} value={(userAssetData&&userAssetData['currentVariableDebt'])?parseFloat(formatUnits(userAssetData['currentVariableDebt'], assetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={assetData.symbol}/>}
+          {(assetData)&&<Statistic title={`Stable debt`} value={(userAssetData&&userAssetData['currentStableDebt'])?parseFloat(formatUnits(userAssetData['currentStableDebt'], assetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={assetData.symbol}/>}
+          {(poolAllowance&&poolNeedsAllowance&&assetData)&&<Statistic title={`Aave Pool allowance`} value={poolAllowance&&formatUnits(poolAllowance, assetData.decimals)} suffix={assetData.symbol} />}
+          {(assetPrice&&['borrow'].includes(type))&&<Statistic title={`Maximum borrow`} value={maxBorrow?maxBorrow.toPrecision(6):"0"} suffix={assetData.symbol}/>}
+          {(assetPrice&&['withdraw'].includes(type))&&<Statistic title={`Maximum withdraw`} value={maxWithdraw?maxWithdraw.toPrecision(6):"0"} suffix={assetData.symbol}/>}
+        </Space>
+      </Row>
+      <Row>
+        <Space>
+          {(assetData&&['deposit','withdraw'].includes(type))&&<Statistic title={`Deposit rate`} value={parseFloat(formatUnits(assetData.liquidityRate, 25)).toFixed(2)} suffix={"%"}/>}
+          {(assetData&&['borrow','repay'].includes(type))&&<Statistic title={`Variable rate`} value={parseFloat(formatUnits(assetData.variableBorrowRate, 25)).toFixed(2)} suffix={"%"}/>}
+          {(assetData&&['borrow','repay'].includes(type)&&assetData.stableBorrowRateEnabled)&&<Statistic title={`Stable rate`} value={parseFloat(formatUnits(assetData.stableBorrowRate, 25)).toFixed(2)} suffix={"%"}/>}
+        </Space>
+      </Row>
+      <Divider/>
+      <Space>
+      <InputNumber style={{width: '160px'}} min={0} size={'large'} value={amount} onChange={(e) => {
+        setAmount(e)
+        setUseMax(false)
+      }}
+        disabled={useMax}
+      />
+      <Typography>{assetData&&assetData.symbol}</Typography>
+      {['withdraw','repay'].includes(type)&&<Checkbox checked={useMax} onChange={()=>{
+        setUseMax(!useMax)
+        updateMaxAmount()
+      }}>Maximum</Checkbox>}
+      {["borrow","repay"].includes(type)&&(
+        <Select defaultValue="2" style={{ width: 120 }} onChange={(value) => {
+          setBorrowType(value)
+          updateMaxAmount()
+        }}>
+          {(assetData&&assetData.stableBorrowRateEnabled)&&<Option value="1">Stable</Option>}
+          <Option value="2">Variable</Option>
+        </Select>
+      )}
+      {(poolNeedsAllowance)?(
         <>
-        <Button onClick={() => {approve(amount.toString())}}>Approve Amount</Button>
-        <Button onClick={() => {approve("0")}}>Approve Max</Button>
+        <Button loading={approving} onClick={() => {approve(amount.toString())}}>Approve Amount</Button>
+        <Button loading={approving} onClick={() => {approve("0")}}>Approve Max</Button>
         </>
       ):null}
+      </Space>
     </Modal>
   )
 

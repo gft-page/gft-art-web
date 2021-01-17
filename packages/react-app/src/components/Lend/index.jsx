@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, InputNumber, Radio, Card, notification, Select, Statistic, Descriptions, List, Typography, Button, Divider, Tooltip, Drawer, Modal, Table } from "antd";
-import { SettingOutlined, RetweetOutlined } from '@ant-design/icons';
-import { ChainId, Token, WETH, Fetcher, Trade, TokenAmount, Percent } from '@uniswap/sdk'
+import { Space, Row, Col, Radio, Card, Select, Statistic, Descriptions, Typography, Button, Divider, Drawer, Table, Skeleton } from "antd";
+import { SettingOutlined } from '@ant-design/icons';
+import { Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { useBlockNumber, usePoller } from "eth-hooks";
 import { abi as IAddressProvider } from './abis/LendingPoolAddressProvider.json'
 import { abi as IDataProvider } from './abis/ProtocolDataProvider.json'
 import { abi as ILendingPool } from './abis/LendingPool.json'
-import { abi as IErc20 } from './abis/erc20.json'
 import { abi as IPriceOracle } from './abis/PriceOracle.json'
 import AaveAction from "./AaveAction"
-
-const { Option } = Select;
-const { Text } = Typography;
 
 export const POOL_ADDRESSES_PROVIDER_ADDRESS = '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
 const PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
@@ -25,7 +21,6 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
   const [settingsVisible, setSettingsVisible] = useState(false)
 
   const [userConfiguration, setUserConfiguration] = useState()
-  const [userActiveAssets, setUserActiveAssets] = useState()
   const [userAccountData, setUserAccountData] = useState()
   const [userAssetData, setUserAssetData] = useState({})
   const [userAssetList, setUserAssetList] = useState({})
@@ -33,6 +28,8 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
   const [reserveTokens, setReserveTokens] = useState()
   const [assetData, setAssetData] = useState({})
   const [assetPrices, setAssetPrices] = useState({})
+
+  const [liveAsset, setLiveAsset] = useState("none")
 
   const [showActiveAssets, setShowActiveAssets] = useState(false)
 
@@ -45,15 +42,17 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
   let priceOracleContract = new ethers.Contract(PRICE_ORACLE, IPriceOracle, signer);
 
   const getReserveData = async () => {
-    console.log('getting reserve data')
     if(reserveTokens) {
+      console.log('getting reserve data')
       reserveTokens.forEach(async (asset) => {
+        if(["none",asset.symbol].includes(liveAsset)) {
         let _reserveData = await dataProviderContract.getReserveData(asset.tokenAddress)
         let _reserveConfigurationData = await dataProviderContract.getReserveConfigurationData(asset.tokenAddress)
         let _newAssetData = {}
         _newAssetData[asset.symbol] = {...asset, ..._reserveData, ..._reserveConfigurationData}
         setAssetData(assetData => {
           return {...assetData, ..._newAssetData}})
+          }
       })
     }
   }
@@ -66,10 +65,9 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
 
 
   const getPriceData = async () => {
-    console.log('getting price data')
-    if(reserveTokens) {
+    if(reserveTokens && liveAsset==="none") {
+      console.log('getting price data')
       let assetAddresses = reserveTokens.map(a => a.tokenAddress)
-      console.log(assetAddresses)
       let prices = await priceOracleContract.getAssetsPrices(assetAddresses)
       console.log(prices)
       let _assetPrices = {}
@@ -111,17 +109,21 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
     if(userAssetList && reserveTokens) {
       let address = await signer.getAddress()
 
-      reserveTokens.forEach(async (asset) => {
+      Object.keys(userAssetList).forEach(async (asset) => {
+
+        var _assetInfo = reserveTokens.filter(function (el) {
+          return el.symbol === asset})
+
+        console.log(asset, _assetInfo)
+
         let _asset = {}
         let _data
-        if(Object.keys(userAssetList).includes(asset.symbol)) {
-          console.log('getting data!', asset)
-          _data = await dataProviderContract.getUserReserveData(asset.tokenAddress,address)
-          console.log(_data)
-        }
-        _asset[asset.symbol] = _data
+        _data = await dataProviderContract.getUserReserveData(_assetInfo[0].tokenAddress,address)
+        _asset[asset] = _data
+
         setUserAssetData(userAssetData => {
           return {...userAssetData, ..._asset}})
+
       })
       }
     }
@@ -156,7 +158,7 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
 
   usePoller(getReserveTokens, 3000)
   usePoller(getReserveData, 15000)
-  usePoller(getPriceData, 15000)
+  usePoller(getPriceData, 25000)
   usePoller(getUserInfo, 6000)
 
   usePoller(()=>{console.log(assetData)} , 6000)
@@ -200,31 +202,24 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
   {
     title: 'Deposit rate',
     key: 'depositRate',
-    render: value => parseFloat(formatUnits(value.liquidityRate, 25)).toPrecision(4) + "%",
+    render: value => parseFloat(formatUnits(value.liquidityRate, 25)).toFixed(2) + "%",
     sorter: (a,b) => parseFloat(formatUnits(a.liquidityRate, 25)) - parseFloat(formatUnits(b.liquidityRate, 25)),
     sortDirections:['descend', 'ascend']
   },
   {
     title: 'Variable rate',
     key: 'variableRate',
-    render: value => parseFloat(formatUnits(value.variableBorrowRate, 25)).toPrecision(4) + "%",
+    render: value => parseFloat(formatUnits(value.variableBorrowRate, 25)).toFixed(2) + "%",
     sorter: (a,b) => parseFloat(formatUnits(a.variableBorrowRate, 25)) - parseFloat(formatUnits(b.variableBorrowRate, 25)),
     sortDirections:['descend', 'ascend']
   },
   {
     title: 'Stable rate',
     key: 'stableRate',
-    render: value => parseFloat(formatUnits(value.stableBorrowRate, 25)).toPrecision(4) + "%",
+    render: value => parseFloat(formatUnits(value.stableBorrowRate, 25)).toFixed(2) + "%",
     sorter: (a,b) => parseFloat(formatUnits(a.stableBorrowRate, 25)) - parseFloat(formatUnits(b.stableBorrowRate, 25)),
     sortDirections:['descend', 'ascend']
   },
-  /*
-  {
-    title: 'Price (ETH)',
-    key: 'price',
-    render: value => assetPrices[value.symbol]&&formatEther(assetPrices[value.symbol]),
-  },
-  */
   {
     title: 'Deposited' + (convertNative?` (${displayCurrency})`:''),
     key: 'deposited',
@@ -245,13 +240,13 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
     key: 'actions',
     render: value => {
       return (<>
-      {value.isActive&&<AaveAction type="deposit" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
+      {value.isActive&&<AaveAction setLiveAsset={setLiveAsset} type="deposit" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
       {(Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('collateral')).includes(value.symbol)&&(
-        <AaveAction type="withdraw" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+        <AaveAction setLiveAsset={setLiveAsset} type="withdraw" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
       ))}
-      {(value.borrowingEnabled&&userAccountData&&userAccountData.availableBorrowsETH>0)&&<AaveAction type="borrow" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
+      {(value.borrowingEnabled&&userAccountData&&userAccountData.availableBorrowsETH>0)&&<AaveAction setLiveAsset={setLiveAsset} type="borrow" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
       {(Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('debt')).includes(value.symbol)&&(
-        <AaveAction type="repay" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+        <AaveAction setLiveAsset={setLiveAsset} type="repay" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
       ))}
       </>)
     }
@@ -284,8 +279,11 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
       </Drawer>
       </>
   )
-  }
+} else {
+  userAccountDisplay = (<Skeleton active/>)
+}
 
+  let missingPrices = reserveTokens && Object.keys(assetPrices).length < reserveTokens.length
 
   return (
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmWzL3TSmkMhbqGBEwyeFyWVvLmEo3F44HBMFnmTUiTfp1" width='40' alt='aaveLogo'/><Typography>Aave Lender</Typography></Space>}
@@ -297,6 +295,7 @@ function Lend({ selectedProvider, tokenListURI, ethPrice }) {
           value={displayCurrency}
           optionType="button"
           buttonStyle="solid"
+          disabled={missingPrices}
         />
         <Radio.Group
           options={[
