@@ -1,15 +1,15 @@
-# 🏗 scaffold-eth: Uniswapper
+# 🏗 scaffold-eth: Lender
 
-> a component for swapping erc20s on Uniswap (plus tokenlists + local forks of mainnet!)
+> a component for depositing & borrowing assets on Aave
 
 ---
 
 ## quickstart
 
 ```bash
-git clone -b uniswapper https://github.com/austintgriffith/scaffold-eth.git uniswapper-scaffold
+git clone -b lender https://github.com/austintgriffith/scaffold-eth.git lender-scaffold
 
-cd uniswapper-scaffold
+cd lender-scaffold
 ```
 
 ```bash
@@ -37,5 +37,10 @@ This branch uses a local fork of mainnet, which is easy to do with Hardhat ([see
 
 📱 Open http://localhost:3000 to see the app
 
+- Send your burner wallet some ETH using the faucet
+- Swap some ETH for DAI
+- Go to "Lend" and Deposit DAI into Aave
+- Borrow whatever assets you want!
+
 Notes:
-- This widget uses [tokenlists](https://tokenlists.org/) to import the erc20s of your choice
+- The on-chain requests are quite heavy for this branch, so it can sometimes take the mainnet fork a little while to get going - you may need to refresh several times before everything is cached.
