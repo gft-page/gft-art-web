@@ -3,7 +3,8 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu } from "antd";
+import { Row, Col, Button, Menu, List } from "antd";
+import { Address, Balance } from "./components";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -13,6 +14,8 @@ import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
+import { id } from "@ethersproject/hash";
+import { keccak256 } from '@ethersproject/keccak256'
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -101,6 +104,17 @@ function App(props) {
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
+  const [revealHash, setRevealHash] = useState('0');
+
+  const committedEvents = useEventListener(readContracts, "YourContract", "CommitHash", localProvider, 1);
+  console.log("Commit events:",committedEvents)
+
+  //📟 Listen for broadcast YourContract
+  const revealedEvents = useEventListener(readContracts, "YourContract", "RevealHash", localProvider, 1);
+  console.log("Reveal events:", revealedEvents)
+
+  const random = useContractReader(readContracts,"YourContract", "getRandom", [])
+  console.log("random number",random)
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -152,6 +166,66 @@ function App(props) {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
+
+           
+            <h4>Random Number: {random && random.toString()}</h4>
+
+
+            <div style={{margin:8}}>
+              <Button onClick={async ()=>{
+                let message = id(Math.random().toString())
+                let revealHash = await readContracts["YourContract"]["getHash"](message);
+                setRevealHash(message)
+                tx( writeContracts.YourContract.commit(revealHash) )
+              }}>Commit</Button>
+            </div>
+
+            <div style={{margin:8}}>
+              <Button onClick={()=>{
+                /* look how you call setPurpose on your contract: */
+                tx(writeContracts.YourContract.reveal(revealHash) )
+              }}>Reveal</Button>
+            </div>
+
+            <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+              <h2>Committed Events:</h2>
+              <List
+                bordered
+                dataSource={committedEvents}
+                renderItem={(item) => {
+                  return (
+                    <List.Item>
+                      <Address
+                          value={item[0]}
+                          ensProvider={mainnetProvider}
+                          fontSize={16}
+                        /> => 
+                      {item[1]}
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
+
+            <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+              <h2>Revealed Events:</h2>
+              <List
+                bordered
+                dataSource={revealedEvents}
+                renderItem={(item) => {
+                  return (
+                    <List.Item>
+                      <Address
+                          value={item[0]}
+                          ensProvider={mainnetProvider}
+                          fontSize={16}
+                        /> => 
+                      {item[1]}
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
             <Contract
               name="YourContract"
               signer={userProvider.getSigner()}

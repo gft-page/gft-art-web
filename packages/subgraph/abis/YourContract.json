@@ -85,11 +85,6 @@
         "internalType": "bytes32",
         "name": "dataHash",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint64",
-        "name": "block_number",
-        "type": "uint64"
       }
     ],
     "name": "commit",
@@ -140,6 +135,19 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRandom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

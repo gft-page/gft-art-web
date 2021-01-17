@@ -15,16 +15,16 @@ contract YourContract {
     bool revealed;
   }
 
-  uint8 public max = 100;
+  uint8 public max = 6;
+
+  uint8 random;
   
   mapping (address => Commit) public commits;
   
-  function commit(bytes32 dataHash, uint64 block_number) public {
-    require(block_number > block.number,"CommitReveal::reveal: Already revealed");
+  function commit(bytes32 dataHash) public {
     commits[msg.sender].commit = dataHash;
-    commits[msg.sender].block = block_number;
+    commits[msg.sender].block = uint64(block.number + 1);
     commits[msg.sender].revealed = false;
-    console.log(block.number, block_number);
     emit CommitHash(msg.sender,commits[msg.sender].commit,commits[msg.sender].block);
   }
 
@@ -41,7 +41,7 @@ contract YourContract {
 
     bytes32 blockHash = blockhash(commits[msg.sender].block);
 
-    uint8 random = uint8(uint(keccak256(abi.encodePacked(blockHash,revealHash))))%max;
+    random = uint8(uint(keccak256(abi.encodePacked(blockHash,revealHash))))%max;
     emit RevealHash(msg.sender,revealHash,random);
     console.log("Random: ", random);
   }
@@ -58,6 +58,10 @@ contract YourContract {
 
   function getSaltedHash(bytes32 data,bytes32 salt) public view returns(bytes32){
     return keccak256(abi.encodePacked(address(this), data, salt));
+  }
+
+  function getRandom() public view returns(uint) {
+    return random;
   }
 
   event RevealHash(address sender, bytes32 revealHash, uint8 random);
