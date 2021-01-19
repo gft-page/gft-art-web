@@ -1,7 +1,4 @@
-# 🏗 scaffold-eth
-
-> is everything you need to get started building decentralized applications powered by smart contracts
-
+# Grid Game on xDAI
 ---
 
 ## quickstart
