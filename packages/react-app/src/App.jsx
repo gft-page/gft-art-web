@@ -44,12 +44,12 @@ const blockExplorer = "https://etherscan.io/"//"https://blockscout.com/poa/xdai/
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
 //const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
 // const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" +    INFURA_ID)
+const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
 // 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://localhost:8545"; // 
-const xdaiProviderUrl = "http://rpc.xdaichain.com";
+const localProviderUrl = "http://localhost:8545"; 
+const xdaiProviderUrl = "http://dai.poa.network";
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);

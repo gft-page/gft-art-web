@@ -72,7 +72,7 @@ module.exports = {
       },
     },
     xdai: {
-      url: 'http://rpc.xdaichain.com',
+      url: 'http://dai.poa.network',
       gasPrice: 1000000000,
       accounts: {
         mnemonic: mnemonic(),
