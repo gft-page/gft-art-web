@@ -10,7 +10,8 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 16 vvvv
+  const factory = await deploy("ProxyFactory") // <-- add in constructor args like line 16 vvvv
+  const proxy = await deploy("MinimalProxy") // <-- add in constructor args like line 16 vvvv
 
 
 
