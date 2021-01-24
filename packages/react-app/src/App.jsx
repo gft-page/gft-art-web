@@ -276,7 +276,7 @@ function App(props) {
           </div>
 
           <div style={{padding:8}}>
-            <Button type={ balanceStaked ? "success" : "primary"} onClick={()=>{
+            <Button type={"primary"} onClick={()=>{
               tx( writeContracts.Staker.stake({value: parseEther("0.01")}) )
             }}>🥩  Stake 0.01 Kovan!</Button>
           </div>
