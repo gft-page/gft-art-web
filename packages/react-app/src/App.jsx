@@ -37,7 +37,7 @@ const humanizeDuration = require("humanize-duration");
 const DEBUG = true
 
 // 🔭 block explorer URL
-const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
+const blockExplorer =  "https://kovan.etherscan.io/"
 
 // 🛰 providers
 if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
@@ -47,11 +47,11 @@ const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFU
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 console.log("window.location.hostname",window.location.hostname)
 // 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = "http://"+window.location.hostname+":8545"; // for xdai: https://dai.poa.network
+const localProviderUrl =  "http://localhost:8545"
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
+const localProvider = new JsonRpcProvider("https://kovan.infura.io/v3/"+INFURA_ID)
 
 
 
@@ -61,7 +61,7 @@ function App(props) {
   const price = useExchangePrice(mainnetProvider); //1 for xdai
 
   /* 🔥 this hook will get the price of Gas from ⛽️ EtherGasStation */
-  const gasPrice = useGasPrice("fast"); //1000000000 for xdai
+  const gasPrice = 1000000000//useGasPrice("fast"); //1000000000 for xdai
 
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
@@ -168,7 +168,7 @@ function App(props) {
 
   let faucetHint = ""
   const [ faucetClicked, setFaucetClicked ] = useState( false );
-  if(!faucetClicked&&localProvider&&localProvider.getSigner()&&yourLocalBalance&&formatEther(yourLocalBalance)<=0){
+  if(!faucetClicked&&localProvider&&localProvider._network&&localProvider._network.chainId==31337&&yourLocalBalance&&formatEther(yourLocalBalance)<=0){
     faucetHint = (
       <div style={{padding:16}}>
         <Button type={"primary"} onClick={()=>{
@@ -249,8 +249,8 @@ function App(props) {
 
           <div style={{padding:8}}>
             <Button type={ balanceStaked ? "success" : "primary"} onClick={()=>{
-              tx( writeContracts.Staker.stake({value: parseEther("0.5")}) )
-            }}>🥩  Stake 0.5 ether!</Button>
+              tx( writeContracts.Staker.stake({value: parseEther("0.01")}) )
+            }}>🥩  Stake 0.01 Kovan!</Button>
           </div>
 
 

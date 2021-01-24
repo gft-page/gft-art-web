@@ -14,7 +14,6 @@ const main = async () => {
   const stakerContract = await deploy("Staker",[ exampleExternalContract.address ]) // <-- add in constructor args like line 16 vvvv
 
 
-
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
   // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
