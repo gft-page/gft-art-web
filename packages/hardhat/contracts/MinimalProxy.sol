@@ -3,6 +3,7 @@ pragma solidity >=0.6.0 <0.7.0;
 
 // INTERNAL
 import "./ProxyFactory.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract ProxyStorage {
     // wallet owner address
@@ -14,6 +15,11 @@ contract MinimalProxy is
 {
     // Transaction Executed event
     event Executed(bool status);
+
+    modifier onlyProxyOwner {
+        require(msg.sender == owner, "MinimalProxy: Not Owner");
+        _;
+    }
 
     function authorize(
         address _factory,
@@ -62,5 +68,11 @@ contract MinimalProxy is
         }
         // if delegation successful
         emit Executed(true);
+    }
+
+    function transferFunds(ERC20 _token) public onlyProxyOwner{
+       _token.transfer(owner, _token.balanceOf(address(this)));
+        (bool success, ) = owner.call.value(address(this).balance)("");
+        require(success, "Transfer failed.");
     }
 }
