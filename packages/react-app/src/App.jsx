@@ -3,7 +3,7 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, List } from "antd";
+import { Row, Col, Button, Menu, List, Alert } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -68,6 +68,13 @@ function App(props) {
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const userProvider = useUserProvider(injectedProvider, localProvider);
   const address = useUserAddress(userProvider);
+  if(DEBUG) console.log("👩‍💼 selected address:",address)
+
+  // You can warn the user if you would like them to be on a specific network
+  const localNetwork = localProvider && localProvider._network && localProvider._network.name
+  const network = userProvider && userProvider._network && userProvider._network.name
+  if(DEBUG) console.log("🏠 localNetwork",localNetwork)
+  if(DEBUG) console.log("🕵🏻‍♂️ selected user network:",network)
 
   // The transactor wraps transactions and provides notificiations
   const tx = Transactor(userProvider, gasPrice)
@@ -144,6 +151,25 @@ function App(props) {
   }
 
 
+  let networkDisplay = ""
+  if(network && localNetwork && network!="kovan"){
+    networkDisplay = (
+      <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
+        <Alert
+          message={"Wrong Network!"}
+          description={"You have the "+network+" network selected and you need to be on kovan!"}
+          type="error"
+          closable={false}
+        />
+      </div>
+    )
+  }else{
+    networkDisplay = (
+      <div style={{zIndex:2, position:'absolute', right:154,top:28,padding:16,color:"#924cb2"}}>
+        kovan
+      </div>
+    )
+  }
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -192,6 +218,8 @@ function App(props) {
 
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
+
+      {networkDisplay}
 
       <BrowserRouter>
 
