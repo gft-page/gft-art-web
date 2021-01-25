@@ -11,8 +11,10 @@ export default function useExternalContractLoader(provider, address, ABI, option
   const [contract, setContract] = useState();
   useEffect(() => {
     async function loadContract() {
+      console.log("CHECK")
       if (typeof provider !== "undefined" && address && ABI) {
-        try {
+        console.log("YPU")
+        //try {
           // we need to check to see if this provider has a signer or not
           let signer;
           const accounts = await provider.listAccounts();
@@ -21,14 +23,14 @@ export default function useExternalContractLoader(provider, address, ABI, option
           } else {
             signer = provider;
           }
-
+          console.log("CREATING CONTER!!!!>>>>>",address,ABI,signer)
           const customContract = new Contract(address, ABI, signer);
           if(optionalBytecode) customContract.bytecode = optionalBytecode
 
           setContract(customContract);
-        } catch (e) {
-          console.log("ERROR LOADING EXTERNAL CONTRACT AT "+address+" (check provider, address, and ABI)!!", e);
-        }
+        //} catch (e) {
+        //  console.log("ERROR LOADING EXTERNAL CONTRACT AT "+address+" (check provider, address, and ABI)!!", e);
+        //}
       }
     }
     loadContract();

@@ -44,8 +44,12 @@ export default function Contract({ customContract, account, gasPrice, signer, pr
     contract = customContract
   }
 
+  console.log("contract:",contract)
+
   const address = contract ? contract.address : "";
   const contractIsDeployed = useContractExistsAtAddress(provider, address);
+
+  console.log("contractIsDeployed",contractIsDeployed, address)
 
   const displayedContractFunctions = useMemo(
     () =>

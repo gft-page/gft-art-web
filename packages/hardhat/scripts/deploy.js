@@ -10,11 +10,11 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const yourToken = await deploy("YourToken") // <-- add in constructor args like line 16 vvvv
+  //const yourToken = await deploy("YourToken") // <-- add in constructor args like line 16 vvvv
 
-  const vendor = await deploy("Vendor",[yourToken.address])
+  const vendor = await deploy("Vendor")
 
-  await yourToken.transfer(vendor.address,utils.parseEther("100"))
+  //await yourToken.transfer(vendor.address,utils.parseEther("100"))
 
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")

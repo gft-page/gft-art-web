@@ -3,12 +3,12 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu } from "antd";
+import { Row, Col, Button, Menu, List } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, AddressInput } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -31,7 +31,7 @@ import { Hints, ExampleUI, Subgraph } from "./views"
     You can also bring in contract artifacts in `constants.js`
     (and then use the `useExternalContractLoader()` hook!)
 */
-import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
+import { INFURA_ID, DAI_ADDRESS, DAI_ABI, TOKEN_ABI } from "./constants";
 
 // 😬 Sorry for all the console logging 🤡
 const DEBUG = true
@@ -100,6 +100,16 @@ function App(props) {
   // Then read your DAI balance like:
   //const myMainnetBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
   //
+
+  const newMarketEvents = useEventListener(readContracts, "Vendor", "NewMarket", localProvider, 1);
+  console.log("📟 newMarketEvents:",newMarketEvents)
+
+  //we'll use a state variable to track some token address
+  // then the user can dynamically point the cool contract component at a dynamic token
+  const [ someTokenAddress, setSomeTokenAddress ] = useState()
+
+  const randomTokenContract = useExternalContractLoader(localProvider, someTokenAddress, TOKEN_ABI)
+
 
   // keep track of a variable from the contract in the local React state:
   const purpose = useContractReader(readContracts,"YourContract", "purpose")
@@ -177,6 +187,14 @@ function App(props) {
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
+
+                <Contract
+                  name="YourToken"
+                  signer={userProvider.getSigner()}
+                  provider={localProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                />
             */}
             <Contract
               name="Vendor"
@@ -186,15 +204,61 @@ function App(props) {
               blockExplorer={blockExplorer}
             />
 
+
+
+            <List
+              bordered
+              dataSource={newMarketEvents}
+              renderItem={(item) => {
+                return (
+                  <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
+                   Creator:<Address
+                        value={item[1]}
+                        ensProvider={mainnetProvider}
+                        fontSize={16}
+                      />
+                    Token:<Address
+                        value={item[0]}
+                        ensProvider={mainnetProvider}
+                        fontSize={16}
+                      />
+
+                    {item[2]}
+                    {item[3]}
+                  </List.Item>
+                )
+              }}
+            />
+
+            <div style={{width:500,margin:"auto",padding:16}}>
+              Token Contract Address: <AddressInput
+                autoFocus
+                ensProvider={mainnetProvider}
+                placeholder="any token address"
+                value={someTokenAddress}
+                onChange={setSomeTokenAddress}
+              />
+            </div>
             <Contract
-              name="YourToken"
+              name={someTokenAddress}
+              customContract={randomTokenContract}
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
 
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
+
+
+            { /*   <Contract
+                name={""}
+                signer={userProvider.getSigner()}
+                provider={localProvider}
+                address={item[0]}
+                blockExplorer={blockExplorer}
+                show= {"balanceOf","transferFrom","transfer"}
+              />
+Uncomment to display and interact with an external contract (DAI on mainnet):
             <Contract
               name="DAI"
               customContract={mainnetDAIContract}
