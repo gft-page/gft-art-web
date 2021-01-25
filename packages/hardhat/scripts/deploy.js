@@ -9,8 +9,14 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
+  // You only need to deploy your library once and then it is available to
+  //   "link" into deployments of yourContract
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 16 vvvv
+  const yourLib = await deploy("YourLib")
+
+  const libAddress = yourLib.address //hard code this and comment out the line above after the first deploy
+
+  const yourContract = await deploy("YourContract",[],{},{ "YourLib": yourLib.address }) // <-- add in constructor args like line 16 vvvv
 
 
 
@@ -47,11 +53,11 @@ const main = async () => {
   );
 };
 
-const deploy = async (contractName, _args = [], overrides = {}) => {
+const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) => {
   console.log(` 🛰  Deploying: ${contractName}`);
 
   const contractArgs = _args || [];
-  const contractArtifacts = await ethers.getContractFactory(contractName);
+  const contractArtifacts = await ethers.getContractFactory(contractName,{libraries: libraries});
   const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
   const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
