@@ -114,7 +114,11 @@ Look for the [HardHat](https://hardhat.org) console.log() output in the `yarn ru
   - [📦 Components:](#-components)
   - [📤 Save to your Git](#-save-to-your-git)
   - [🛳 Ship it!](#-ship-it)
-  - [## Join Us](#-join-us)
+  - [Join Us!](#join-us)
+  - [### Contribution guide](#-contribution-guide)
+    - [Branch submission](#branch-submission)
+    - [Tips and Tricks](#tips-and-tricks)
+  - [### PR Rubric](#-pr-rubric)
 
 
 
@@ -480,6 +484,39 @@ OR
 
 yarn run ipfs
 ```
+## Join Us!
+Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA)  to ask questions and find others building with 🏗 scaffold-eth!
+
+### Contribution guide
+---
+The following is a set of guidelines for contributing to Scaffold-eth. 
+
+User your best judement when interpreting these rules and feel free to propose changes to this document in a pull request.
+We're really glad you're reading this because we need volunteer developers to help this project flourish
+cd into react-app to yarn add things too it
+> **Note:** Please don't file an issue to ask a question. You'll get faster results by using the resources below.
+> 
+> Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA)  to ask questions and find others building with 🏗 scaffold-eth!
+### Branch submission
+
+Readme requirements:
+
+### Tips and Tricks
+TODO
+how to add screenshots to readme
+
+### PR Rubric
+---
+
+| Criterion | Excellent | Good | Adequate | Developing |
+|---|---|---|---|---|
+| **Program Specifications / Correctness** | No errors, program always works correctly and meets the specification(s). | Minor details of the program specification are violated, program functions incorrectly for some inputs. | Significant details of the specification are violated, program often exhibits incorrect behavior. | Program only functions correctly in very limited cases or not at all. |
+| **Readability** | No errors, code is clean, understandable, and well-organized. | Minor issues with consistent indentation, use of whitespace, variable naming, or general organization. | At least one major issue with indentation, whitespace, variable names, or organization. | Major problems with at three or four of the readability subcategories. |
+| **Code Efficiency** | No errors, code uses the best approach in every case. | N/A | Code uses poorly-chosen approaches in at least one place. | Many things in the code could have been accomplished in an easier, faster, or otherwise better fashion. |
+| **Documentation** | No errors, code is well-commented. | One or two places that could benefit from comments are missing them or the code is overly commented. | File header missing, complicated lines or sections of code uncommented or lacking meaningful comments. | No file header or comments present. |
+| **Pull Request Specifications** | No errors | N/A | Minor details of the assignment specification are violated, such as files named incorrectly or extra instructions slightly misunderstood. | Significant details of the specification are violated, such as extra instructions ignored or entirely misunderstood. |
+
+
 <h1>built with 🏗 scaffold-eth:</h1>
 
 
@@ -528,12 +565,5 @@ Remember someone permanently on the blockchain. Write an obituary and upload a p
 ---
 
 ^^^ ⛏ <b>PR</b> your 🏗 scaffold-eth project in above!!! ^^^
-
----
-
-## Join Us
----
-
-Join the telegram [support chat 💬](https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA)  to ask questions and find others building with 🏗 scaffold-eth!
 
 ---
