@@ -1,1 +1,1 @@
-module.exports = ["MinimalProxy","ProxyFactory"];
+module.exports = ["MinimalProxy","MockDai","ProxyFactory"];

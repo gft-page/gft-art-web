@@ -164,11 +164,11 @@ function App(props) {
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item>
           <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
+            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">Create Minimal Proxy</Link>
           </Menu.Item>
-          <Menu.Item key="/subgraph">
+          {/* <Menu.Item key="/subgraph">
             <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
-          </Menu.Item>
+          </Menu.Item> */}
         </Menu>
 
         <Switch>
@@ -178,8 +178,23 @@ function App(props) {
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
-            <Contract
-              name="YourContract"
+             <Contract
+              name="ProxyFactory"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+             <Contract
+              name="MinimalProxy"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+
+             <Contract
+              name="MockDai"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
@@ -220,14 +235,14 @@ function App(props) {
               setPurposeEvents={setPurposeEvents}
             />
           </Route>
-          <Route path="/subgraph">
+          {/* <Route path="/subgraph">
             <Subgraph
             subgraphUri={props.subgraphUri}
             tx={tx}
             writeContracts={writeContracts}
             mainnetProvider={mainnetProvider}
             />
-          </Route>
+          </Route> */}
         </Switch>
       </BrowserRouter>
 

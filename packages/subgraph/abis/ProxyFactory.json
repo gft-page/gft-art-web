@@ -47,11 +47,6 @@
         "internalType": "address",
         "name": "implementation",
         "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_data",
-        "type": "bytes"
       }
     ],
     "name": "deploy",

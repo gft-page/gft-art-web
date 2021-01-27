@@ -12,6 +12,7 @@ const main = async () => {
 
   const factory = await deploy("ProxyFactory") // <-- add in constructor args like line 16 vvvv
   const proxy = await deploy("MinimalProxy") // <-- add in constructor args like line 16 vvvv
+  const dai = await deploy("MockDai") // <-- add in constructor args like line 16 vvvv
 
 
 

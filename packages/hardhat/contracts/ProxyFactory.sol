@@ -26,18 +26,13 @@ contract ProxyFactory {
 
     function deploy(
         uint256 salt,
-        address implementation,
-        bytes memory _data
+        address implementation
     ) public {
         address minimalProxy = Create2.deploy(
             0,
             keccak256(abi.encodePacked(salt)),
             getContractCreationCode(implementation)
         );
-        if (_data.length > 0) {
-            (bool success, ) = minimalProxy.call(_data);
-            require(success);
-        }
         registry[msg.sender] = minimalProxy;
         require(address(this) != address(0), "invalid address");
         address payable wallet = address(uint160(minimalProxy));

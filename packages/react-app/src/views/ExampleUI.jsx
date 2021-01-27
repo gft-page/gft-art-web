@@ -3,33 +3,54 @@
 import React, { useState } from "react";
 import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progress, Spin } from "antd";
 import { SyncOutlined } from '@ant-design/icons';
-import { Address, Balance } from "../components";
+import { Address, Balance , EtherInput} from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { useContractReader, useEventListener } from "../hooks";
 
 export default function ExampleUI({purpose, setPurposeEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
-  const [newPurpose, setNewPurpose] = useState("loading...");
-
+  const [amount, setAmount] = useState();
+  const zeroAddress = '0x0000000000000000000000000000000000000000';
+  const yourProxy = useContractReader(readContracts,"ProxyFactory", "registry", [address]);
+  const proxyDAIBalance = useContractReader(readContracts, "MockDai", "balanceOf", [yourProxy]);
+  
+  const factoryEvents = useEventListener(readContracts, "ProxyFactory", "ProxyCreated", localProvider, 1);
   return (
     <div>
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
-        <h2>Example UI:</h2>
+        <h2>Minimal Proxy and Proxy Factory Demonstration:</h2>
 
-        <h4>purpose: {purpose}</h4>
 
         <Divider/>
-
-        <div style={{margin:8}}>
-          <Input onChange={(e)=>{setNewPurpose(e.target.value)}} />
+        <h4>Your Proxy DAI Balance</h4>
+        {proxyDAIBalance && formatEther(proxyDAIBalance)}
+        {yourProxy !== zeroAddress &&  <div style={{margin:8}}>
+        <EtherInput
+  price={price}
+  value={amount}
+  onChange={value => {
+    setAmount(value);
+  }}
+/> 
           <Button onClick={()=>{
-            console.log("newPurpose",newPurpose)
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose(newPurpose) )
-          }}>Set Purpose</Button>
+            tx( writeContracts.MockDai.transfer(yourProxy, parseEther(amount)) )
+          }}>Transfer DAI to Proxy</Button>
         </div>
+        }
+
+{yourProxy == zeroAddress &&  <div style={{margin:8}}>
+          <Button onClick={()=>{
+            /* look how you call setPurpose on your contract: */
+            tx( writeContracts.ProxyFactory.deploy(parseInt(Math.random()), writeContracts.MinimalProxy.address))
+          }}>Deploy Proxy</Button>
+        </div>
+        }
+
+
 
 
         <Divider />
@@ -73,12 +94,7 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
 
 
 
-        Your Contract Address:
-        <Address
-            value={readContracts?readContracts.YourContract.address:readContracts}
-            ensProvider={mainnetProvider}
-            fontSize={16}
-        />
+
 
         <Divider />
 
@@ -136,16 +152,16 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
         <h2>Events:</h2>
         <List
           bordered
-          dataSource={setPurposeEvents}
+          dataSource={factoryEvents}
           renderItem={(item) => {
             return (
               <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
-                <Address
+               Proxy =>{item[0]}
+                {/* <Address
                     value={item[0]}
                     ensProvider={mainnetProvider}
                     fontSize={16}
-                  /> =>
-                {item[1]}
+                  />  */}
               </List.Item>
             )
           }}
