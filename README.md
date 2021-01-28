@@ -2,6 +2,8 @@
 
 > a component for swapping erc20s on Uniswap (plus tokenlists + local forks of mainnet!)
 
+Read the [medium article](https://azfuller20.medium.com/swap-with-uniswap-wip-f15923349b3d)!
+
 ---
 
 ## quickstart
