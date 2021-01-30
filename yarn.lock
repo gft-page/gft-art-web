@@ -1234,6 +1234,11 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
+"@chainlink/contracts@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.1.4.tgz#e66fa39916c3644576dcf54673150b4d12e831ad"
+  integrity sha512-hPALDK+KIbnZ1bMctjifruaW6kWXnkq6U4wigdOFP99Bt0QzSuUa65mqsXE5ri7n7hvHbCX/2Kl3BUUfaexeuQ==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"

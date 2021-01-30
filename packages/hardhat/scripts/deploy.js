@@ -10,7 +10,9 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+  const yourContract = await deploy("YourContract"); // <-- add in constructor args like line 19 vvvv
+  //const apiConsumer = await deploy("ApiConsumer"); // <-- getting artifact error ????
+  const coinGeckoConsumer = await deploy("CoinGeckoConsumer");
 
   //const secondContract = await deploy("SecondContract")
 

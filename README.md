@@ -1,6 +1,6 @@
 # 🏗 scaffold-eth
 
-> is everything you need to get started building decentralized applications powered by smart contracts
+> is everything you need to get started building decentralized applications powered by smart contracts using Chainlink price feeds and vrf
 
 ---
 
