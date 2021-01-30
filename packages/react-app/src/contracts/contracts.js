@@ -1,1 +1,1 @@
-module.exports = ["CoinGeckoConsumer","YourContract"];
+module.exports = ["CoinGeckoConsumer","RandomNumberConsumer","YourContract"];

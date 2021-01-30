@@ -235,6 +235,14 @@ function App(props) {
               blockExplorer={blockExplorer}
             />
 
+            {/* <Contract
+              name="RandomNumberConsumer"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            /> */}
+
 
             { /* uncomment for a second contract:
             <Contract

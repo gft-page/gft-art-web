@@ -13,6 +13,7 @@ const main = async () => {
   const yourContract = await deploy("YourContract"); // <-- add in constructor args like line 19 vvvv
   //const apiConsumer = await deploy("ApiConsumer"); // <-- getting artifact error ????
   const coinGeckoConsumer = await deploy("CoinGeckoConsumer");
+  const randomNumberConsumer = await deploy("RandomNumberConsumer");
 
   //const secondContract = await deploy("SecondContract")
 
