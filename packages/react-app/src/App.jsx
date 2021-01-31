@@ -190,6 +190,12 @@ function App(props) {
           </Route>
           <Route exact path="/aaveth">
             <AavEth selectedProvider={userProvider}/>
+            <Contract
+              name="AavEth"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+            />
           </Route>
         </Switch>
       </BrowserRouter>

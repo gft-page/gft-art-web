@@ -3,24 +3,28 @@ pragma solidity >=0.6.0 <0.9.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
 import "./interfaces/ILendingPool.sol";
+import "./interfaces/ILendingPoolAddressesProvider.sol";
+import "./interfaces/IProtocolDataProvider.sol";
 import "./interfaces/IUniswapV2Router02.sol";
 
 contract AavEth {
 
   constructor() public {
-    lendingPool = ILendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
+    lendingPoolAddressProvider = ILendingPoolAddressesProvider(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5);
     uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
     wethAddress = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   }
 
-  ILendingPool public lendingPool;
+  ILendingPoolAddressesProvider public lendingPoolAddressProvider;
   IUniswapV2Router02 public uniswapRouter;
   address public wethAddress;
+
+  bytes32 dataProviderLookup = 0x0100000000000000000000000000000000000000000000000000000000000000;
 
   event Deposit(address sender, address asset, uint256 EthAmount, uint256 assetAmount);
   event Withdraw(address sender, address asset, uint256 EthAmount, uint256 assetAmount);
 
-  function depositEthForAToken(uint amountOutMin, address[] calldata path, address to, uint deadline) public payable {
+  function depositEthForAToken(uint amountOutMin, address[] calldata path, address to, uint deadline) public payable returns (uint amountAsset) {
 
       address _fromAsset = path[0];
       address _toAsset = path[path.length - 1];
@@ -32,9 +36,14 @@ contract AavEth {
 
       uint _amount = amounts[amounts.length - 1];
       IERC20 _asset = IERC20(_toAsset);
-      _asset.approve(address(lendingPool), _amount);
 
-      lendingPool.deposit(
+      address _lendingPoolAddress = lendingPoolAddressProvider.getLendingPool();
+
+      _asset.approve(_lendingPoolAddress, _amount);
+
+      ILendingPool _lendingPool = ILendingPool(_lendingPoolAddress);
+
+      _lendingPool.deposit(
         _toAsset,
         _amount,
         to,
@@ -42,6 +51,12 @@ contract AavEth {
       );
 
       emit Deposit(to, _toAsset, msg.value, _amount);
+
+      return _amount;
+  }
+
+  function getProtocolDataProvider() external view returns (address)  {
+    return lendingPoolAddressProvider.getAddress(dataProviderLookup);
   }
 
 }
