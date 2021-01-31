@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend } from ".
 import { SimpleLend } from "./views";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints } from "./views"
+import { Hints, AavEth } from "./views"
 
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 const { Text, Title, Paragraph } = Typography;
@@ -132,8 +132,8 @@ function App(props) {
           <Menu.Item key="/simple-lend">
             <Link onClick={()=>{setRoute("/simple-lend")}} to="/simple-lend">SimpleLend</Link>
           </Menu.Item>
-          <Menu.Item key="/wrap">
-            <Link onClick={()=>{setRoute("/wrap")}} to="/wrap">Wrap</Link>
+          <Menu.Item key="/aaveth">
+            <Link onClick={()=>{setRoute("/aaveth")}} to="/aaveth">AavEth</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -188,9 +188,8 @@ function App(props) {
               />
             </Row>
           </Route>
-          <Route exact path="/wrap">
-            <Row justify="center">
-            </Row>
+          <Route exact path="/aaveth">
+            <AavEth selectedProvider={userProvider}/>
           </Route>
         </Switch>
       </BrowserRouter>

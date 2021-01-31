@@ -30,7 +30,7 @@ function SimpleLend({ selectedProvider, ethPrice }) {
 
   const [reserveTokens, setReserveTokens] = useState()
   const [assetData, setAssetData] = useState({})
-  const [assetPrices, setAssetPrices] = useState({})
+  const [assetPrice, setAssetPrice] = useState()
 
   const [liveAsset, setLiveAsset] = useState("DAI")
 
@@ -76,6 +76,17 @@ function SimpleLend({ selectedProvider, ethPrice }) {
   useEffect(() => {
     getReserveData()
   }, [reserveTokens])
+
+  const getAssetPrice = async () => {
+    if(reserveTokens && liveAsset) {
+      console.log('getting price data')
+      var asset = reserveTokens.filter(function (el) {
+        return el.symbol === liveAsset})[0]
+      let _price = await priceOracleContract.getAssetPrice(asset.tokenAddress)
+      console.log(_price)
+      setAssetPrice(_price)
+    }
+  }
 
   const getTokenBalance = async () => {
     if(assetData&&assetData.tokenAddress&&signer) {
@@ -143,10 +154,12 @@ function SimpleLend({ selectedProvider, ethPrice }) {
   usePoller(getReserveData, 15000)
   usePoller(getUserAssetData, 6000)
   usePoller(getUserInfo, 6000)
+  usePoller(getAssetPrice, 5500)
 
   useEffect(() => {
     getReserveData()
     getUserAssetData()
+    getAssetPrice()
   },[liveAsset])
 
   const approve = async (_amount) => {
@@ -239,7 +252,10 @@ function SimpleLend({ selectedProvider, ethPrice }) {
 
   let poolNeedsAllowance = (poolAllowance&&amount) ? parseFloat(formatUnits(poolAllowance, assetData.decimals)) < amount : false
 
-  console.log(!amount,!userAssetData,assetData&&userAssetData&&parseFloat(formatUnits(userAssetData['currentATokenBalance'], assetData.decimals))===0)
+  //let maxBorrow = (userAccountData&&assetPrice) ? parseFloat(formatUnits(userAccountData.availableBorrowsETH)) / parseFloat(formatUnits(assetPrice)) : null
+  let requiredCollateralETH = (userAccountData&&assetPrice) ? parseFloat(formatUnits(userAccountData.totalDebtETH)) / parseFloat(formatUnits(userAccountData.ltv, 4)) : 0.0
+  let maxWithdrawETH = (userAccountData&&requiredCollateralETH) ? (parseFloat(formatUnits(userAccountData.totalCollateralETH)) - requiredCollateralETH) : 0.0
+  let maxWithdraw = (assetPrice&&maxWithdrawETH) ? maxWithdrawETH / parseFloat(formatUnits(assetPrice)) : 0.0
 
   let userAccountDisplay
   if(userAccountData&&assetData) {
@@ -312,8 +328,6 @@ function SimpleLend({ selectedProvider, ethPrice }) {
 } else {
   userAccountDisplay = (<Skeleton active/>)
 }
-
-  let missingPrices = reserveTokens && Object.keys(assetPrices).length < reserveTokens.length
 
   return (
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmWzL3TSmkMhbqGBEwyeFyWVvLmEo3F44HBMFnmTUiTfp1" width='40' alt='aaveLogo'/><Typography>Lender</Typography></Space>}
