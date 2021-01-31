@@ -1,1 +1,1 @@
-module.exports = ["Attack","Bank","HoneyPot","Logger"];
+module.exports = ["Attack","Bank","HoneyPot"];

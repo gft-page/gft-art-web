@@ -10,10 +10,9 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const logger = await deploy("Logger");
-  const bank = await deploy("Bank", [logger.address]);
+  const honeyPot = await deploy("HoneyPot");
+  const bank = await deploy("Bank", [honeyPot.address]);
   await deploy("Attack", [bank.address]);
-  await deploy("HoneyPot");
 
   //const secondContract = await deploy("SecondContract")
 

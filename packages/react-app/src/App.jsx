@@ -197,9 +197,6 @@ function App(props) {
           <Menu.Item key="/honeypot">
             <Link onClick={()=>{setRoute("/honeypot")}} to="/honeypot">Honeypot</Link>
           </Menu.Item>
-          <Menu.Item key="/logger">
-            <Link onClick={()=>{setRoute("/logger")}} to="/logger">Logger</Link>
-          </Menu.Item>
           <Menu.Item key="/attack">
             <Link onClick={()=>{setRoute("/attack")}} to="/attack">Attack</Link>
           </Menu.Item>
@@ -215,21 +212,6 @@ function App(props) {
 
             <Contract
                 name="HoneyPot"
-                signer={userProvider.getSigner()}
-                provider={localProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-            />
-          </Route>
-          <Route exact path="/logger">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
-            <Contract
-                name="Logger"
                 signer={userProvider.getSigner()}
                 provider={localProvider}
                 address={address}

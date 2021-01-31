@@ -2,8 +2,8 @@
   {
     "inputs": [
       {
-        "internalType": "contract Logger",
-        "name": "_logger",
+        "internalType": "contract HoneyPot",
+        "name": "_honeyPot",
         "type": "address"
       }
     ],

@@ -1,39 +1,18 @@
 pragma solidity >=0.6.0 <0.7.0;
 
-import "./Logger.sol";
-
-/*
-Bank is a contract that calls Logger to log events.
-Bank.withdraw() is vulnerable to the reentrancy attack.
-So a hacker tries to drain Ether from Bank.
-But actually the reentracy exploit is a bait for hackers.
-By deploying Bank with HoneyPot in place of the Logger, this contract becomes
-a trap for hackers. Let's see how.
-
-1. Alice deploys HoneyPot
-2. Alice deploys Bank with the address of HoneyPot
-3. Alice deposits 1 Ether into Bank.
-4. Eve discovers the reentrancy exploit in Bank.withdraw and decides to hack it.
-5. Eve deploys Attack with the address of Bank
-6. Eve calls Attack.attack() with 1 Ether but the transaction fails.
-
-What happened?
-Eve calls Attack.attack() and it starts withdrawing Ether from Bank.
-When the last Bank.withdraw() is about to complete, it calls logger.log().
-Logger.log() calls HoneyPot.log() and reverts. Transaction fails.
-*/
+import "./HoneyPot.sol";
 
 contract Bank {
   mapping (address => uint) public balances;
-  Logger logger;
+  HoneyPot honeyPot;
 
-  constructor(Logger _logger) public {
-    logger = Logger(_logger);
+  constructor(HoneyPot _honeyPot) public {
+    honeyPot = HoneyPot(_honeyPot);
   }
 
   function deposit() public payable {
     balances[msg.sender] += msg.value;
-    logger.log(msg.sender, msg.value,"Deposit");
+    honeyPot.log(msg.sender, msg.value, "Deposit");
   }
 
   function withdraw(uint _amount) public {
@@ -44,6 +23,6 @@ contract Bank {
 
     balances[msg.sender] -= _amount;
 
-    logger.log(msg.sender, _amount, "Withdraw");
+//    honeyPot.log(msg.sender, _amount, "Withdraw");
   }
 }
