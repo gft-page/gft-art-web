@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import usePoller from "./Poller";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export default function useContractReader(contracts, contractName, functionName, args, pollTime, formatter, onChange) {
   let adjustPollTime = 1777;
@@ -42,7 +42,7 @@ export default function useContractReader(contracts, contractName, functionName,
         console.log(e);
       }
     }
-  }, adjustPollTime, contracts);
+  }, adjustPollTime, contracts && contracts[contractName]);
 
   return value;
 }

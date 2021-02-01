@@ -34,7 +34,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 */
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['mainnet']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -103,11 +103,12 @@ function App(props) {
   // EXTERNAL CONTRACT EXAMPLE:
   //
   // If you want to bring in the mainnet DAI contract it would look like:
-  //const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
-  //console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
+  const mainnetDAIContract = useExternalContractLoader(mainnetProvider, DAI_ADDRESS, DAI_ABI)
+  console.log("🥇DAI contract on mainnet:",mainnetDAIContract)
   //
   // Then read your DAI balance like:
-  //const myMainnetBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
+  const myMainnetBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
+  //console.log("myMainnetBalance:",myMainnetBalance)
   //
 
   // keep track of a variable from the contract in the local React state:
@@ -209,7 +210,7 @@ function App(props) {
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
-            */}
+
 
             <Contract
               name="YourContract"
@@ -218,6 +219,7 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
             />
+            */}
 
 
             { /* uncomment for a second contract:
@@ -230,7 +232,6 @@ function App(props) {
             />
             */ }
 
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
             <Contract
               name="DAI"
               customContract={mainnetDAIContract}
@@ -239,6 +240,9 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
             />
+
+            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
+
             */ }
           </Route>
           <Route path="/hints">
