@@ -75,3 +75,6 @@ proxy owner -> proxy -> connector contract -> external contract
 
 Here is an [example](https://github.com/viraj124/Compound-Finance-Connector/blob/master/Compound%20Connector%20Contract.sol) of a very simple and minimal connector contract I created a long time ago which interact with [compound's](https://compound.finance/) contracts.
 
+### Proxy Deployment and Interaction
+The [Proxy Factory](https://ropsten.etherscan.io/address/0xa5d428357f4340139b5e811f42f765fa119cfe20) and [Proxy Implementation Contract](https://ropsten.etherscan.io/address/0xcd1affda0ba8abdd5e70776da75ec538361861db) are deployed on Ropsten, and here is the [minimal proxy](https://ropsten.etherscan.io/address/0x6111be994e49611bc1ac109659db20e98fbde261#code) for a user that was created by calling deploy as you can see it points to the minimal proxy address on etherscan and now once you get yourself one created by deploy() you can make your own connector contract and use delegate call.
+
