@@ -55,5 +55,9 @@
       "**/@graphprotocol/graph-ts",
       "**/@graphprotocol/graph-ts/**"
     ]
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.2.0",
+    "@rtoken/contracts": "^1.0.1-rc6"
   }
 }
