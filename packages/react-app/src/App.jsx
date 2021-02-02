@@ -118,6 +118,9 @@ function App(props) {
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
+  const rollEvents = useEventListener(readContracts, "RandomNumberConsumer", "Roll", localProvider, 1);
+  console.log("🎲 Roll events:", rollEvents);
+
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -192,9 +195,9 @@ function App(props) {
           <Menu.Item key="/">
             <Link onClick={()=>{setRoute("/")}} to="/">Contracts</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
+          {/* <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
+          </Menu.Item> */}
           <Menu.Item key="/exampleui">
             <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
           </Menu.Item>
@@ -211,15 +214,15 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
 
-            <Contract
+            {/* <Contract
               name="YourContract"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
-            />
+            /> */}
 
-            <Contract
+            {/* <Contract
               name="ApiConsumer"
               signer={userProvider.getSigner()}
               provider={localProvider}
@@ -233,15 +236,15 @@ function App(props) {
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
-            />
+            /> */}
 
-            {/* <Contract
+            <Contract
               name="RandomNumberConsumer"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
-            /> */}
+            />
 
 
             { /* uncomment for a second contract:
@@ -265,14 +268,14 @@ function App(props) {
             />
             */ }
           </Route>
-          <Route path="/hints">
+          {/* <Route path="/hints">
             <Hints
               address={address}
               yourLocalBalance={yourLocalBalance}
               mainnetProvider={mainnetProvider}
               price={price}
             />
-          </Route>
+          </Route> */}
           <Route path="/exampleui">
             <ExampleUI
               address={address}

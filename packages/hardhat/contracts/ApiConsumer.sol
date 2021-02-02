@@ -6,6 +6,7 @@ import "@chainlink/contracts/v0.6/ChainlinkClient.sol";
 contract APIConsumer is ChainlinkClient {
   
     uint256 public volume;
+    //uint256 public temp;
     
     address private oracle;
     bytes32 private jobId;
@@ -34,6 +35,9 @@ contract APIConsumer is ChainlinkClient {
         
         // Set the URL to perform the GET request on
         request.add("get", "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD");
+
+        // OpenWeather api key 5ade089984aa5e91c6a9ffaaee337011
+        //request.add("get", "api.openweathermap.org/data/2.5/weather?q=denver&appid=5ade089984aa5e91c6a9ffaaee337011");
         
         // Set the path to find the desired data in the API response, where the response format is:
         // {"RAW":
@@ -46,7 +50,8 @@ contract APIConsumer is ChainlinkClient {
         //   }
         //  }
         request.add("path", "RAW.ETH.USD.VOLUME24HOUR");
-        
+        //request.add("path", "main.temp");
+
         // Multiply the result by 1000000000000000000 to remove decimals
         int timesAmount = 10**18;
         request.addInt("times", timesAmount);

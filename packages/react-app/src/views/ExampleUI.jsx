@@ -151,6 +151,25 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
           }}
         />
       </div>
+      <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+        <h2>Events:</h2>
+        <List
+          bordered
+          dataSource={setPurposeEvents}
+          renderItem={(item) => {
+            return (
+              <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
+                <Address
+                    value={item[0]}
+                    ensProvider={mainnetProvider}
+                    fontSize={16}
+                  /> =>
+                {item[1]}
+              </List.Item>
+            )
+          }}
+        />
+      </div>
 
 
       <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:256 }}>

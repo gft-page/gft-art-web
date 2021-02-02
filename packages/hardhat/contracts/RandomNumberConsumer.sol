@@ -9,6 +9,8 @@ contract RandomNumberConsumer is VRFConsumerBase {
     uint256 internal fee;
     
     uint256 public randomResult;
+
+    event Roll (uint8 roll1, uint8 roll2, uint8 roll3, uint8 roll4, uint8 roll5, uint8 roll6);
     
     /**
      * Constructor inherits VRFConsumerBase
@@ -32,8 +34,14 @@ contract RandomNumberConsumer is VRFConsumerBase {
      * Requests randomness from a user-provided seed
      */
     function getRandomNumber(uint256 userProvidedSeed) public returns (bytes32 requestId) {
+        
         require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-        return requestRandomness(keyHash, fee, userProvidedSeed);
+
+        bytes32 requestId = requestRandomness(keyHash, fee, userProvidedSeed);
+
+        emit Roll(uint8(requestId[0]) % 6, uint8(requestId[1]) % 6, uint8(requestId[2]) % 6, uint8(requestId[3]) % 6, uint8(requestId[4]) % 6, uint8(requestId[5]) % 6);
+        
+        return requestId;
     }
 
     /**
