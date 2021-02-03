@@ -10,7 +10,10 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+  // const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+  await deploy("GoodAuction");
+  const vulnerableAuction = await deploy("VulnerableAuction");
+  await deploy("Attack", [vulnerableAuction.address]);
 
   //const secondContract = await deploy("SecondContract")
 
