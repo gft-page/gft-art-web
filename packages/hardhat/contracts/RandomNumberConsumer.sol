@@ -39,7 +39,14 @@ contract RandomNumberConsumer is VRFConsumerBase {
 
         bytes32 requestId = requestRandomness(keyHash, fee, userProvidedSeed);
 
-        emit Roll(uint8(requestId[0]) % 6, uint8(requestId[1]) % 6, uint8(requestId[2]) % 6, uint8(requestId[3]) % 6, uint8(requestId[4]) % 6, uint8(requestId[5]) % 6);
+        emit Roll(
+            uint8(requestId[0]) % 6, 
+            uint8(requestId[1]) % 6, 
+            uint8(requestId[2]) % 6, 
+            uint8(requestId[3]) % 6, 
+            uint8(requestId[4]) % 6, 
+            uint8(requestId[5]) % 6
+        );
         
         return requestId;
     }

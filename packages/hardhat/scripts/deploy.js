@@ -9,11 +9,11 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-
-  //const yourContract = await deploy("YourContract"); // <-- add in constructor args like line 19 vvvv
-  const apiConsumer = await deploy("APIConsumer"); // <-- getting artifact error ????
-  //const coinGeckoConsumer = await deploy("CoinGeckoConsumer");
-  //const randomNumberConsumer = await deploy("RandomNumberConsumer");
+  // ** Comment out the contracts you don't need to redeploy when iterating and testing ** //
+  const yourContract = await deploy("YourContract"); // <-- add in constructor args like line 19 vvvv
+  const apiConsumer = await deploy("APIConsumer"); // <-- Chainlink API Consumer Contract
+  const coinGeckoConsumer = await deploy("CoinGeckoConsumer"); // <-- Chainlink Coin Gecko API contract
+  const randomNumberConsumer = await deploy("RandomNumberConsumer"); // <-- Chainllink VRF random number contract
 
   //const secondContract = await deploy("SecondContract")
 

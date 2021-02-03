@@ -1,13 +1,13 @@
 # 🏗 scaffold-eth
 
-> is everything you need to get started building decentralized applications powered by smart contracts using Chainlink price feeds and vrf
+> is everything you need to get started building decentralized applications powered by smart contracts using Chainlink oracles and vrf
 
 ---
 
 ## quickstart
 
 ```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git
+git clone -b chainlink-tutorial-1 https://github.com/austintgriffith/scaffold-eth.git
 
 cd scaffold-eth
 ```
@@ -28,19 +28,33 @@ yarn start
 
 ```bash
 cd scaffold-eth
-yarn chain
-
+yarn run generate
 ```
 
-> in a third terminal window:
+The warnings are normal and you can ignore.
+![image](https://user-images.githubusercontent.com/9419140/106749563-ac2d2f00-65f4-11eb-91a5-d736e30f4b97.png)
+
+
+``` bash
+yarn run account
+```
+
+You will need to fund your deployer account with kovan ETH before you can deploy your contracts.
+![image](https://user-images.githubusercontent.com/9419140/106749192-36c15e80-65f4-11eb-8365-64f66569c899.png)
+
 
 ```bash
-cd scaffold-eth
 yarn deploy
 
 ```
 
+![image](https://user-images.githubusercontent.com/9419140/106748708-9b2fee00-65f3-11eb-90c6-3c28c09f7540.png)
+
+
 🔏 Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
+🔏 Edit your smart contract `ApiConsumer.sol` in `packages/hardhat/contracts`
+🔏 Edit your smart contract `CoinGeckoConsumer.sol` in `packages/hardhat/contracts`
+🔏 Edit your smart contract `RandomNumberConsumer.sol` in `packages/hardhat/contracts`
 
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
 
@@ -50,16 +64,50 @@ yarn deploy
 
 📚 Keep [solidity by example](https://solidity-by-example.org) handy and check out the [Solidity globals and units](https://solidity.readthedocs.io/en/v0.6.6/units-and-global-variables.html)
 
-> With everything up your dev environment starts looking something like this:
+> With everything up your UI should look something like this:
 
-![image](https://user-images.githubusercontent.com/2653167/91858466-768bb080-ec26-11ea-9e9b-81519f7f1c90.png)
+![image](https://user-images.githubusercontent.com/9419140/106748778-b0a51800-65f3-11eb-8a57-d6444748ffe9.png)
 
-> React dev server, HardHat blockchain, deploy terminal, code IDE, and frontend browser.
+> Fund the contract with LINK
+Copy the contract address and send it some link. You don't need much, average oracle costs .1 LINK.
+![image](https://user-images.githubusercontent.com/9419140/106750100-645ad780-65f5-11eb-95c9-ce07ef0ed2e2.png)
+
+> To test just put a arbitrary number in the field and click send.
+![image](https://user-images.githubusercontent.com/9419140/106750387-c74c6e80-65f5-11eb-9c19-74ead780dc5b.png)
+
+After about 30 seconds you can click the refresh icon to get the value.
+
+![image](https://user-images.githubusercontent.com/9419140/106750667-1e524380-65f6-11eb-8983-d4fd6a392b1c.png)
+
+> Now, what do we do with it?
+
+Let's roll some dice... We used an event to record the roll from the VRF contract.
+
+![image](https://user-images.githubusercontent.com/9419140/106751049-afc1b580-65f6-11eb-93c6-69fd9295d0db.png)
+
+
+![image](https://user-images.githubusercontent.com/9419140/106750992-9ae52200-65f6-11eb-9a35-8a09a31b051c.png)
+
+As you can see the event emitted our 6 dice roll values and we can now use them in the front-end.
+
+> Here is the solidity code broken down
+
+![image](https://user-images.githubusercontent.com/9419140/106750921-7db05380-65f6-11eb-9b25-1b377a997d43.png)
+
 
 ---
 
+> There are two other Chainlink examples...
 
-🔁    You can `yarn run deploy` any time and get a fresh new contract in the frontend:
+APIConsumer.sol
+
+- This contract shows you how to use any API to make a get request.
+
+CoinGeckoConsumer.sol
+
+- This contract shows you how to use existing Chainlink jobs.
+
+> 🔁    You can `yarn run deploy` any time and get a fresh new contract in the frontend:
 
 
 ![deploy](https://user-images.githubusercontent.com/2653167/93149199-f8fa8280-f6b2-11ea-9da7-3b26413ec8ab.gif)
