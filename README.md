@@ -40,7 +40,7 @@ You should be familiar with [calls](https://solidity-by-example.org/call/) and [
 
 ### Installation
 
-Let's start our environment for tinkering and exploring how honeypots work.
+Let's start our environment for tinkering and exploring how "DoS attack" works.
 
 1. Clone the repo first
 ```sh
