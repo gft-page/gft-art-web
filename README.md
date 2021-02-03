@@ -1,4 +1,4 @@
-#🕷️🏗 scaffold-eth - Denial of Service
+# 🕷️🏗 scaffold-eth - Denial of Service
 
 > Make contract unusable by exploiting push external calls 😈
 
