@@ -68,11 +68,18 @@ yarn deploy
 
 ![image](https://user-images.githubusercontent.com/9419140/106748778-b0a51800-65f3-11eb-8a57-d6444748ffe9.png)
 
-> Fund the contract with LINK
+> Fund the contract with LINK 
+
+> ** Side Quest - use deploy.js to fund the contract with LINK after funding deployer account. **
+
+- Testnet LINK is available from https://kovan.chain.link/ 
+- Testnet ETH is available from https://faucet.kovan.network/
+
 Copy the contract address and send it some link. You don't need much, average oracle costs .1 LINK.
 ![image](https://user-images.githubusercontent.com/9419140/106750100-645ad780-65f5-11eb-95c9-ce07ef0ed2e2.png)
 
-> To test just put a arbitrary number in the field and click send.
+To test just put a arbitrary number in the field and click send.
+
 ![image](https://user-images.githubusercontent.com/9419140/106750387-c74c6e80-65f5-11eb-9c19-74ead780dc5b.png)
 
 After about 30 seconds you can click the refresh icon to get the value.
@@ -103,12 +110,18 @@ APIConsumer.sol
 
 - This contract shows you how to use any API to make a get request.
 
+![image](https://user-images.githubusercontent.com/9419140/106782214-e52acb00-6617-11eb-9213-b119e1eb94f3.png)
+
 CoinGeckoConsumer.sol
 
 - This contract shows you how to use existing Chainlink jobs.
 
+![image](https://user-images.githubusercontent.com/9419140/106782323-04295d00-6618-11eb-9ff7-4de13698b23f.png)
+
+
 > 🔁    You can `yarn run deploy` any time and get a fresh new contract in the frontend:
 
+Make sure to edit your deploy.js if you don't want to redeploy all of your contracts.
 
 ![deploy](https://user-images.githubusercontent.com/2653167/93149199-f8fa8280-f6b2-11ea-9da7-3b26413ec8ab.gif)
 
