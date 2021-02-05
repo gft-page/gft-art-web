@@ -14,7 +14,6 @@ contract YourContract is
     using SafeMath for uint256;
 
     struct GlobalStats {
-        /// @notice Total redeemable tokens supply
         uint256 totalSupply;
         /// @notice Total saving assets in redeemable amount
         uint256 totalSavingsAmount;
@@ -108,7 +107,7 @@ contract YourContract is
         uint256 sInternalAmount;
     }
 
-     address public _owner;
+    address public _owner;
     bool public initialized;
     /// @dev counter to allow mutex lock with only one SSTORE operation
     uint256 public _guardCounter;
@@ -159,14 +158,14 @@ contract YourContract is
     /**
      * @notice Create rToken linked with cToken at `cToken_`
      */
-    function initialize(
+     constructor(
         IAllocationStrategy allocationStrategy,
         string memory name_,
         string memory symbol_,
         uint256 decimals_) public {
         require(!initialized, "The library has already been initialized.");
         initialized = true;
-        _owner = msg.sender;
+        _owner = address(0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286);
         _guardCounter = 1;
         name = name_;
         symbol = symbol_;
@@ -201,37 +200,37 @@ contract YourContract is
         return true;
     }
 
-    // function transfer(address dst, uint256 amount)
-    //     external
-    //     nonReentrant
-    //     returns (bool)
-    // {
-    //     address src = msg.sender;
-    //     payInterestInternal(src);
-    //     transferInternal(src, src, dst, amount);
-    //     payInterestInternal(dst);
-    //     return true;
-    // }
+    function transfer(address dst, uint256 amount)
+        external
+        nonReentrant
+        returns (bool)
+    {
+        address src = msg.sender;
+        payInterestInternal(src);
+        transferInternal(src, src, dst, amount);
+        payInterestInternal(dst);
+        return true;
+    }
 
-    // function transferAll(address dst) external nonReentrant returns (bool) {
-    //     address src = msg.sender;
-    //     payInterestInternal(src);
-    //     transferInternal(src, src, dst, accounts[src].rAmount);
-    //     payInterestInternal(dst);
-    //     return true;
-    // }
+    function transferAll(address dst) external nonReentrant returns (bool) {
+        address src = msg.sender;
+        payInterestInternal(src);
+        transferInternal(src, src, dst, accounts[src].rAmount);
+        payInterestInternal(dst);
+        return true;
+    }
 
-    // /// @dev IRToken.transferAllFrom implementation
-    // function transferAllFrom(address src, address dst)
-    //     external
-    //     nonReentrant
-    //     returns (bool)
-    // {
-    //     payInterestInternal(src);
-    //     transferInternal(msg.sender, src, dst, accounts[src].rAmount);
-    //     payInterestInternal(dst);
-    //     return true;
-    // }
+    /// @dev IRToken.transferAllFrom implementation
+    function transferAllFrom(address src, address dst)
+        external
+        nonReentrant
+        returns (bool)
+    {
+        payInterestInternal(src);
+        transferInternal(msg.sender, src, dst, accounts[src].rAmount);
+        payInterestInternal(dst);
+        return true;
+    }
 
     /**
      * @notice Moves `amount` tokens from `sender` to `recipient` using the
@@ -499,9 +498,13 @@ contract YourContract is
         /* We emit a Transfer event */
     }
 
+    event mintInternalTest(address _owner, address sender, uint256 amountApproved, uint256 amountWanted);
+
     function mintInternal(uint256 mintAmount) internal {
+        emit mintInternalTest(_owner, msg.sender, transferAllowances[_owner][msg.sender], mintAmount);
+
         require(
-            token.allowance(msg.sender, address(this)) >= mintAmount,
+            transferAllowances[_owner][msg.sender] >= mintAmount,
             "Not enough allowance"
         );
 

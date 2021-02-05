@@ -10,7 +10,8 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+  const compoundAllocationStrategy = await deploy("CompoundAllocationStrategy", ["0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643"]);
+  const yourContract = await deploy("YourContract", [compoundAllocationStrategy.address, 'rScaffold', '🏗', 2]); // <-- add in constructor args like line 19 vvvv
 
   //const secondContract = await deploy("SecondContract")
 

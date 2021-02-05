@@ -14,6 +14,8 @@ import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { Hints, ExampleUI, Subgraph } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+import { ethers } from "ethers";
+
 /*
     Welcome to 🏗 scaffold-eth !
 
@@ -119,6 +121,45 @@ function App(props) {
   const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
+  const getImpersonatingSigner = async () => {
+    let accountToImpersonate = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+    await localProvider.send("hardhat_impersonateAccount",[accountToImpersonate])
+    const signer = await localProvider.getSigner(accountToImpersonate)
+    console.log(signer.provider.getSigner())
+    const signerbal = await signer.getBalance()
+    console.log(formatEther(signerbal))
+    let transferbal = parseFloat(formatEther(signerbal)) - 0.01
+    let txmisc = signer.sendTransaction({
+      to: "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+      value: parseEther(transferbal.toString())
+    });
+  }
+
+  const getImpersonatingSignerDai = async () => {
+    let accountToImpersonate = "0x6b175474e89094c44da98b954eedeac495271d0f"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+
+
+
+    await localProvider.send("hardhat_impersonateAccount",[accountToImpersonate])
+    const signer = await localProvider.getSigner(accountToImpersonate)
+    console.log(signer.provider.getSigner())
+    const myDaiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
+
+    const myAddress = await signer.getAddress()
+    console.log("myAddress",myAddress)
+    const signerDaiBal = await myDaiContract.balanceOf(myAddress)
+    console.log("vsignerDaiBal",signerDaiBal)
+
+
+
+    console.log(formatEther(signerDaiBal))
+    let transferbal = parseFloat(formatEther(signerDaiBal)) - 0.01
+    let txmisc = tx(myDaiContract.transfer(
+      "0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286",
+      parseEther(transferbal.toString())
+    ));
+  }
+
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
   console.log("🏷 Resolved austingriffith.eth as:",addressFromENS)
@@ -189,6 +230,14 @@ function App(props) {
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
       {networkDisplay}
+
+      <Button onClick={()=>{getImpersonatingSigner()}}>
+        SnatchETH
+      </Button>
+      <Button onClick={()=>{getImpersonatingSignerDai()}}>
+        SnatchDAI
+      </Button>
+
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
