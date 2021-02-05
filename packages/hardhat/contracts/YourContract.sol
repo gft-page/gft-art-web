@@ -10,9 +10,6 @@ contract YourContract {
 
   string public purpose = "Programming Unstoppable Money";
 
-  constructor() public {
-    // what should we do on deploy?
-  }
 
   function setPurpose(string memory newPurpose) public {
     purpose = newPurpose;

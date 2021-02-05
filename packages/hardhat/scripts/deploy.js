@@ -4,13 +4,46 @@ const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
+const defiFacetABI = require("../artifacts/contracts/facets/DeFiFacet.sol/DeFiFacet.json");
+//  
+// 
+const defiCutABI = require("../artifacts/contracts/facets/DiamondCutFacet.sol/DiamondCutFacet.json");
+
 
 const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
+  const FacetCutAction = {
+    Add: 0,
+    Replace: 1,
+    Remove: 2
+  }
+
+  function getSelectors (contract) {
+    const selectors = contract.reduce((acc, val) => {
+      console.log(val.signature)
+      console.log(acc)
+      if (val.type === 'function') {
+        acc.push(val.signature)
+        return acc
+      } else {
+        return acc
+      }
+    }, [])
+    return selectors
+  }
 
   const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+  const defiFacet = await deploy("DeFiFacet") // <-- add in constructor args like line 19 vvvv
+  const diamondCutFacet = await deploy("DiamondCutFacet") // <-- add in constructor args like line 19 vvvv
+  const diamondCutParams = [
+    [diamondCutFacet.address, FacetCutAction.Add, [ '0x1f931c1c' ]],
+    [defiFacet.address, FacetCutAction.Add, ['0x0400a718', '0xf807cd22', '0x0261bf8b', '0xed6ff760', '0x87f64f41']]
+  ]
+  // eslint-disable-next-line no-unused-vars
+  const deployedDiamond = await deploy("Diamond", [diamondCutParams])
+}
 
   //const secondContract = await deploy("SecondContract")
 
@@ -52,7 +85,6 @@ const main = async () => {
     chalk.blue("packages/hardhat/artifacts/"),
     "\n\n"
   );
-};
 
 const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) => {
   console.log(` 🛰  Deploying: ${contractName}`);
