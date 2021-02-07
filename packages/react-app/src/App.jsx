@@ -196,6 +196,12 @@ function App(props) {
               provider={localProvider}
               address={address}
             />
+            <Contract
+              name="AaveApe"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+            />
           </Route>
         </Switch>
       </BrowserRouter>

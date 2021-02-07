@@ -1,49 +1,29 @@
 pragma solidity >=0.6.0 <0.9.0;
+pragma experimental ABIEncoderV2;
 
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol"; //https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol
-import "./interfaces/ILendingPool.sol";
-import "./interfaces/ILendingPoolAddressesProvider.sol";
-import "./interfaces/IProtocolDataProvider.sol";
-import "./interfaces/IUniswapV2Router02.sol";
+import "./AaveUniswapBase.sol";
 
-contract AavEth {
-
-  constructor() public {
-    lendingPoolAddressProvider = ILendingPoolAddressesProvider(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5);
-    uniswapRouter = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-    wethAddress = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-  }
-
-  ILendingPoolAddressesProvider public lendingPoolAddressProvider;
-  IUniswapV2Router02 public uniswapRouter;
-  address public wethAddress;
-
-  bytes32 dataProviderLookup = 0x0100000000000000000000000000000000000000000000000000000000000000;
+contract AavEth is AaveUniswapBase {
 
   event Deposit(address sender, address asset, uint256 EthAmount, uint256 assetAmount);
   event Withdraw(address sender, address asset, uint256 EthAmount, uint256 assetAmount);
 
-  function depositEthForAToken(uint amountOutMin, address[] calldata path, address to, uint deadline) public payable returns (uint amountAsset) {
+  function depositEthForAToken(address[] calldata path, address to) public payable returns (uint amountAsset) {
 
       address _fromAsset = path[0];
       address _toAsset = path[path.length - 1];
 
-      require(wethAddress == _fromAsset, "from asset must be WETH");
-      require(wethAddress != _toAsset, "to asset must not be WETH");
+      require(Constants.WETH_ADDRESS == _fromAsset, "from asset must be WETH");
+      require(Constants.WETH_ADDRESS != _toAsset, "to asset must not be WETH");
 
-      uint[] memory amounts = uniswapRouter.swapExactETHForTokens{value: msg.value}(amountOutMin, path, address(this), deadline);
+      uint[] memory amounts = UNISWAP_ROUTER.swapExactETHForTokens{value: msg.value}(0, path, address(this), block.timestamp);
 
       uint _amount = amounts[amounts.length - 1];
       IERC20 _asset = IERC20(_toAsset);
 
-      address _lendingPoolAddress = lendingPoolAddressProvider.getLendingPool();
+      _asset.approve(ADDRESSES_PROVIDER.getLendingPool(), _amount);
 
-      _asset.approve(_lendingPoolAddress, _amount);
-
-      ILendingPool _lendingPool = ILendingPool(_lendingPoolAddress);
-
-      _lendingPool.deposit(
+      getLendingPool().deposit(
         _toAsset,
         _amount,
         to,
@@ -55,8 +35,40 @@ contract AavEth {
       return _amount;
   }
 
-  function getProtocolDataProvider() external view returns (address)  {
-    return lendingPoolAddressProvider.getAddress(dataProviderLookup);
+  function withdrawATokenToEth(uint256 amount, address[] calldata path, address to) public payable returns (uint amountAsset) {
+
+    address _fromAsset = path[0];
+
+    require(Constants.WETH_ADDRESS != _fromAsset, "from asset must not be WETH");
+    require(Constants.WETH_ADDRESS == path[path.length - 1], "to asset must be WETH");
+
+    DataTypes.ReserveData memory reserve = getAaveAssetReserveData(_fromAsset);
+
+    IERC20 _aToken = IERC20(reserve.aTokenAddress);
+
+    uint256 amountToWithdraw;
+
+    if (amount == type(uint256).max) {
+      amountToWithdraw = _aToken.balanceOf(msg.sender);
+    } else {
+      amountToWithdraw = amount;
+    }
+
+    _aToken.transferFrom(msg.sender, address(this), amountToWithdraw);
+
+    getLendingPool().withdraw(
+      _fromAsset,
+      amountToWithdraw,
+      address(this)
+    );
+
+    IERC20(_fromAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, amountToWithdraw);
+
+    uint[] memory amounts = UNISWAP_ROUTER.swapExactTokensForETH(amountToWithdraw, 0, path, msg.sender, block.timestamp);
+
+    emit Withdraw(to, _fromAsset, amounts[amounts.length - 1], amountToWithdraw);
+
+    return amountToWithdraw;
   }
 
 }
