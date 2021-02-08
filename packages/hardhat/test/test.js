@@ -15,7 +15,9 @@ describe("AaveApe", function () {
     let metadata = {
       value: ethers.utils.parseEther("5")
     }
-    await ethGateway['depositETH'](owner.address, 0, metadata)
+    let ethDeposit = await ethGateway['depositETH'](owner.address, 0, metadata)
+    let receipt = await ethers.provider.getTransactionReceipt(ethDeposit.hash)
+    console.log('eth deposit gas', receipt.gasUsed.toString(), ethers.utils.formatEther(receipt.gasUsed.mul(ethDeposit.gasPrice)))
 
     const lendingPoolAddressesProvider = await ethers.getContractAt('ILendingPoolAddressesProvider', "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5")
     lendingPoolAddress = await lendingPoolAddressesProvider['getLendingPool']()
@@ -29,13 +31,17 @@ describe("AaveApe", function () {
     let wethAToken = await ethers.getContractAt('IAToken', wethReserveData.aTokenAddress)
     let ownerATokenBalanceWeth = await wethAToken.balanceOf(owner.address)
     console.log('weth before', ethers.utils.formatEther(ownerATokenBalanceWeth))
-    let maxBorrow = await aaveApe['getAvailableBorrowInAsset'](daiAddress, owner.address);
-    console.log('max borrow', ethers.utils.formatEther(maxBorrow))
-    await aaveApe['superApe'](wethAddress, daiAddress, 1,5)
+    //let maxBorrow = await aaveApe['getAvailableBorrowInAsset'](daiAddress, owner.address);
+    //console.log('max borrow', ethers.utils.formatEther(maxBorrow))
+    let ape = await aaveApe['ape'](wethAddress, daiAddress, 1)
+    receipt = await ethers.provider.getTransactionReceipt(ape.hash)
+    console.log('ape gas',receipt.gasUsed.toString(), ethers.utils.formatEther(receipt.gasUsed.mul(ape.gasPrice)))
     ownerATokenBalanceWeth = await wethAToken.balanceOf(owner.address)
     console.log('weth after', ethers.utils.formatEther(ownerATokenBalanceWeth))
     await wethAToken['approve'](aaveApe.address, ethers.constants.MaxUint256)
-    await aaveApe['unwindApe'](wethAddress, daiAddress, 1)
+    let unwind = await aaveApe['unwindApe'](wethAddress, daiAddress, 1)
+    receipt = await ethers.provider.getTransactionReceipt(unwind.hash)
+    console.log('unwind gas',receipt.gasUsed.toString(), ethers.utils.formatEther(receipt.gasUsed.mul(unwind.gasPrice)))
     ownerATokenBalanceWeth = await wethAToken.balanceOf(owner.address)
     console.log('weth after unwind', ethers.utils.formatEther(ownerATokenBalanceWeth))
   });

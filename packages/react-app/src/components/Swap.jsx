@@ -6,6 +6,7 @@ import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { useBlockNumber, usePoller } from "eth-hooks";
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
+import { useDebounce } from "../hooks";
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -78,6 +79,9 @@ function Swap({ selectedProvider, tokenListURI }) {
 
   let _tokenListUri = tokenListURI ? tokenListURI : 'https://gateway.ipfs.io/ipns/tokens.uniswap.org'
 
+  const debouncedAmountIn = useDebounce(amountIn, 500);
+  const debouncedAmountOut = useDebounce(amountOut, 500);
+
   useEffect(() => {
     const getTokenList = async () => {
       console.log(_tokenListUri)
@@ -130,7 +134,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       bestTrade = Trade.bestTradeExactIn(
       listOfPairs.filter(item => item),
       new TokenAmount(tokens[tokenIn], parseUnits(amountIn.toString(), tokens[tokenIn].decimals)),
-      tokens[tokenOut])
+      tokens[tokenOut], { maxNumResults: 3, maxHops: 1 })
       if(bestTrade[0]) {
         setAmountOut(bestTrade[0].outputAmount.toSignificant(6))
       } else { setAmountOut() }
@@ -139,7 +143,8 @@ function Swap({ selectedProvider, tokenListURI }) {
       bestTrade = Trade.bestTradeExactOut(
       listOfPairs.filter(item => item),
       tokens[tokenIn],
-      new TokenAmount(tokens[tokenOut], parseUnits(amountOut.toString(), tokens[tokenOut].decimals)))
+      new TokenAmount(tokens[tokenOut], parseUnits(amountOut.toString(), tokens[tokenOut].decimals)),
+     { maxNumResults: 3, maxHops: 1 })
       if(bestTrade[0]) {
         setAmountIn(bestTrade[0].inputAmount.toSignificant(6))
       } else { setAmountIn() }
@@ -154,7 +159,7 @@ function Swap({ selectedProvider, tokenListURI }) {
 
   useEffect(() => {
       getTrades()
-  },[tokenIn, tokenOut, amountIn, amountOut, slippageTolerance, selectedProvider])
+  },[tokenIn, tokenOut, debouncedAmountIn, debouncedAmountOut, slippageTolerance, selectedProvider])
 
   useEffect(() => {
     if(trades && trades[0]) {

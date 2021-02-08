@@ -10,20 +10,22 @@ contract AaveApe is AaveUniswapBase {
 
   function getAvailableBorrowInAsset(address borrowAsset, address ape) public view returns (uint256) {
     ( ,,uint256 availableBorrowsETH,,,) = getLendingPool().getUserAccountData(ape);
-
+    console.log('availableBorrows', availableBorrowsETH);
     return getAssetAmount(borrowAsset, availableBorrowsETH);
   }
 
   function getAssetAmount(address asset, uint256 amountInEth) public view returns (uint256) {
     uint256 assetPrice = getPriceOracle().getAssetPrice(asset);
+    console.log('assetPrice', assetPrice);
     (uint256 decimals ,,,,,,,,,) = getProtocolDataProvider().getReserveConfigurationData(asset);
-    return amountInEth.div(assetPrice).mul(10**decimals);
+    uint256 assetAmount = amountInEth.mul(10**decimals).div(assetPrice);
+    console.log('assetAmount', assetAmount);
+    return assetAmount;
   }
 
   function superApe(address apeAsset, address borrowAsset, uint256 interestRateMode, uint levers) public returns (bool) {
 
     for (uint i = 0; i < levers; i++) {
-      console.log(i);
       ape(apeAsset, borrowAsset, interestRateMode);
     }
 
@@ -96,11 +98,15 @@ contract AaveApe is AaveUniswapBase {
 
     uint256 maxCollateralAmount = getAvailableBorrowInAsset(apeAsset, ape);
 
-    console.log(maxCollateralAmount);
-
     DataTypes.ReserveData memory reserve = getAaveAssetReserveData(apeAsset);
 
     IERC20 _aToken = IERC20(reserve.aTokenAddress);
+
+    console.log(_aToken.balanceOf(ape), maxCollateralAmount);
+
+    if(_aToken.balanceOf(ape) < maxCollateralAmount) {
+      maxCollateralAmount = _aToken.balanceOf(ape);
+    }
 
     _aToken.transferFrom(ape, address(this), maxCollateralAmount);
 

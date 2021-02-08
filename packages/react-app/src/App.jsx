@@ -9,7 +9,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken } from "./components";
 import { SimpleLend } from "./views";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
@@ -132,8 +132,14 @@ function App(props) {
           <Menu.Item key="/simple-lend">
             <Link onClick={()=>{setRoute("/simple-lend")}} to="/simple-lend">SimpleLend</Link>
           </Menu.Item>
+          <Menu.Item key="/snatch">
+            <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
+          </Menu.Item>
           <Menu.Item key="/aaveth">
             <Link onClick={()=>{setRoute("/aaveth")}} to="/aaveth">AavEth</Link>
+          </Menu.Item>
+          <Menu.Item key="/aave-ape">
+            <Link onClick={()=>{setRoute("/aave-ape")}} to="/aave-ape">Ape</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -196,12 +202,21 @@ function App(props) {
               provider={localProvider}
               address={address}
             />
+          </Route>
+          <Route exact path="/aave-ape">
             <Contract
               name="AaveApe"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
             />
+          </Route>
+          <Route exact path="/snatch">
+          <SnatchToken
+            mainnetProvider={mainnetProvider}
+            localProvider={localProvider}
+            tx={tx}
+          />
           </Route>
         </Switch>
       </BrowserRouter>

@@ -1,1 +1,1 @@
-module.exports = ["AavEth"];
+module.exports = ["AavEth","AaveApe"];

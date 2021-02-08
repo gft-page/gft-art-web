@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, Radio, Card, Select, Statistic, Descriptions, Typography, Button, Divider, Drawer, Table, Skeleton } from "antd";
+import { Space, Row, Col, Radio, Card, Select, Statistic, Descriptions, Typography, Button, Divider, Drawer, Table, Skeleton, Tabs } from "antd";
 import { SettingOutlined } from '@ant-design/icons';
 import { Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
@@ -10,6 +10,9 @@ import { abi as IDataProvider } from './abis/ProtocolDataProvider.json'
 import { abi as ILendingPool } from './abis/LendingPool.json'
 import { abi as IPriceOracle } from './abis/PriceOracle.json'
 import AaveAction from "./AaveAction"
+import Ape from "./Ape"
+
+const { TabPane } = Tabs;
 
 export const POOL_ADDRESSES_PROVIDER_ADDRESS = '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
 const PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
@@ -69,7 +72,6 @@ function Lend({ selectedProvider, ethPrice }) {
       console.log('getting price data')
       let assetAddresses = reserveTokens.map(a => a.tokenAddress)
       let prices = await priceOracleContract.getAssetsPrices(assetAddresses)
-      console.log(prices)
       let _assetPrices = {}
       for (let i = 0; i < prices.length; i++) {
         let _symbol = reserveTokens[i]['symbol']
@@ -114,15 +116,21 @@ function Lend({ selectedProvider, ethPrice }) {
         var _assetInfo = reserveTokens.filter(function (el) {
           return el.symbol === asset})
 
-        console.log(asset, _assetInfo)
-
         let _asset = {}
         let _data
         _data = await dataProviderContract.getUserReserveData(_assetInfo[0].tokenAddress,address)
         _asset[asset] = _data
 
         setUserAssetData(userAssetData => {
-          return {...userAssetData, ..._asset}})
+          let filteredUserAssetData = Object.keys(userAssetData)
+            .filter(key => Object.keys(userAssetList).includes(key))
+            .reduce((obj, key) => {
+              return {
+                ...obj,
+                [key]: userAssetData[key]
+              };
+            }, {});
+          return {...filteredUserAssetData, ..._asset}})
 
       })
       }
@@ -160,8 +168,7 @@ function Lend({ selectedProvider, ethPrice }) {
   usePoller(getReserveData, 15000)
   usePoller(getPriceData, 25000)
   usePoller(getUserInfo, 6000)
-
-  usePoller(()=>{console.log(assetData)} , 6000)
+  usePoller(getUserAssetData, 9000)
 
   let convertNative = ['USD','ETH'].includes(displayCurrency)
   let showUsdPrice = (ethPrice && displayCurrency === 'USD')
@@ -288,33 +295,42 @@ function Lend({ selectedProvider, ethPrice }) {
   return (
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmWzL3TSmkMhbqGBEwyeFyWVvLmEo3F44HBMFnmTUiTfp1" width='40' alt='aaveLogo'/><Typography>Aave Lender</Typography></Space>}
       extra={
-        <Space>
-        <Radio.Group
-          options={['native','ETH','USD']}
-          onChange={(e)=>{setDisplayCurrency(e.target.value)}}
-          value={displayCurrency}
-          optionType="button"
-          buttonStyle="solid"
-          disabled={missingPrices}
-        />
-        <Radio.Group
-          options={[
-            { label: 'All', value: false },
-            { label: 'Active', value: true }]}
-          onChange={(e)=>{
-            setShowActiveAssets(e.target.value)
-          }}
-          value={showActiveAssets}
-          optionType="button"
-          buttonStyle="solid"
-        />
-        <Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>
-        </Space>}
+        <Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}
       style={{ textAlign: 'left' }}
         >
     {userAccountDisplay}
     <Divider/>
-    <Table dataSource={Object.values(assetData).filter(asset => (showActiveAssets&&userAssetList)?Object.keys(userAssetList).includes(asset.symbol):true)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
+    <Tabs defaultActiveKey="1">
+      <TabPane tab="Markets" key="1">
+      <Row>
+      <Space>
+      <Radio.Group
+        options={['native','ETH','USD']}
+        onChange={(e)=>{setDisplayCurrency(e.target.value)}}
+        value={displayCurrency}
+        optionType="button"
+        buttonStyle="solid"
+        disabled={missingPrices}
+      />
+      <Radio.Group
+        options={[
+          { label: 'All', value: false },
+          { label: 'Active', value: true }]}
+        onChange={(e)=>{
+          setShowActiveAssets(e.target.value)
+        }}
+        value={showActiveAssets}
+        optionType="button"
+        buttonStyle="solid"
+      />
+      </Space>
+      </Row>
+        <Table dataSource={Object.values(assetData).filter(asset => (showActiveAssets&&userAssetList)?Object.keys(userAssetList).includes(asset.symbol):true)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
+      </TabPane>
+      <TabPane tab="Ape" key="2">
+      <Ape reserveTokens={reserveTokens} assetData={assetData} userAssetData={userAssetData} selectedProvider={selectedProvider} dataProviderContract={dataProviderContract}/>
+      </TabPane>
+    </Tabs>
     </Card>
   )
 
