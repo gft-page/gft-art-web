@@ -13,148 +13,6 @@ contract RScaffold is
     ReentrancyGuard {
     using SafeMath for uint256;
 
-    struct GlobalStats {
-        uint256 totalSupply;
-        /// @notice Total saving assets in redeemable amount
-        uint256 totalSavingsAmount;
-    }
-
-    /**
-     * @notice Account stats stored
-     */
-    struct AccountStatsView {
-        /// @notice Current hat ID
-        uint256 hatID;
-        /// @notice Current redeemable amount
-        uint256 rAmount;
-        /// @notice Interest portion of the rAmount
-        uint256 rInterest;
-        /// @notice Current loaned debt amount
-        uint256 lDebt;
-        /// @notice Current internal savings amount
-        uint256 sInternalAmount;
-        /// @notice Interest payable
-        uint256 rInterestPayable;
-        /// @notice Cumulative interest generated for the account
-        uint256 cumulativeInterest;
-        /// @notice Loans lent to the recipients
-        uint256 lRecipientsSum;
-    }
-
-    /**
-     * @notice Account stats stored
-     */
-    struct AccountStatsStored {
-        /// @notice Cumulative interest generated for the account
-        uint256 cumulativeInterest;
-    }
-
-    /**
-     * @notice Hat stats view
-     */
-    struct HatStatsView {
-        /// @notice Number of addresses has the hat
-        uint256 useCount;
-        /// @notice Total net loans distributed through the hat
-        uint256 totalLoans;
-        /// @notice Total net savings distributed through the hat
-        uint256 totalSavings;
-    }
-
-    /**
-     * @notice Hat stats stored
-     */
-    struct HatStatsStored {
-        /// @notice Number of addresses has the hat
-        uint256 useCount;
-        /// @notice Total net loans distributed through the hat
-        uint256 totalLoans;
-        /// @notice Total net savings distributed through the hat
-        uint256 totalInternalSavings;
-    }
-
-    /**
-     * @notice Hat structure describes who are the recipients of the interest
-     *
-     * To be a valid hat structure:
-     *   - at least one recipient
-     *   - recipients.length == proportions.length
-     *   - each value in proportions should be greater than 0
-     */
-    struct Hat {
-        address[] recipients;
-        uint32[] proportions;
-    }
-
-    /// @dev Account structure
-    struct Account {
-        /// @notice Current selected hat ID of the account
-        uint256 hatID;
-        /// @notice Current balance of the account (non realtime)
-        uint256 rAmount;
-        /// @notice Interest rate portion of the rAmount
-        uint256 rInterest;
-        /// @notice Debt in redeemable amount lent to recipients
-        //          In case of self-hat, external debt is optimized to not to
-        //          be stored in lRecipients
-        mapping(address => uint256) lRecipients;
-        /// @notice Received loan.
-        ///         Debt in redeemable amount owed to the lenders distributed
-        ///         through one or more hats.
-        uint256 lDebt;
-        /// @notice Savings internal accounting amount.
-        ///         Debt is sold to buy savings
-        uint256 sInternalAmount;
-    }
-
-    address public _owner;
-    bool public initialized;
-    /// @dev counter to allow mutex lock with only one SSTORE operation
-    uint256 public _guardCounter;
-    /**
-     * @notice EIP-20 token name for this token
-     */
-    string public name;
-    /**
-     * @notice EIP-20 token symbol for this token
-     */
-    string public symbol;
-    /**
-     * @notice EIP-20 token decimals for this token
-     */
-    uint256 public decimals;
-    /**
-     * @notice Total number of tokens in circulation
-     */
-    uint256 public totalSupply;
-    /// @dev Current saving strategy
-    IAllocationStrategy public ias;
-    /// @dev Underlying token
-    IERC20 public token;
-    /// @dev Saving assets original amount
-    /// This amount is in the same unit used in allocation strategy
-    uint256 public savingAssetOrignalAmount;
-    /// @dev Saving asset original to internal amount conversion rate
-    uint256 public savingAssetConversionRate;
-    /// @dev Approved token transfer amounts on behalf of others
-    mapping(address => mapping(address => uint256)) public transferAllowances;
-    /// @dev Hat list
-    Hat[] internal hats;
-    /// @dev Account mapping
-    mapping(address => Account) public accounts;
-    /// @dev AccountStats mapping
-    mapping(address => AccountStatsStored) public accountStats;
-    /// @dev HatStats mapping
-    mapping(uint256 => HatStatsStored) public hatStats;
-
-
-    uint256 public constant ALLOCATION_STRATEGY_EXCHANGE_RATE_SCALE = 1e18;
-    uint256 public constant INITIAL_SAVING_ASSET_CONVERSION_RATE = 1e18;
-    uint256 public constant MAX_UINT256 = uint256(int256(-1));
-    uint256 public constant SELF_HAT_ID = MAX_UINT256;
-    uint32 public constant PROPORTION_BASE = 0xFFFFFFFF;
-    uint256 public constant MAX_NUM_HAT_RECIPIENTS = 50;
-
     /**
      * @notice Create rToken linked with cToken at `cToken_`
      */
@@ -899,4 +757,146 @@ contract RScaffold is
             account.rInterest = rGross - account.lDebt;
         }
     }
+
+    struct GlobalStats {
+        uint256 totalSupply;
+        /// @notice Total saving assets in redeemable amount
+        uint256 totalSavingsAmount;
+    }
+
+    /**
+     * @notice Account stats stored
+     */
+    struct AccountStatsView {
+        /// @notice Current hat ID
+        uint256 hatID;
+        /// @notice Current redeemable amount
+        uint256 rAmount;
+        /// @notice Interest portion of the rAmount
+        uint256 rInterest;
+        /// @notice Current loaned debt amount
+        uint256 lDebt;
+        /// @notice Current internal savings amount
+        uint256 sInternalAmount;
+        /// @notice Interest payable
+        uint256 rInterestPayable;
+        /// @notice Cumulative interest generated for the account
+        uint256 cumulativeInterest;
+        /// @notice Loans lent to the recipients
+        uint256 lRecipientsSum;
+    }
+
+    /**
+     * @notice Account stats stored
+     */
+    struct AccountStatsStored {
+        /// @notice Cumulative interest generated for the account
+        uint256 cumulativeInterest;
+    }
+
+    /**
+     * @notice Hat stats view
+     */
+    struct HatStatsView {
+        /// @notice Number of addresses has the hat
+        uint256 useCount;
+        /// @notice Total net loans distributed through the hat
+        uint256 totalLoans;
+        /// @notice Total net savings distributed through the hat
+        uint256 totalSavings;
+    }
+
+    /**
+     * @notice Hat stats stored
+     */
+    struct HatStatsStored {
+        /// @notice Number of addresses has the hat
+        uint256 useCount;
+        /// @notice Total net loans distributed through the hat
+        uint256 totalLoans;
+        /// @notice Total net savings distributed through the hat
+        uint256 totalInternalSavings;
+    }
+
+    /**
+     * @notice Hat structure describes who are the recipients of the interest
+     *
+     * To be a valid hat structure:
+     *   - at least one recipient
+     *   - recipients.length == proportions.length
+     *   - each value in proportions should be greater than 0
+     */
+    struct Hat {
+        address[] recipients;
+        uint32[] proportions;
+    }
+
+    /// @dev Account structure
+    struct Account {
+        /// @notice Current selected hat ID of the account
+        uint256 hatID;
+        /// @notice Current balance of the account (non realtime)
+        uint256 rAmount;
+        /// @notice Interest rate portion of the rAmount
+        uint256 rInterest;
+        /// @notice Debt in redeemable amount lent to recipients
+        //          In case of self-hat, external debt is optimized to not to
+        //          be stored in lRecipients
+        mapping(address => uint256) lRecipients;
+        /// @notice Received loan.
+        ///         Debt in redeemable amount owed to the lenders distributed
+        ///         through one or more hats.
+        uint256 lDebt;
+        /// @notice Savings internal accounting amount.
+        ///         Debt is sold to buy savings
+        uint256 sInternalAmount;
+    }
+
+    address public _owner;
+    bool public initialized;
+    /// @dev counter to allow mutex lock with only one SSTORE operation
+    uint256 public _guardCounter;
+    /**
+     * @notice EIP-20 token name for this token
+     */
+    string public name;
+    /**
+     * @notice EIP-20 token symbol for this token
+     */
+    string public symbol;
+    /**
+     * @notice EIP-20 token decimals for this token
+     */
+    uint256 public decimals;
+    /**
+     * @notice Total number of tokens in circulation
+     */
+    uint256 public totalSupply;
+    /// @dev Current saving strategy
+    IAllocationStrategy public ias;
+    /// @dev Underlying token
+    IERC20 public token;
+    /// @dev Saving assets original amount
+    /// This amount is in the same unit used in allocation strategy
+    uint256 public savingAssetOrignalAmount;
+    /// @dev Saving asset original to internal amount conversion rate
+    uint256 public savingAssetConversionRate;
+    /// @dev Approved token transfer amounts on behalf of others
+    mapping(address => mapping(address => uint256)) public transferAllowances;
+    /// @dev Hat list
+    Hat[] internal hats;
+    /// @dev Account mapping
+    mapping(address => Account) public accounts;
+    /// @dev AccountStats mapping
+    mapping(address => AccountStatsStored) public accountStats;
+    /// @dev HatStats mapping
+    mapping(uint256 => HatStatsStored) public hatStats;
+
+
+    uint256 private constant ALLOCATION_STRATEGY_EXCHANGE_RATE_SCALE = 1e18;
+    uint256 private constant INITIAL_SAVING_ASSET_CONVERSION_RATE = 1e18;
+    uint256 private constant MAX_UINT256 = uint256(int256(-1));
+    uint256 private constant SELF_HAT_ID = MAX_UINT256;
+    uint32  private constant PROPORTION_BASE = 0xFFFFFFFF;
+    uint256 private constant MAX_NUM_HAT_RECIPIENTS = 50;
 }

@@ -102,6 +102,9 @@ function App(props) {
   const writeContracts = useContractLoader(userProvider)
   if(DEBUG) console.log("🔐 writeContracts",writeContracts)
 
+  const burnerWalletAddress = "0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286";
+  const rTokenAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
   // EXTERNAL CONTRACT EXAMPLE:
   //
   // If you want to bring in the mainnet DAI contract it would look like:
@@ -127,17 +130,13 @@ function App(props) {
       "function approve(address _spender, uint256 _value) public returns (bool success)",
       "function allowance(address _owner, address _spender) public view returns (uint256 remaining)"
     ]
-    let accountToImpersonate = "0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+    let accountToImpersonate = burnerWalletAddress; //"0x34aa3f359a9d614239015126635ce7732c18fdf3"
     await localProvider.send("hardhat_impersonateAccount",[accountToImpersonate])
     const signer = await localProvider.getSigner(accountToImpersonate)
-    console.log(signer);
     let tokenContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
-    console.log(tokenContract);
-    let address = await signer.getAddress()
     let amountToApprove = ethers.constants.MaxUint256
-    let approval = await tokenContract.approve("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", amountToApprove)
-    console.log(approval)
-    let allowance = await tokenContract.allowance("0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286", "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512")
+    await tokenContract.approve(rTokenAddress, amountToApprove)
+    let allowance = await tokenContract.allowance(burnerWalletAddress, rTokenAddress)
     console.log(ethers.utils.formatEther(allowance))  
   }
 
@@ -150,7 +149,7 @@ function App(props) {
     console.log(formatEther(signerbal))
     let transferbal = parseFloat(formatEther(signerbal)) - 0.01
     let txmisc = signer.sendTransaction({
-      to: "0x34aA3F359A9D614239015126635CE7732c18fDF3",
+      to: burnerWalletAddress,
       value: parseEther(transferbal.toString())
     });
   }
@@ -175,7 +174,7 @@ function App(props) {
     console.log(formatEther(signerDaiBal))
     let transferbal = parseFloat(formatEther(signerDaiBal)) - 0.01
     let txmisc = tx(myDaiContract.transfer(
-      "0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286",
+      burnerWalletAddress,
       parseEther(transferbal.toString())
     ));
   }
