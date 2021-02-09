@@ -1,1 +1,1 @@
-module.exports = ["CompoundAllocationStrategy","YourContract"];
+module.exports = ["CompoundAllocationStrategy","RScaffold"];

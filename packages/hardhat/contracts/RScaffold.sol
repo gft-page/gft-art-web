@@ -8,7 +8,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IAllocationStrategy} from "./IAllocationStrategy.sol";
 
 
-contract YourContract is
+contract RScaffold is
     Ownable,
     ReentrancyGuard {
     using SafeMath for uint256;
@@ -165,7 +165,7 @@ contract YourContract is
         uint256 decimals_) public {
         require(!initialized, "The library has already been initialized.");
         initialized = true;
-        _owner = address(0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286);
+        _owner = msg.sender;
         _guardCounter = 1;
         name = name_;
         symbol = symbol_;
@@ -504,7 +504,7 @@ contract YourContract is
         emit mintInternalTest(_owner, msg.sender, transferAllowances[_owner][msg.sender], mintAmount);
 
         require(
-            transferAllowances[_owner][msg.sender] >= mintAmount,
+            token.allowance(msg.sender, address(this)) >= mintAmount,
             "Not enough allowance"
         );
 

@@ -114,12 +114,32 @@ function App(props) {
   //
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
+  const purpose = useContractReader(readContracts,"RScaffold", "purpose")
   console.log("🤗 purpose:",purpose)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
+  const setPurposeEvents = useEventListener(readContracts, "RScaffold", "SetPurpose", localProvider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
+
+  const approveDai = async() => {
+    let IERC20 = [
+      "function balanceOf(address owner) view returns (uint256)",
+      "function approve(address _spender, uint256 _value) public returns (bool success)",
+      "function allowance(address _owner, address _spender) public view returns (uint256 remaining)"
+    ]
+    let accountToImpersonate = "0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+    await localProvider.send("hardhat_impersonateAccount",[accountToImpersonate])
+    const signer = await localProvider.getSigner(accountToImpersonate)
+    console.log(signer);
+    let tokenContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
+    console.log(tokenContract);
+    let address = await signer.getAddress()
+    let amountToApprove = ethers.constants.MaxUint256
+    let approval = await tokenContract.approve("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512", amountToApprove)
+    console.log(approval)
+    let allowance = await tokenContract.allowance("0x4cdabEeaC618d5D16c3838572D3c7d3DC502A286", "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512")
+    console.log(ethers.utils.formatEther(allowance))  
+  }
 
   const getImpersonatingSigner = async () => {
     let accountToImpersonate = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
@@ -136,7 +156,7 @@ function App(props) {
   }
 
   const getImpersonatingSignerDai = async () => {
-    let accountToImpersonate = "0x6b175474e89094c44da98b954eedeac495271d0f"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
+    let accountToImpersonate = "0x34aA3F359A9D614239015126635CE7732c18fDF3"//"0x34aa3f359a9d614239015126635ce7732c18fdf3"
 
 
 
@@ -237,12 +257,16 @@ function App(props) {
       <Button onClick={()=>{getImpersonatingSignerDai()}}>
         SnatchDAI
       </Button>
+      
+      <Button onClick={()=>{approveDai()}}>
+        ApproveDAI
+      </Button>
 
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">rScaffold</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -264,7 +288,7 @@ function App(props) {
             */}
 
             <Contract
-              name="YourContract"
+              name="RScaffold"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}

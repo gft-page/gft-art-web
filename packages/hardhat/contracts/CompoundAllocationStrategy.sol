@@ -31,7 +31,7 @@ contract CompoundAllocationStrategy is IAllocationStrategy, Ownable {
     }
 
     /// @dev ISavingStrategy.investUnderlying implementation
-    function investUnderlying(uint256 investAmount) override external onlyOwner returns (uint256) {
+    function investUnderlying(uint256 investAmount) override external returns (uint256) {
         token.transferFrom(msg.sender, address(this), investAmount);
         token.approve(address(cToken), investAmount);
         uint256 cTotalBefore = cToken.totalSupply();
@@ -45,7 +45,7 @@ contract CompoundAllocationStrategy is IAllocationStrategy, Ownable {
     }
 
     /// @dev ISavingStrategy.redeemUnderlying implementation
-    function redeemUnderlying(uint256 redeemAmount) override external onlyOwner returns (uint256) {
+    function redeemUnderlying(uint256 redeemAmount) override external returns (uint256) {
         uint256 cTotalBefore = cToken.totalSupply();
         // TODO should we handle redeem failure?
         require(cToken.redeemUnderlying(redeemAmount) == 0, "cToken.redeemUnderlying failed");
@@ -58,7 +58,7 @@ contract CompoundAllocationStrategy is IAllocationStrategy, Ownable {
     }
 
     /// @dev ISavingStrategy.redeemAll implementation
-    function redeemAll() override external onlyOwner
+    function redeemAll() override external
         returns (uint256 savingsAmount, uint256 underlyingAmount) {
         savingsAmount = cToken.balanceOf(address(this));
         require(cToken.redeem(savingsAmount) == 0, "cToken.redeem failed");
