@@ -6,12 +6,18 @@ import { abi as IErc20 } from './abis/erc20.json'
 import { abi as IStableDebtToken } from './abis/StableDebtToken.json'
 import { useContractLoader } from "../../hooks";
 import { usePoller } from "eth-hooks";
+import { useAaveData } from "./AaveData"
 
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
 const { Step } = Steps;
 
-function Ape({ reserveTokens, assetData, userAssetData, selectedProvider, dataProviderContract }) {
+function Ape({ selectedProvider }) {
+
+  const [settingsVisible, setSettingsVisible] = useState(false)
+
+  const { reserveTokens, assetData, assetPrices, userAccountData, userConfiguration,  userAssetList, userAssetData, contracts } = useAaveData({ selectedProvider })
+  const { addressProviderContract, dataProviderContract, lendingPoolContract, priceOracleContract } = contracts
 
   const [apeAsset, setApeAsset] = useState('WETH')
   const [borrowAsset, setBorrowAsset] = useState('DAI')

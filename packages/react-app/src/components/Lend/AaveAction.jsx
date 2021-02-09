@@ -100,7 +100,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
 
   const showModal = () => {
     setModalVisible(true);
-    setLiveAsset(assetData.symbol)
+    setLiveAsset([assetData.symbol])
   };
 
   const handleModalOk = async () => {
@@ -147,7 +147,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, lending
 
   const handleModalCancel = () => {
     setModalVisible(false);
-    setLiveAsset("none")
+    setLiveAsset()
   };
 
   let poolNeedsAllowance = ['borrow','withdraw'].includes(type) ? false : (poolAllowance&&amount) ? parseFloat(formatUnits(poolAllowance, assetData.decimals)) < amount : true

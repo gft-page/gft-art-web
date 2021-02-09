@@ -9,7 +9,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken, Ape } from "./components";
 import { SimpleLend } from "./views";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
@@ -204,6 +204,7 @@ function App(props) {
             />
           </Route>
           <Route exact path="/aave-ape">
+            <Ape selectedProvider={userProvider}/>
             <Contract
               name="AaveApe"
               signer={userProvider.getSigner()}
