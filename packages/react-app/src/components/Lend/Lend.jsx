@@ -6,12 +6,12 @@ import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
 import AaveAction from "./AaveAction"
 import { useAaveData } from "./AaveData"
-
-const { TabPane } = Tabs;
+import { convertValue, formattedValue } from "./AaveHelpers"
+import AccountSummary from "./AccountSummary"
+import AccountSettings from "./AccountSettings"
 
 function Lend({ selectedProvider, ethPrice }) {
 
-  const [settingsVisible, setSettingsVisible] = useState(false)
   const [liveAsset, setLiveAsset] = useState()
 
   const { reserveTokens, assetData, assetPrices, userAccountData, userConfiguration,  userAssetList, userAssetData, contracts } = useAaveData({ selectedProvider, liveAsset })
@@ -25,16 +25,6 @@ function Lend({ selectedProvider, ethPrice }) {
 
   let convertNative = ['USD','ETH'].includes(displayCurrency)
   let showUsdPrice = (ethPrice && displayCurrency === 'USD')
-
-  const convertValue = (_amountInUnits, _decimals, _toEthMultiplier) => {
-    let decimals = _decimals ? _decimals : 18
-    let toEthMultiplier = _toEthMultiplier ? _toEthMultiplier : 1
-    return (parseFloat(formatUnits(_amountInUnits,decimals)) * toEthMultiplier * (showUsdPrice ? ethPrice : 1))
-  }
-
-  const formattedValue = (_amountInUnits, _decimals, _toEthMultiplier) => {
-    return convertValue(_amountInUnits, _decimals, _toEthMultiplier).toLocaleString()
-  }
 
   const columns = [
   {
@@ -116,28 +106,7 @@ function Lend({ selectedProvider, ethPrice }) {
   let userAccountDisplay
   if(userAccountData) {
     userAccountDisplay = (
-      <>
-      <Row gutter={16} justify="center" align="middle">
-      <Col span={8}>
-        <Statistic title={"collateral"} value={formattedValue(userAccountData.totalCollateralETH)} suffix={showUsdPrice ? "USD" : "ETH"}/>
-      </Col>
-      <Col span={8}>
-        <Statistic title={"debt"} value={formattedValue(userAccountData.totalDebtETH)} suffix={showUsdPrice ? "USD" : "ETH"}/>
-      </Col>
-      <Col span={8}>
-        <Statistic title={"allowance"} value={formattedValue(userAccountData.availableBorrowsETH)} suffix={showUsdPrice ? "USD" : "ETH"}/>
-      </Col>
-      </Row>
-      <Drawer visible={settingsVisible} onClose={() => { setSettingsVisible(false) }} width={500}>
-      <Descriptions title="Account Details" column={1} style={{textAlign: 'left'}}>
-        <Descriptions.Item label={"currentLiquidationThreshold"}>{new Percent(userAccountData.currentLiquidationThreshold.toString(), "10000").toFixed(2)}</Descriptions.Item>
-        <Descriptions.Item label={"ltv"}>{new Percent(userAccountData.ltv.toString(), "10000").toFixed(2)}</Descriptions.Item>
-        <Descriptions.Item label={"healthFactor"}>{parseFloat(formatUnits(userAccountData.healthFactor,18)).toFixed(3)}</Descriptions.Item>
-        {userConfiguration&&<Descriptions.Item label={`Account configuration`}>{parseInt(userConfiguration.toString(), 10).toString(2)}</Descriptions.Item>}
-        <Descriptions.Item label={"activeAssets"}>{Object.keys(userAssetList).join(',')}</Descriptions.Item>
-      </Descriptions>
-      </Drawer>
-      </>
+      <AccountSummary userAccountData={userAccountData} showUsdPrice={showUsdPrice} ethPrice={ethPrice}/>
   )
 } else {
   userAccountDisplay = (<Skeleton active/>)
@@ -168,7 +137,7 @@ function Lend({ selectedProvider, ethPrice }) {
           optionType="button"
           buttonStyle="solid"
         />
-        <Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>
+        <AccountSettings userAccountData={userAccountData} userConfiguration={userConfiguration} userAssetList={userAssetList} />
         </Space>}
       style={{ textAlign: 'left' }}
         >

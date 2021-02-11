@@ -35,7 +35,7 @@ contract AavEth is AaveUniswapBase {
       return _amount;
   }
 
-  function withdrawATokenToEth(uint256 amount, address[] calldata path, address to) public payable returns (uint amountAsset) {
+  function withdrawATokenToEth(uint256 amount, address[] calldata path, address to) public returns (uint amountAsset) {
 
     address _fromAsset = path[0];
 

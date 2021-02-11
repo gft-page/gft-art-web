@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Input, Button, Form, Tooltip, Select, InputNumber } from "antd";
-import { parseUnits } from "@ethersproject/units";
+import { Input, Button, Form, Tooltip, Select, InputNumber, Typography } from "antd";
+import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 
 import { useResolveName, useDebounce } from "../hooks";
@@ -8,15 +8,22 @@ import { useResolveName, useDebounce } from "../hooks";
 import { DAI_ADDRESS, DAI_ABI } from "../constants";
 
 const { Option } = Select;
+const { Text } = Typography;
 
 const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
   const [target, setTarget] = useState("ironsoul.eth");
   const [receiver, setReceiver] = useState("");
+  const [targetBalance, setTargetBalance] = useState();
+  const [targetEthBalance, setTargetEthBalance] = useState();
+  const [receiverBalance, setReceiverBalance] = useState();
   const [token, setToken] = useState(DAI_ADDRESS)
   const [tokenList, setTokenList] = useState([])
   const [amount, setAmount] = useState()
 
-  let tokenListUri = 'https://gateway.ipfs.io/ipns/tokens.uniswap.org'
+  let defaultToken = 'DAI'
+  let defaultDecimals = 18
+
+  let tokenListUri = 'http://tokens.1inch.eth.link'
 
   useEffect(() => {
     const getTokenList = async () => {
@@ -39,6 +46,41 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
 
   const { addressFromENS, loading, error } = useResolveName(mainnetProvider, debouncedTarget);
 
+  const getTokenBalance = async () => {
+      let tokenContract = new ethers.Contract(token, DAI_ABI, localProvider);
+      if(addressFromENS) {
+        let _targetBalance = await tokenContract.balanceOf(addressFromENS)
+        setTargetBalance(_targetBalance)
+        let _targetEthBalance = await localProvider.getBalance(addressFromENS)
+        setTargetEthBalance(_targetEthBalance)
+      }
+      if(ethers.utils.isAddress(receiver) ) {
+        let _receiverBalance = await tokenContract.balanceOf(receiver)
+        setReceiverBalance(_receiverBalance)
+      }
+    }
+
+  useEffect(() => {
+    getTokenBalance()
+  },[addressFromENS, receiver])
+
+  let _token = tokenList.filter(function (el) {
+    return el.address === token})
+
+  let decimals
+  let symbol
+  if(_token.length === 0) {
+    decimals = defaultDecimals
+    symbol = defaultToken
+  } else {
+    decimals = _token[0].decimals
+    symbol = _token[0].symbol
+  }
+
+  let targetBalanceFormatted = targetBalance ? parseFloat(formatUnits(targetBalance, decimals)).toFixed(2) : null
+  let targetEthBalanceFormatted = targetEthBalance ? parseFloat(formatUnits(targetEthBalance, 18)).toFixed(2) : null
+  let receiverBalanceFormatted = receiverBalance ? parseFloat(formatUnits(receiverBalance, decimals)).toFixed(2) : null
+
   const impersonateSend = useCallback(async () => {
     const accountToImpersonate = addressFromENS;
 
@@ -47,10 +89,8 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
 
     const myTokenContract = new ethers.Contract(token, DAI_ABI, signer);
 
-    let _token = tokenList.filter(function (el) {
-      return el.address === token})
-
-    tx(myTokenContract.transfer(receiver, parseUnits(amount.toString(), _token[0].decimals)));
+    await tx(myTokenContract.transfer(receiver, parseUnits(amount.toString(), decimals)));
+    getTokenBalance()
   }, [addressFromENS, receiver]);
 
   const getValidationProps = () => {
@@ -63,10 +103,6 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
       return {
         validateStatus: "error",
         help: error,
-      };
-    } else {
-      return {
-        validateStatus: "success",
       };
     }
   };
@@ -83,10 +119,11 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
       <Form.Item label="ENS name or address of your target:" hasFeedback {...getValidationProps()}>
         <Tooltip placement="bottom" title="Account must have non-zero ETH balance">
           <Input value={target} onChange={e => setTarget(e.target.value)} />
+          <Text type="secondary">{targetBalanceFormatted&&`${targetBalanceFormatted} ${symbol}, ${targetEthBalanceFormatted} ETH`}</Text>
         </Tooltip>
       </Form.Item>
       <Form.Item label="Token">
-        <Select showSearch onChange={(value) => setToken(value)}
+        <Select showSearch defaultValue={defaultToken} onChange={(value) => setToken(value)}
         filterOption={(input, option) =>
         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
         } optionFilterProp="children">
@@ -101,6 +138,7 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
       <Form style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
         <Form.Item style={{ flexBasis: "75%" }}>
           <Input size="medium" onChange={e => setReceiver(e.target.value)} placeholder="Put receiver address" />
+          <Text type="secondary">{receiverBalanceFormatted&&`${receiverBalanceFormatted} ${symbol}`}</Text>
         </Form.Item>
         <Form.Item style={{ flexBasis: "20%" }}>
           <Button onClick={impersonateSend} disabled={error || loading || !receiver}>

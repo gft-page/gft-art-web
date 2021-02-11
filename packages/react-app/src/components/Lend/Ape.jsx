@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Space, Row, Col, InputNumber, notification, Checkbox, Statistic, Select, Typography, Button, Divider, Modal, Steps } from "antd";
+import { Card, Space, Row, Col, InputNumber, notification, Checkbox, Statistic, Select, Typography, Button, Divider, Modal, Steps, Skeleton } from "antd";
 import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { abi as IErc20 } from './abis/erc20.json'
@@ -7,6 +7,8 @@ import { abi as IStableDebtToken } from './abis/StableDebtToken.json'
 import { useContractLoader } from "../../hooks";
 import { usePoller } from "eth-hooks";
 import { useAaveData } from "./AaveData"
+import AccountSummary from "./AccountSummary"
+import AccountSettings from "./AccountSettings"
 
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
@@ -115,17 +117,19 @@ function Ape({ selectedProvider }) {
   }
   }
 
-  let hasDelegatedCredit = creditDelegated&&creditDelegated.eq(ethers.constants.MaxUint256) ? true : false
-  let hasATokenAllowance = aTokenAllowance&&aTokenAllowance.eq(ethers.constants.MaxUint256) ? true : false
+  let hasDelegatedCredit = creditDelegated&&creditDelegated.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
+  let hasATokenAllowance = aTokenAllowance&&aTokenAllowance.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
 
   return (
-    <>
-          <Row>
+    <Row justify="center" align="middle" gutter={16}>
+    <Card title={`🦍 Aave Ape 🦍`} style={{ width: 600 }}
+    extra={
+      <AccountSettings userAccountData={userAccountData} userConfiguration={userConfiguration} userAssetList={userAssetList} />}
+    >
+    {userAccountData?<AccountSummary userAccountData={userAccountData}/>:<Skeleton active/>}
+    <Divider/>
             <Title level={4}>Select your ape asset 🙈</Title>
-          </Row>
-          <Row>
             <Text>This is the asset you are going Long</Text>
-          </Row>
           <Row justify="center" align="middle" gutter={16}>
             <Col>
               <Select showSearch value={apeAsset} style={{width: '120px'}} size={'large'} onChange={(value) => {
@@ -166,7 +170,7 @@ function Ape({ selectedProvider }) {
         </Row>
         <Divider/>
         <Title level={4}>How to go ape 🦍</Title>
-        <Steps direction="vertical">
+        <Steps>
           <Step status={hasDelegatedCredit?'finish':'wait'} title="Delegate credit" description={creditDelegated&&(hasDelegatedCredit?<p>You have delegated credit to the Aave Ape 🏦</p>:<Button loading={delegating} onClick={setFullCreditAllowance}>{"Delegate!"}</Button>)} />
           <Step status={hasDelegatedCredit?'finish':'wait'} title="Go ape!"
             description={creditDelegated&&(hasDelegatedCredit&&<>
@@ -195,7 +199,7 @@ function Ape({ selectedProvider }) {
         </Steps>
         <Divider/>
         <Title level={4}>Unwinding your ape 🍌</Title>
-        <Steps direction="vertical">
+        <Steps>
           <Step status={hasATokenAllowance?'finish':'wait'} title={`Add a${apeAsset} allowance`} description={aTokenAllowance&&(hasATokenAllowance?<p>You have given an allowance to the Aave Ape 🏦</p>:<Button loading={allowing} onClick={setFullATokenAllowance}>{"Allow on the aToken!"}</Button>)} />
           <Step status={hasATokenAllowance?'finish':'wait'} title="Unwind your ape" description={aTokenAllowance&&(hasATokenAllowance&&<>
             <Paragraph>{`Flashloan the ${borrowAsset} you need to repay your debt, then withdraw some ${apeAsset} and swap it to settle up`}</Paragraph>
@@ -223,7 +227,8 @@ function Ape({ selectedProvider }) {
             </>
           )} />
         </Steps>
-    </>
+    </Card>
+    </Row>
   )
 
 }

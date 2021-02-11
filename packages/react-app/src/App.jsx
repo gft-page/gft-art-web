@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter, Switch, Route, Link, Redirect } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
@@ -13,7 +13,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchTo
 import { SimpleLend } from "./views";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints, AavEth } from "./views"
+import { Hints } from "./views"
 
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 const { Text, Title, Paragraph } = Typography;
@@ -123,8 +123,11 @@ function App(props) {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Swap</Link>
+          <Menu.Item key="/snatch">
+            <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
+          </Menu.Item>
+          <Menu.Item key="/swap">
+            <Link onClick={()=>{setRoute("/swap")}} to="/swap">Swap</Link>
           </Menu.Item>
           <Menu.Item key="/lend">
             <Link onClick={()=>{setRoute("/lend")}} to="/lend">Lend</Link>
@@ -132,14 +135,11 @@ function App(props) {
           <Menu.Item key="/simple-lend">
             <Link onClick={()=>{setRoute("/simple-lend")}} to="/simple-lend">SimpleLend</Link>
           </Menu.Item>
-          <Menu.Item key="/snatch">
-            <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
+          <Menu.Item key="/aave-ape">
+            <Link onClick={()=>{setRoute("/aave-ape")}} to="/aave-ape">Ape</Link>
           </Menu.Item>
           <Menu.Item key="/aaveth">
             <Link onClick={()=>{setRoute("/aaveth")}} to="/aaveth">AavEth</Link>
-          </Menu.Item>
-          <Menu.Item key="/aave-ape">
-            <Link onClick={()=>{setRoute("/aave-ape")}} to="/aave-ape">Ape</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -151,13 +151,16 @@ function App(props) {
         </Modal>
 
         <Switch>
-        <Route exact path="/">
+        <Route exact path="/swap">
           <Row justify="center">
           <Swap
             selectedProvider={userProvider}
             tokenListURI={tokenListURI}
             />
           </Row>
+        </Route>
+        <Route exact path="/">
+              <Redirect to="/swap" />
         </Route>
         <Route exact path="/lend">
           <Row justify="center">
@@ -195,7 +198,6 @@ function App(props) {
             </Row>
           </Route>
           <Route exact path="/aaveth">
-            <AavEth selectedProvider={userProvider}/>
             <Contract
               name="AavEth"
               signer={userProvider.getSigner()}
@@ -205,19 +207,13 @@ function App(props) {
           </Route>
           <Route exact path="/aave-ape">
             <Ape selectedProvider={userProvider}/>
-            <Contract
-              name="AaveApe"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-            />
           </Route>
           <Route exact path="/snatch">
-          <SnatchToken
-            mainnetProvider={mainnetProvider}
-            localProvider={localProvider}
-            tx={tx}
-          />
+            <SnatchToken
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              tx={tx}
+            />
           </Route>
         </Switch>
       </BrowserRouter>

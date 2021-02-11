@@ -4,8 +4,9 @@ const { use, expect } = require("chai");
 let daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 let wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
+/*
 describe("AaveApe", function () {
-  it("Should deploy AaveApe", async function () {
+  it("Should ape and unwind", async function () {
     const AaveApe = await ethers.getContractFactory("AaveApe");
 
     aaveApe = await AaveApe.deploy();
@@ -47,7 +48,7 @@ describe("AaveApe", function () {
   });
 
 });
-/*
+*/
   describe("AavEth", function () {
     it("Should deploy AavEth", async function () {
       const AavEth = await ethers.getContractFactory("AavEth");
@@ -95,4 +96,3 @@ describe("AaveApe", function () {
 
 
   });
-  */
