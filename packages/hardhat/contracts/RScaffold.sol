@@ -133,6 +133,26 @@ contract RScaffold is
         return true;
     }
 
+    // 0x97843608a00e2bbc75ab0c1911387e002565dede
+
+    function mintWithNewHatForBuidlGuidl(
+        uint256 mintAmount,
+        uint32 proportion
+    ) external nonReentrant returns (bool) {
+        address[] memory recipients = new address[](2);
+        recipients[0] = address(msg.sender);
+        recipients[1] = 0x97843608a00e2bbc75ab0C1911387E002565DEDE;
+        uint32[] memory proportions = new uint32[](2);
+        proportions[0] = 100 - proportion;
+        proportions[1] = proportion;
+        uint256 hatID = createHatInternal(recipients, proportions);
+        changeHatInternal(msg.sender, hatID);
+        mintInternal(mintAmount);
+        payInterestInternal(msg.sender);
+        return true;
+    }
+
+
     /**
      * @dev IRToken.mintWithNewHat implementation
      */
@@ -159,10 +179,13 @@ contract RScaffold is
         return true;
     }
 
+    event redeemTest(address _owner, uint256 amountRedeemed);
+
     /// @dev IRToken.redeemAll implementation
     function redeemAll() external nonReentrant returns (bool) {
         address src = msg.sender;
         payInterestInternal(src);
+        emit redeemTest(msg.sender, accounts[src].rAmount);
         redeemInternal(src, accounts[src].rAmount);
         return true;
     }
@@ -470,7 +493,7 @@ contract RScaffold is
         uint256 rGross = sInternalToR(account.sInternalAmount);
         if (rGross > (account.lDebt.add(account.rInterest))) {
             // don't panic, the condition guarantees that safemath is not needed
-            return rGross - account.lDebt - account.rInterest;
+            return rGross - account.lDebt;
         } else {
             // no interest accumulated yet or even negative interest rate!?
             return 0;
