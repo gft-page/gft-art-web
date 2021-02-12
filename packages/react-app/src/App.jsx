@@ -289,6 +289,7 @@ function App(props) {
               readContracts={readContracts}
               purpose={purpose}
               setPurposeEvents={setPurposeEvents}
+              rollEvents={rollEvents}
             />
           </Route>
           <Route path="/subgraph">

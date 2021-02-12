@@ -6,12 +6,26 @@ import { SyncOutlined } from '@ant-design/icons';
 import { Address, Balance } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
 
-export default function ExampleUI({purpose, setPurposeEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
+export default function ExampleUI({purpose, setPurposeEvents, rollEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
   const [newPurpose, setNewPurpose] = useState("loading...");
 
   return (
     <div>
+       <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+        <h2>Roll Events:</h2>
+        <List
+          bordered
+          dataSource={rollEvents}
+          renderItem={(item) => {
+            return (
+              <List.Item key={item.blockNumber}>
+                {`Block::${item.blockNumber}| Roll1 => ${item[0]}| Roll2 => ${item[1]}| Roll3 => ${item[2]}| Roll4  =>${item[3]}| Roll5  =>${item[4]}| Roll6  =>${item[5]}`}
+              </List.Item>
+            )
+          }}
+        />
+      </div>
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
@@ -132,6 +146,7 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
         📑 Maybe display a list of events?
           (uncomment the event and emit line in YourContract.sol! )
       */}
+
       <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
         <h2>Events:</h2>
         <List
@@ -145,33 +160,12 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
                     ensProvider={mainnetProvider}
                     fontSize={16}
                   /> =>
-                {item[1]}
+                {item[0]}
               </List.Item>
             )
           }}
         />
       </div>
-      <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
-        <h2>Events:</h2>
-        <List
-          bordered
-          dataSource={setPurposeEvents}
-          renderItem={(item) => {
-            return (
-              <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
-                <Address
-                    value={item[0]}
-                    ensProvider={mainnetProvider}
-                    fontSize={16}
-                  /> =>
-                {item[1]}
-              </List.Item>
-            )
-          }}
-        />
-      </div>
-
-
       <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:256 }}>
 
         <Card>
