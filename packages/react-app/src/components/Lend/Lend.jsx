@@ -3,6 +3,7 @@ import { Space, Row, Col, Radio, Card, Select, Statistic, Descriptions, Typograp
 import { SettingOutlined } from '@ant-design/icons';
 import { Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
+import { TxBuilderV2, Network, Market } from '@aave/protocol-js'
 import { ethers } from "ethers";
 import AaveAction from "./AaveAction"
 import { useAaveData } from "./AaveData"
@@ -10,7 +11,23 @@ import { convertValue, formattedValue } from "./AaveHelpers"
 import AccountSummary from "./AccountSummary"
 import AccountSettings from "./AccountSettings"
 
-function Lend({ selectedProvider, ethPrice }) {
+var Web3 = require('web3');
+
+function Lend({ selectedProvider, ethPrice, localProvider }) {
+
+  const httpProvider = new Web3.providers.HttpProvider(
+      process.env.REACT_APP_PROVIDER ||
+        "http://localhost:8545"
+    );
+  let customProvider = new ethers.providers.Web3Provider(httpProvider)
+
+  let txBuilder
+  let lendingPool
+
+  if(customProvider) {
+    txBuilder = new TxBuilderV2(Network.main, customProvider);
+    lendingPool = txBuilder.getLendingPool(Market.Proto); // get all lending pool methods
+  }
 
   const [liveAsset, setLiveAsset] = useState()
 
@@ -38,15 +55,15 @@ function Lend({ selectedProvider, ethPrice }) {
   {
     title: 'Market size' + (convertNative?` (${displayCurrency})`:''),
     key: 'marketSize',
-    render: value => formattedValue(value.availableLiquidity.add(value.totalStableDebt).add(value.totalVariableDebt), value.decimals, (assetPrices[value.symbol]&&convertNative)?formatEther(assetPrices[value.symbol]):1),
-    sorter: (a, b) => convertValue(a.availableLiquidity.add(a.totalStableDebt).add(a.totalVariableDebt), a.decimals, (assetPrices[a.symbol]&&convertNative)?formatEther(assetPrices[a.symbol]):1) - convertValue(b.availableLiquidity.add(b.totalStableDebt).add(b.totalVariableDebt), b.decimals, (assetPrices[b.symbol]&&convertNative)?formatEther(assetPrices[b.symbol]):1),
+    render: value => formattedValue(value.totalLiquidity, value.decimals, convertNative?formatEther(value.price.priceInEth):1, showUsdPrice, ethPrice),
+    sorter: (a, b) => convertValue(a.totalLiquidity, a.decimals, convertNative?formatEther(a.price.priceInEth):1) - convertValue(b.totalLiquidity, b.decimals, convertNative?formatEther(b.price.priceInEth):1),
     sortDirections: ['descend', 'ascend'],
   },
   {
     title: 'Liquidity' + (convertNative?` (${displayCurrency})`:''),
     key: 'availableLiquidity',
-    render: value => formattedValue(value.availableLiquidity, value.decimals, (assetPrices[value.symbol]&&convertNative)?formatEther(assetPrices[value.symbol]):1),
-    sorter: (a, b) => convertValue(a.availableLiquidity, a.decimals, (assetPrices[a.symbol]&&convertNative)?formatEther(assetPrices[a.symbol]):1) - convertValue(b.availableLiquidity, b.decimals, (assetPrices[b.symbol]&&convertNative)?formatEther(assetPrices[b.symbol]):1),
+    render: value => formattedValue(value.availableLiquidity, value.decimals, convertNative?formatEther(value.price.priceInEth):1, showUsdPrice, ethPrice),
+    sorter: (a, b) => convertValue(a.availableLiquidity, a.decimals, convertNative?formatEther(a.price.priceInEth):1) - convertValue(b.availableLiquidity, b.decimals, convertNative?formatEther(b.price.priceInEth):1),
     sortDirections: ['descend', 'ascend'],
   },
   {
@@ -73,30 +90,30 @@ function Lend({ selectedProvider, ethPrice }) {
   {
     title: 'Deposited' + (convertNative?` (${displayCurrency})`:''),
     key: 'deposited',
-    render: value => (userAssetData[value.symbol] && userAssetData[value.symbol]['currentATokenBalance'])&&formattedValue(userAssetData[value.symbol]['currentATokenBalance'], value.decimals, (assetPrices[value.symbol]&&convertNative)?formatEther(assetPrices[value.symbol]):1),
+    render: value => (userAssetData[value.symbol] && userAssetData[value.symbol]['currentATokenBalance'])&&formattedValue(userAssetData[value.symbol]['currentATokenBalance'], value.decimals, convertNative?formatEther(value.price.priceInEth):1, showUsdPrice, ethPrice),
   },
   {
     title: 'Stable Debt' + (convertNative?` (${displayCurrency})`:''),
     key: 'stableDebt',
-    render: value => (userAssetData[value.symbol] && userAssetData[value.symbol]['currentStableDebt'])&&formattedValue(userAssetData[value.symbol]['currentStableDebt'], value.decimals, (assetPrices[value.symbol]&&convertNative)?formatEther(assetPrices[value.symbol]):1),
+    render: value => (userAssetData[value.symbol] && userAssetData[value.symbol]['currentStableDebt'])&&formattedValue(userAssetData[value.symbol]['currentStableDebt'], value.decimals, convertNative?formatEther(value.price.priceInEth):1, showUsdPrice, ethPrice),
   },
   {
     title: 'Variable Debt' + (convertNative?` (${displayCurrency})`:''),
     key: 'variableDebt',
-    render: value => (userAssetData[value.symbol])&&formattedValue(userAssetData[value.symbol]['currentVariableDebt'], value.decimals, (assetPrices[value.symbol]&&convertNative)?formatEther(assetPrices[value.symbol]):1),
+    render: value => (userAssetData[value.symbol])&&formattedValue(userAssetData[value.symbol]['currentVariableDebt'], value.decimals, convertNative?formatEther(value.price.priceInEth):1, showUsdPrice, ethPrice),
   },
   {
     title: 'Actions',
     key: 'actions',
     render: value => {
       return (<>
-      {value.isActive&&<AaveAction setLiveAsset={setLiveAsset} type="deposit" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
+      {value.isActive&&<AaveAction selectedProvider={selectedProvider} lendingPool={lendingPool} setLiveAsset={setLiveAsset} type="deposit" assetData={value} assetPrice={value.price.priceInEth} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
       {(Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('collateral')).includes(value.symbol)&&(
-        <AaveAction setLiveAsset={setLiveAsset} type="withdraw" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+        <AaveAction lendingPool={lendingPool} selectedProvider={selectedProvider} setLiveAsset={setLiveAsset} type="withdraw" assetData={value} assetPrice={value.price.priceInEth} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
       ))}
-      {(value.borrowingEnabled&&userAccountData&&userAccountData.availableBorrowsETH>0)&&<AaveAction setLiveAsset={setLiveAsset} type="borrow" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
+      {(value.borrowingEnabled&&userAccountData&&userAccountData.availableBorrowsETH>0)&&<AaveAction lendingPool={lendingPool} selectedProvider={selectedProvider} setLiveAsset={setLiveAsset} type="borrow" assetData={value} assetPrice={value.price.priceInEth} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>}
       {(Object.keys(userAssetList).filter(asset => userAssetList[asset].includes('debt')).includes(value.symbol)&&(
-        <AaveAction setLiveAsset={setLiveAsset} type="repay" assetData={value} assetPrice={assetPrices[value.symbol]} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
+        <AaveAction lendingPool={lendingPool} selectedProvider={selectedProvider} setLiveAsset={setLiveAsset} type="repay" assetData={value} assetPrice={value.price.priceInEth} signer={signer} lendingPoolContract={lendingPoolContract} userAccountData={userAccountData} userAssetData={userAssetData[value.symbol]}/>
       ))}
       </>)
     }
@@ -107,12 +124,11 @@ function Lend({ selectedProvider, ethPrice }) {
   if(userAccountData) {
     userAccountDisplay = (
       <AccountSummary userAccountData={userAccountData} showUsdPrice={showUsdPrice} ethPrice={ethPrice}/>
-  )
-} else {
-  userAccountDisplay = (<Skeleton active/>)
-}
+      )
+    } else {
+      userAccountDisplay = (<Skeleton active/>)
+    }
 
-  let missingPrices = reserveTokens && Object.keys(assetPrices).length < reserveTokens.length
 
   return (
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmWzL3TSmkMhbqGBEwyeFyWVvLmEo3F44HBMFnmTUiTfp1" width='40' alt='aaveLogo'/><Typography>Aave Lender</Typography></Space>}
@@ -124,7 +140,6 @@ function Lend({ selectedProvider, ethPrice }) {
           value={displayCurrency}
           optionType="button"
           buttonStyle="solid"
-          disabled={missingPrices}
         />
         <Radio.Group
           options={[
@@ -143,7 +158,7 @@ function Lend({ selectedProvider, ethPrice }) {
         >
     {userAccountDisplay}
     <Divider/>
-        <Table dataSource={Object.values(assetData).filter(asset => (showActiveAssets&&userAssetList)?Object.keys(userAssetList).includes(asset.symbol):true)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
+        <Table dataSource={assetData.filter(asset => (showActiveAssets&&userAssetList)?Object.keys(userAssetList).includes(asset.symbol):true)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
     </Card>
   )
 

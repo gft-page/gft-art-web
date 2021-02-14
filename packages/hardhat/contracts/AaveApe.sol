@@ -8,12 +8,14 @@ contract AaveApe is AaveUniswapBase {
   event Ape(address ape, address apeAsset, address borrowAsset, uint256 borrowAmount, uint256 apeAmount, uint256 interestRateMode);
   event Unwind(address ape, address apeAsset, address borrowAsset, uint256 amountOwing, uint256 apeAmount, uint256 interestRateMode);
 
+  // Gets the amount available to borrow for a given address for a given asset
   function getAvailableBorrowInAsset(address borrowAsset, address ape) public view returns (uint256) {
     ( ,,uint256 availableBorrowsETH,,,) = getLendingPool().getUserAccountData(ape);
     console.log('availableBorrows', availableBorrowsETH);
     return getAssetAmount(borrowAsset, availableBorrowsETH);
   }
 
+  // Converts an amount denominated in ETH into an asset based on the Aave oracle
   function getAssetAmount(address asset, uint256 amountInEth) public view returns (uint256) {
     uint256 assetPrice = getPriceOracle().getAssetPrice(asset);
     console.log('assetPrice', assetPrice);
@@ -23,21 +25,20 @@ contract AaveApe is AaveUniswapBase {
     return assetAmount;
   }
 
-  function superApe(address apeAsset, address borrowAsset, uint256 interestRateMode, uint levers) public returns (bool) {
-
-    for (uint i = 0; i < levers; i++) {
-      ape(apeAsset, borrowAsset, interestRateMode);
-    }
-
-    return true;
-  }
-
+  // 1. Borrows the maximum amount available of a borrowAsset (in the designated interest rate mode)
+  // Note: requires the user to have delegated credit to the Aave Ape Contract
+  // 2. Converts it into apeAsset via Uniswap
+  // 3. Deposits that apeAsset into Aave on  behalf of the borrower
   function ape(address apeAsset, address borrowAsset, uint256 interestRateMode) public returns (bool) {
 
+      // Get the maximum amount available to borrow in the borrowAsset
       uint256 borrowAmount = getAvailableBorrowInAsset(borrowAsset, msg.sender);
+
+      require(borrowAmount > 0, "Requires credit on Aave!");
 
       ILendingPool _lendingPool = getLendingPool();
 
+      // Borrow from Aave
       _lendingPool.borrow(
         borrowAsset,
         borrowAmount,
@@ -46,16 +47,18 @@ contract AaveApe is AaveUniswapBase {
         msg.sender
       );
 
+      // Approve the Uniswap Router on the borrowed asset
+      IERC20(borrowAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, borrowAmount);
+
+      // Execute trade on Uniswap
       address[] memory path = new address[](2);
       path[0] = borrowAsset;
       path[1] = apeAsset;
 
-      IERC20(borrowAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, borrowAmount);
-
       uint[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(borrowAmount, 0, path, address(this), block.timestamp);
 
+      // get the output amount, approve the Lending Pool to move that amount of erc20 & deposit
       uint outputAmount = amounts[amounts.length - 1];
-
       IERC20(apeAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), outputAmount);
 
       _lendingPool.deposit(
@@ -70,14 +73,27 @@ contract AaveApe is AaveUniswapBase {
       return true;
   }
 
+  function superApe(address apeAsset, address borrowAsset, uint256 interestRateMode, uint levers) public returns (bool) {
+
+    // Call "ape" for the number of levers specified
+    for (uint i = 0; i < levers; i++) {
+      ape(apeAsset, borrowAsset, interestRateMode);
+    }
+
+    return true;
+  }
+
   function uniswapTokensForExactTokens(
     uint amountOut,
     uint amountInMax,
     address fromAsset,
     address toAsset
   ) internal returns (uint[] memory amounts) {
+
+    // Approve the transfer
     IERC20(fromAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, amountInMax);
 
+    // Prepare and execute the swap
     address[] memory path = new address[](2);
     path[0] = fromAsset;
     path[1] = toAsset;
@@ -85,83 +101,10 @@ contract AaveApe is AaveUniswapBase {
     return UNISWAP_ROUTER.swapTokensForExactTokens(amountOut, amountInMax, path, address(this), block.timestamp);
   }
 
-  function closePosition(address ape, address apeAsset, address borrowAsset, uint256 repayAmount, uint256 amountOwing, uint256 rateMode) internal returns (bool) {
-
-    IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), repayAmount);
-
-    getLendingPool().repay(
-      borrowAsset,
-      repayAmount,
-      rateMode,
-      ape
-    );
-
-    uint256 maxCollateralAmount = getAvailableBorrowInAsset(apeAsset, ape);
-
-    DataTypes.ReserveData memory reserve = getAaveAssetReserveData(apeAsset);
-
-    IERC20 _aToken = IERC20(reserve.aTokenAddress);
-
-    console.log(_aToken.balanceOf(ape), maxCollateralAmount);
-
-    if(_aToken.balanceOf(ape) < maxCollateralAmount) {
-      maxCollateralAmount = _aToken.balanceOf(ape);
-    }
-
-    _aToken.transferFrom(ape, address(this), maxCollateralAmount);
-
-    getLendingPool().withdraw(
-      apeAsset,
-      maxCollateralAmount,
-      address(this)
-    );
-
-    IERC20(apeAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, maxCollateralAmount);
-
-    uint[] memory amounts = uniswapTokensForExactTokens(amountOwing, maxCollateralAmount, apeAsset, borrowAsset);
-
-    uint256 leftoverAmount = maxCollateralAmount.sub(amounts[0]);
-
-    IERC20(apeAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), leftoverAmount);
-
-    getLendingPool().deposit(
-      apeAsset,
-      leftoverAmount,
-      ape,
-      0
-    );
-
-    IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), amountOwing);
-
-    emit Unwind(ape, apeAsset, borrowAsset, amountOwing, amounts[0], rateMode);
-
-    return true;
-  }
-
-  function executeOperation(
-          address[] calldata assets,
-          uint256[] calldata amounts,
-          uint256[] calldata premiums,
-          address initiator,
-          bytes calldata params
-      )
-          external
-          returns (bool)
-      {
-        require(msg.sender == ADDRESSES_PROVIDER.getLendingPool(), 'only the lending pool can call this function');
-
-        (address ape, address apeAsset, uint256 rateMode) = abi.decode(params, (address, address, uint256));
-
-        address borrowAsset = assets[0];
-        uint256 repayAmount = amounts[0];
-        uint256 amountOwing = repayAmount.add(premiums[0]);
-
-        return closePosition(ape, apeAsset, borrowAsset, repayAmount, amountOwing, rateMode);
-
-      }
-
+  // Unwind a position (long apeAsset, short borrowAsset)
   function unwindApe(address apeAsset, address borrowAsset, uint256 interestRateMode) public {
 
+    // Get the user's outstanding debt
     (,uint256 stableDebt, uint256 variableDebt,,,,,,) = getProtocolDataProvider().getUserReserveData(borrowAsset, msg.sender);
 
     uint256 repayAmount;
@@ -171,6 +114,7 @@ contract AaveApe is AaveUniswapBase {
       repayAmount = variableDebt;
     }
 
+    // Prepare the flashLoan parameters
     address receiverAddress = address(this);
 
     address[] memory assets = new address[](1);
@@ -197,6 +141,90 @@ contract AaveApe is AaveUniswapBase {
         referralCode
     );
 
+  }
+
+  // This is the function that the Lending pool calls when flashLoan has been called and the funds have been flash transferred
+  function executeOperation(
+          address[] calldata assets,
+          uint256[] calldata amounts,
+          uint256[] calldata premiums,
+          address initiator,
+          bytes calldata params
+      )
+          external
+          returns (bool)
+      {
+        require(msg.sender == ADDRESSES_PROVIDER.getLendingPool(), 'only the lending pool can call this function');
+
+        // Decode the parameters
+        (address ape, address apeAsset, uint256 rateMode) = abi.decode(params, (address, address, uint256));
+
+        // Calculate the amount owed back to the lendingPool
+        address borrowAsset = assets[0];
+        uint256 repayAmount = amounts[0];
+        uint256 amountOwing = repayAmount.add(premiums[0]);
+
+        // Close position & repay the flashLoan
+        return closePosition(ape, apeAsset, borrowAsset, repayAmount, amountOwing, rateMode);
+
+      }
+
+  function closePosition(address ape, address apeAsset, address borrowAsset, uint256 repayAmount, uint256 amountOwing, uint256 rateMode) internal returns (bool) {
+
+    // Approve the lendingPool to transfer the repay amount
+    IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), repayAmount);
+
+    // Repay the amount owed
+    getLendingPool().repay(
+      borrowAsset,
+      repayAmount,
+      rateMode,
+      ape
+    );
+
+    // Calculate the amount available to withdraw (the smaller of the borrow allowance and the aToken balance)
+    uint256 maxCollateralAmount = getAvailableBorrowInAsset(apeAsset, ape);
+
+    DataTypes.ReserveData memory reserve = getAaveAssetReserveData(apeAsset);
+
+    IERC20 _aToken = IERC20(reserve.aTokenAddress);
+
+    if(_aToken.balanceOf(ape) < maxCollateralAmount) {
+      maxCollateralAmount = _aToken.balanceOf(ape);
+    }
+
+    // transfer the aTokens to this address, then withdraw the Tokens from Aave
+    _aToken.transferFrom(ape, address(this), maxCollateralAmount);
+
+    getLendingPool().withdraw(
+      apeAsset,
+      maxCollateralAmount,
+      address(this)
+    );
+
+    // Make the swap on Uniswap
+    IERC20(apeAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, maxCollateralAmount);
+
+    uint[] memory amounts = uniswapTokensForExactTokens(amountOwing, maxCollateralAmount, apeAsset, borrowAsset);
+
+    // Deposit any leftover back into Aave on behalf of the user
+    uint256 leftoverAmount = maxCollateralAmount.sub(amounts[0]);
+
+    IERC20(apeAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), leftoverAmount);
+
+    getLendingPool().deposit(
+      apeAsset,
+      leftoverAmount,
+      ape,
+      0
+    );
+
+    // Approve Aave to withdraw the owed amount
+    IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), amountOwing);
+
+    emit Unwind(ape, apeAsset, borrowAsset, amountOwing, amounts[0], rateMode);
+
+    return true;
   }
 
 }

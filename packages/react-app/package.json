@@ -15,6 +15,7 @@
     ]
   },
   "dependencies": {
+    "@aave/protocol-js": "^2.4.1",
     "@ant-design/icons": "^4.2.2",
     "@apollo/react-hooks": "^4.0.0",
     "@ethersproject/address": "^5.0.5",

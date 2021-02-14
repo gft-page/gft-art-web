@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Card, Space, Row, Col, InputNumber, notification, Checkbox, Statistic, Select, Typography, Button, Divider, Modal, Steps, Skeleton } from "antd";
 import { parseUnits, formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
-import { abi as IErc20 } from './abis/erc20.json'
-import { abi as IStableDebtToken } from './abis/StableDebtToken.json'
-import { useContractLoader } from "../../hooks";
+import { abi as IErc20 } from '../components/Lend/abis/erc20.json'
+import { abi as IStableDebtToken } from '../components/Lend/abis/StableDebtToken.json'
+import { useContractLoader } from "../hooks";
 import { usePoller } from "eth-hooks";
-import { useAaveData } from "./AaveData"
-import AccountSummary from "./AccountSummary"
-import AccountSettings from "./AccountSettings"
+import { useAaveData } from "../components/Lend/AaveData"
+import AccountSummary from "../components/Lend/AccountSummary"
+import AccountSettings from "../components/Lend/AccountSettings"
 
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;

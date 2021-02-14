@@ -88,7 +88,7 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
     const signer = await localProvider.getSigner(accountToImpersonate);
 
     const myTokenContract = new ethers.Contract(token, DAI_ABI, signer);
-
+    console.log(receiver, amount, decimals)
     await tx(myTokenContract.transfer(receiver, parseUnits(amount.toString(), decimals)));
     getTokenBalance()
   }, [addressFromENS, receiver]);
@@ -133,7 +133,10 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
         </Select>
       </Form.Item>
       <Form.Item label="Amount">
-        <InputNumber onChange={(value) => setAmount(value)} />
+        <InputNumber onChange={(value) => {
+          setAmount(value)
+        }
+        } />
       </Form.Item>
       <Form style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
         <Form.Item style={{ flexBasis: "75%" }}>

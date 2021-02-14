@@ -3,6 +3,7 @@ import { Percent } from '@uniswap/sdk'
 import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { useBlockNumber, usePoller } from "eth-hooks";
+import { useQuery, gql } from '@apollo/client';
 import { abi as IAddressProvider } from './abis/LendingPoolAddressProvider.json'
 import { abi as IDataProvider } from './abis/ProtocolDataProvider.json'
 import { abi as ILendingPool } from './abis/LendingPool.json'
@@ -11,7 +12,6 @@ import { abi as IPriceOracle } from './abis/PriceOracle.json'
 const POOL_ADDRESSES_PROVIDER_ADDRESS = '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
 const PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
 const LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
-const PRICE_ORACLE = '0xa50ba011c48153de246e5192c8f9258a2ba79ca9'
 
 export function useAaveData({ selectedProvider, markets }) {
 
@@ -21,17 +21,55 @@ export function useAaveData({ selectedProvider, markets }) {
   const [userAssetList, setUserAssetList] = useState({})
 
   const [reserveTokens, setReserveTokens] = useState()
-  const [assetData, setAssetData] = useState({})
-  const [assetPrices, setAssetPrices] = useState({})
 
   let signer = selectedProvider.getSigner()
   let addressProviderContract = new ethers.Contract(POOL_ADDRESSES_PROVIDER_ADDRESS, IAddressProvider, signer);
   let dataProviderContract = new ethers.Contract(PROTOCOL_DATA_PROVIDER, IDataProvider, signer);
   let lendingPoolContract = new ethers.Contract(LENDING_POOL, ILendingPool, signer);
-  let priceOracleContract = new ethers.Contract(PRICE_ORACLE, IPriceOracle, signer);
 
-  const contracts = { addressProviderContract, dataProviderContract, lendingPoolContract, priceOracleContract }
+  const contracts = { addressProviderContract, dataProviderContract, lendingPoolContract }
 
+  const RESERVE_GRAPHQL = `
+  {
+      pool (id: "${POOL_ADDRESSES_PROVIDER_ADDRESS.toLowerCase()}"){
+        id
+        lendingPool
+        reserves {
+          id
+          underlyingAsset
+          symbol
+          name
+          decimals
+          usageAsCollateralEnabled
+          borrowingEnabled
+          isActive
+          isFrozen
+          price {
+            priceInEth
+          }
+          totalLiquidity
+          totalATokenSupply
+          availableLiquidity
+          liquidityRate
+          variableBorrowRate
+          stableBorrowRate
+          aToken {
+            id
+          }
+          vToken {
+            id
+          }
+          sToken {
+            id
+          }
+        }
+      }
+    }
+  `
+  const RESERVE_GQL = gql(RESERVE_GRAPHQL)
+  const { loading, data } = useQuery(RESERVE_GQL,{pollInterval: 6000});
+
+/*
   const getReserveData = async () => {
     if(reserveTokens) {
       console.log('getting reserve data')
@@ -52,6 +90,7 @@ export function useAaveData({ selectedProvider, markets }) {
   useEffect(() => {
     getReserveData()
     getPriceData()
+    console.log(reserveTokens)
   }, [reserveTokens])
 
 
@@ -68,7 +107,7 @@ export function useAaveData({ selectedProvider, markets }) {
       setAssetPrices(_assetPrices)
     }
   }
-
+*/
   const checkUserConfiguration = async (_configuration) => {
     if(_configuration && reserveTokens) {
       let _userActiveAssets = {}
@@ -98,6 +137,11 @@ export function useAaveData({ selectedProvider, markets }) {
   const getUserAssetData = async () => {
     if(userAssetList && reserveTokens) {
       let address = await signer.getAddress()
+
+      if(userAssetList.length === 0) {
+        setUserAssetData({})
+        return
+      }
 
       Object.keys(userAssetList).forEach(async (asset) => {
 
@@ -147,11 +191,11 @@ export function useAaveData({ selectedProvider, markets }) {
   }
 
   usePoller(getReserveTokens, 3000)
-  usePoller(getReserveData, 15000)
-  usePoller(getPriceData, 25000)
+  //usePoller(getReserveData, 15000)
+  //usePoller(getPriceData, 25000)
   usePoller(getUserInfo, 6000)
   usePoller(getUserAssetData, 9000)
 
-  return { reserveTokens, assetData, assetPrices, userAccountData, userConfiguration,  userAssetList, userAssetData, contracts }
+  return { reserveTokens, assetData: data?data.pool.reserves:[], userAccountData, userConfiguration,  userAssetList, userAssetData, contracts }
 
 }

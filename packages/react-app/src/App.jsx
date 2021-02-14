@@ -9,35 +9,22 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken, Ape } from "./components";
-import { SimpleLend } from "./views";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints } from "./views"
+import { Hints, Ape, SimpleLend } from "./views"
 
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 const { Text, Title, Paragraph } = Typography;
 
-// 😬 Sorry for all the console logging 🤡
-const DEBUG = true
-
 // 🔭 block explorer URL
 const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.com/poa/xdai/"
 
-// 🛰 providers
-if(DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
-//const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
 const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFURA_ID)
-// ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
-// 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
-// as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-if(DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
-
 
 
 function App(props) {
@@ -160,13 +147,14 @@ function App(props) {
           </Row>
         </Route>
         <Route exact path="/">
-              <Redirect to="/swap" />
+              <Redirect to="/lend" />
         </Route>
         <Route exact path="/lend">
           <Row justify="center">
           <Lend
             selectedProvider={userProvider}
             ethPrice={price}
+            localProvider={localProvider}
             />
           </Row>
         </Route>
