@@ -5,8 +5,6 @@ const { config, ethers } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
 const defiFacetABI = require("../artifacts/contracts/facets/DeFiFacet.sol/DeFiFacet.json");
-//  
-// 
 const defiCutABI = require("../artifacts/contracts/facets/DiamondCutFacet.sol/DiamondCutFacet.json");
 
 
@@ -34,9 +32,11 @@ const main = async () => {
     return selectors
   }
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
   const defiFacet = await deploy("DeFiFacet") // <-- add in constructor args like line 19 vvvv
   const diamondCutFacet = await deploy("DiamondCutFacet") // <-- add in constructor args like line 19 vvvv
+  console.log(diamondCutFacet.address)
+  console.log(defiFacet.address)
+
   const diamondCutParams = [
     [diamondCutFacet.address, FacetCutAction.Add, [ '0x1f931c1c' ]],
     [defiFacet.address, FacetCutAction.Add, ['0x0400a718', '0xf807cd22', '0x0261bf8b', '0xed6ff760', '0x87f64f41']]

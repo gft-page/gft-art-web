@@ -3,12 +3,27 @@
 import React, { useState } from "react";
 import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progress, Spin } from "antd";
 import { SyncOutlined } from '@ant-design/icons';
-import { Address, Balance } from "../components";
+import { Address, Balance, EtherInput } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
-
+import ethers from 'ethers'
+import facetABI from  '../contracts/DefiFacet.abi';
 export default function ExampleUI({purpose, setPurposeEvents, address, mainnetProvider, userProvider, localProvider, yourLocalBalance, price, tx, readContracts, writeContracts }) {
 
   const [newPurpose, setNewPurpose] = useState("loading...");
+  const [amount, setAmount] = useState();
+  const signer = userProvider.getSigner();
+  const defiFacet = new ethers.Contract(
+    '0xD0224F66007a515bb404c70B5e8f8830585672Bb',
+    facetABI,
+    userProvider
+);
+const data = defiFacet.interface.encodeFunctionData('zappify', [parseEther('1000')])
+console.log('zappify', data)
+const hex = defiFacet.interface.getSighash('zappify');
+console.log('hex', hex)
+// const data = functionNName.encode([parseEther('1000')])
+
+
 
   return (
     <div>
@@ -18,17 +33,28 @@ export default function ExampleUI({purpose, setPurposeEvents, address, mainnetPr
       <div style={{border:"1px solid #cccccc", padding:16, width:400, margin:"auto",marginTop:64}}>
         <h2>Example UI:</h2>
 
-        <h4>purpose: {purpose}</h4>
+        {/* <h4>purpose: {purpose}</h4> */}
 
         <Divider/>
 
         <div style={{margin:8}}>
-          <Input onChange={(e)=>{setNewPurpose(e.target.value)}} />
+
+        <EtherInput
+  price={price}
+  value={amount}
+  onChange={value => {
+    setAmount(value);
+  }}
+/> 
           <Button onClick={()=>{
-            console.log("newPurpose",newPurpose)
             /* look how you call setPurpose on your contract: */
-            tx( writeContracts.YourContract.setPurpose(newPurpose) )
-          }}>Set Purpose</Button>
+            tx( signer.sendTransaction({
+              to: writeContracts.Diamond.address,
+              data: data,
+              value: parseEther(amount)
+            }) )
+              // writeContracts.Diamond.zap(parseEther('1000'), {value: parseEther(amount)}) )
+          }}>Zap with Aave Uniswap Market</Button>
         </div>
 
 
