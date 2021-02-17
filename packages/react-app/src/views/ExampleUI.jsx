@@ -5,6 +5,7 @@ import { Button, List, Divider, Input, Card, DatePicker, Slider, Switch, Progres
 import { SyncOutlined } from "@ant-design/icons";
 import { Address, Balance, EtherInput, AddressInput } from "../components";
 import { parseEther, formatEther } from "@ethersproject/units";
+import { Alert } from "antd";
 
 export default function ExampleUI({
   setPurposeEvents,
@@ -44,6 +45,17 @@ export default function ExampleUI({
       {/*
         ⚙️ Here is an example UI that displays and sets the purpose in your smart contract:
       */}
+              <Alert
+          message={"⚠️ Facet Deployment"}
+          description={(
+            <div>
+              Deploy the facet you want to upgrade through scaffold
+            </div>
+          )}
+          type="error"
+          closable={false}
+        />
+      <a href = 'https://faucet.metamask.io/'><b>Get Ropsten ETH here</b></a>
       <div style={{ border: "1px solid #cccccc", padding: 16, width: 400, margin: "auto", marginTop: 64 }}>
         <h2>Zap with DeFi Facet</h2>
         {/* <h4>purpose: {purpose}</h4> */}
@@ -75,6 +87,7 @@ export default function ExampleUI({
         </div>
         <Divider />
         <h2>Upgrade Diamond Facet</h2>
+        {/* upgrades the defi facet only currently for demo purposes */}
         <Divider />
         <div style={{ margin: 8 }}>
         

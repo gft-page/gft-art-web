@@ -33,7 +33,8 @@ const main = async () => {
   const defiFacet = await deploy("DeFiFacet") // <-- add in constructor args like line 19 vvvv
   const diamondCutFacet = await deploy("DiamondCutFacet") // <-- add in constructor args like line 19 vvvv
 
-
+ // initial version of the defi and diamond cut facet after deploying the initial version of these contracts feel free to comment line 37 - 40 and line 34 and make changes to the defi facet contract and deploy alone and upgrade the diamond through ui
+ // diamonf cut params include facet address, action and function signatures
   const diamondCutParams = [
     [diamondCutFacet.address, FacetCutAction.Add, [ '0x1f931c1c' ]],
     [defiFacet.address, FacetCutAction.Add, ['0x0400a718', '0xf807cd22', '0x0261bf8b', '0xed6ff760', '0x87f64f41']]
