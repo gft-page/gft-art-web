@@ -279,8 +279,9 @@ contract DeFiFacet is Helper{
         uint256 indexed healthFactor);
     
     using SafeMath for uint256;
+
     /**
-     * @dev Levrage 1x Long on your ETH/DAI Pool in Uniswap
+     * @dev Levrage 2x Long on your ETH/DAI Pool in Uniswap
      * @param maxAmount - amount calulated at web3 level to save a mathmatical operation here(A very high value)
      */
     function zappify(uint256 maxAmount) public payable returns(bool)

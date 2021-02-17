@@ -197,10 +197,7 @@ function App(props) {
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item>
           <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">Diamond Standard Demonstration</Link>
           </Menu.Item>
         </Menu>
 
@@ -214,6 +211,14 @@ function App(props) {
 
             <Contract
               name="Diamond"
+              signer={userProvider.getSigner()}
+              provider={userProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+
+              <Contract
+              name="DeFiFacet"
               signer={userProvider.getSigner()}
               provider={userProvider}
               address={address}

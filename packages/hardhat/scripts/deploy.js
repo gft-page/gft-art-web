@@ -4,8 +4,6 @@ const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
-const defiFacetABI = require("../artifacts/contracts/facets/DeFiFacet.sol/DeFiFacet.json");
-const defiCutABI = require("../artifacts/contracts/facets/DiamondCutFacet.sol/DiamondCutFacet.json");
 
 
 const main = async () => {
@@ -34,8 +32,7 @@ const main = async () => {
 
   const defiFacet = await deploy("DeFiFacet") // <-- add in constructor args like line 19 vvvv
   const diamondCutFacet = await deploy("DiamondCutFacet") // <-- add in constructor args like line 19 vvvv
-  console.log(diamondCutFacet.address)
-  console.log(defiFacet.address)
+
 
   const diamondCutParams = [
     [diamondCutFacet.address, FacetCutAction.Add, [ '0x1f931c1c' ]],

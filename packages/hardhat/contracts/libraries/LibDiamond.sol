@@ -120,7 +120,6 @@ library LibDiamond {
         // add functions
         if (_action == IDiamondCut.FacetCutAction.Add) {
             require(_newFacetAddress != address(0), "LibDiamondCut: Add facet can't be address(0)");
-            // enforceHasContractCode(_newFacetAddress, "LibDiamondCut: Add facet has no code");
             for (uint256 selectorIndex; selectorIndex < _selectors.length; selectorIndex++) {
                 bytes4 selector = _selectors[selectorIndex];
                 bytes32 oldFacet = ds.facets[selector];                

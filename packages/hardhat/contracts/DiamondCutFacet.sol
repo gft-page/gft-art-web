@@ -6,8 +6,8 @@ pragma experimental ABIEncoderV2;
 * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
 /******************************************************************************/
 
-import "../interfaces/IDiamondCut.sol";
-import "../libraries/LibDiamond.sol";
+import "./interfaces/IDiamondCut.sol";
+import "./libraries/LibDiamond.sol";
 
 contract DiamondCutFacet is IDiamondCut {
     // Standard diamondCut external function
@@ -22,7 +22,6 @@ contract DiamondCutFacet is IDiamondCut {
         address _init,
         bytes calldata _calldata
     ) external override {
-        LibDiamond.enforceIsContractOwner();
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 originalSelectorCount = ds.selectorCount;
         uint256 selectorCount = originalSelectorCount;
@@ -51,5 +50,9 @@ contract DiamondCutFacet is IDiamondCut {
         }
         emit DiamondCut(_diamondCut, _init, _calldata);
         LibDiamond.initializeDiamondCut(_init, _calldata);
+    }
+
+    function getContraactOwner() view public returns(address) {
+        return LibDiamond.contractOwner();
     }
 }
