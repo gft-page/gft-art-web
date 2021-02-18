@@ -9,7 +9,7 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-  await deploy("AavEth") // <-- add in constructor args like line 16 vvvv
+  // await deploy("AavEth") // <-- add in constructor args like line 16 vvvv
   await deploy("AaveApe") // <-- add in constructor args like line 16 vvvv
 
   // const exampleToken = await deploy("ExampleToken")

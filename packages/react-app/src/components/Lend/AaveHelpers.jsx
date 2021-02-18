@@ -1,5 +1,4 @@
-import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
-import { ethers } from "ethers";
+import { formatUnits } from "@ethersproject/units";
 
 export const convertValue = (amountInUnits, decimals, toEthMultiplier, showUsdPrice, ethPrice) => {
   return (parseFloat(formatUnits(amountInUnits,decimals)) * toEthMultiplier * (showUsdPrice ? ethPrice : 1))

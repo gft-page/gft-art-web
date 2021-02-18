@@ -40,8 +40,13 @@ module.exports = {
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
   networks: {
+    hardhat: {
+      forking: {
+        url: "https://eth-mainnet.alchemyapi.io/v2/ghvsKtOkSCEpkeMz141jgzx5AeHPq9hU"
+      }
+    },
     localhost: {
-      url: "http://localhost:8545",
+      url: "http://localhost:8545"
       /*
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
@@ -80,14 +85,27 @@ module.exports = {
     },
   },
   solidity: {
-    version: "0.6.7",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
+    compilers: [
+      {
+        version: "0.8.1"
+      },
+      {
+        version: "0.6.8"
+      },
+      {
+        version: "0.6.12",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
       }
-    }
+    ]
   },
+  mocha: {
+    timeout: 80000
+  }
 };
 
 const DEBUG = false;

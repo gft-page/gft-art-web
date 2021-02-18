@@ -9,7 +9,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken, Approver } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 import { Hints, Ape, SimpleLend } from "./views"
@@ -110,14 +110,18 @@ function App(props) {
       <BrowserRouter>
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/snatch">
-            <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
-          </Menu.Item>
           <Menu.Item key="/swap">
             <Link onClick={()=>{setRoute("/swap")}} to="/swap">Swap</Link>
           </Menu.Item>
           <Menu.Item key="/lend">
             <Link onClick={()=>{setRoute("/lend")}} to="/lend">Lend</Link>
+          </Menu.Item>
+          <Menu.Item key="/approve">
+            <Link onClick={()=>{setRoute("/approve")}} to="/approve">Approve</Link>
+          </Menu.Item>
+          {onLocalChain&&(<>
+          <Menu.Item key="/snatch">
+            <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
           </Menu.Item>
           <Menu.Item key="/simple-lend">
             <Link onClick={()=>{setRoute("/simple-lend")}} to="/simple-lend">SimpleLend</Link>
@@ -130,7 +134,7 @@ function App(props) {
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
+          </Menu.Item></>)}
         </Menu>
         <Modal visible={showNetworkWarning} title={"Unknown network"} footer={null} closable={false}>
           <span>{`Your wallet is not corrected to the right network, please connect to the network at ${localProviderUrlFromEnv}`}</span>
@@ -200,6 +204,12 @@ function App(props) {
             <SnatchToken
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
+              tx={tx}
+            />
+          </Route>
+          <Route exact path="/approve">
+            <Approver
+              userProvider={userProvider}
               tx={tx}
             />
           </Route>

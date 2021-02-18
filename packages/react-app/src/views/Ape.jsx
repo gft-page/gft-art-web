@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Card, Space, Row, Col, InputNumber, notification, Checkbox, Statistic, Select, Typography, Button, Divider, Modal, Steps, Skeleton } from "antd";
-import { parseUnits, formatUnits } from "@ethersproject/units";
+import React, { useState } from "react";
+import { Card, Space, Row, Col, notification, Statistic, Select, Typography, Button, Divider, Steps, Skeleton, Table, Radio } from "antd";
+import { formatUnits } from "@ethersproject/units";
 import { ethers } from "ethers";
 import { abi as IErc20 } from '../components/Lend/abis/erc20.json'
+import { Address } from "../components";
 import { abi as IStableDebtToken } from '../components/Lend/abis/StableDebtToken.json'
-import { useContractLoader } from "../hooks";
+import { useContractLoader, useEventListener } from "../hooks";
 import { usePoller } from "eth-hooks";
 import { useAaveData } from "../components/Lend/AaveData"
 import AccountSummary from "../components/Lend/AccountSummary"
@@ -16,14 +17,13 @@ const { Step } = Steps;
 
 function Ape({ selectedProvider }) {
 
-  const [settingsVisible, setSettingsVisible] = useState(false)
-
-  const { reserveTokens, assetData, assetPrices, userAccountData, userConfiguration,  userAssetList, userAssetData, contracts } = useAaveData({ selectedProvider })
-  const { addressProviderContract, dataProviderContract, lendingPoolContract, priceOracleContract } = contracts
+  // use our custom Aave data hook to get protocol information
+  const { reserveTokens, assetData, userAccountData, userConfiguration,  userAssetList, userAssetData } = useAaveData({ selectedProvider })
 
   const [apeAsset, setApeAsset] = useState('WETH')
   const [borrowAsset, setBorrowAsset] = useState('DAI')
   const [debtType, setDebtType] = useState('v')
+
 
   let debtLookup = {
     's': "1",
@@ -39,6 +39,47 @@ function Ape({ selectedProvider }) {
   const [unwinding, setUnwinding] = useState(false)
 
   const writeContracts = useContractLoader(selectedProvider)
+  const [apeEvents, setApeEvents] = useState([]);
+
+  const findAsset = (_asset) => {
+    return assetData.find(obj => { return obj.underlyingAsset.toLowerCase() === _asset.toLowerCase()})
+  }
+
+  const eventRowKey = (value) => {
+    return (value.ape + value.action + value.blockNumber + value.apeAsset + value.apeAmount + value.borrowAsset + value.borrowAmount)
+  }
+
+  const eventColumns = [
+  {
+    title: 'Ape',
+    key: 'ape',
+    render: value => value&&<Address value={value.args.ape}  fontSize={16}/>,
+  },
+  {
+    title: 'Block',
+    dataIndex: 'blockNumber',
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: value => value.args.action
+  },
+  {
+    title: 'Long',
+    key: 'apeAsset',
+    render: value => `${parseFloat(formatUnits(value.args.apeAmount, findAsset(value.args.apeAsset).decimals)).toFixed(3)} ${findAsset(value.args.apeAsset).symbol}`,
+  },
+  {
+    title: 'Short',
+    key: 'borrowAsset',
+    render: value => `${parseFloat(formatUnits(value.args.borrowAmount, findAsset(value.args.borrowAsset).decimals)).toFixed(3)} ${findAsset(value.args.borrowAsset).symbol}`,
+  },
+  {
+    title: 'Price',
+    key: 'price',
+    render: value =>  (parseFloat(formatUnits(value.args.borrowAmount, findAsset(value.args.borrowAsset).decimals)) / parseFloat(formatUnits(value.args.apeAmount, findAsset(value.args.apeAsset).decimals))).toFixed(4),
+  },
+];
 
   let signer = selectedProvider.getSigner()
 
@@ -52,7 +93,6 @@ function Ape({ selectedProvider }) {
 
   const getCreditAllowance = async () => {
     if(reserveTokens&&borrowAssetData&&writeContracts&&writeContracts['AaveApe']) {
-
     //let borrowTokensAddresses = await dataProviderContract.getReserveTokensAddresses(borrowAssetData[`${debtType}Token`].id);
     let debtContract = new ethers.Contract(borrowAssetData[`${debtType}Token`].id, IStableDebtToken, signer);
 
@@ -61,6 +101,7 @@ function Ape({ selectedProvider }) {
 
     let _creditAllowance = await debtContract.borrowAllowance(address, aaveApeAddress)
     setCreditDelegated(_creditAllowance)
+
   }
   }
 
@@ -73,11 +114,15 @@ function Ape({ selectedProvider }) {
       //let borrowTokensAddresses = await dataProviderContract.getReserveTokensAddresses(borrowAssetData.tokenAddress);
       let debtContract = new ethers.Contract(borrowAssetData[`${debtType}Token`].id, IStableDebtToken, signer);
 
-      let address = await signer.getAddress()
       let aaveApeAddress = writeContracts['AaveApe'].address
 
       let _approveDelegation = await debtContract.approveDelegation(aaveApeAddress, ethers.constants.MaxUint256)
       console.log(_approveDelegation)
+      notification.open({
+        message: `You delegated credit! 🦍`,
+        description:
+        <><Text>{`The ape can now borrow ${borrowAssetData.symbol} on your behalf`}</Text></>,
+      });
       setDelegating(false)
     }
     catch(e) {
@@ -111,11 +156,15 @@ function Ape({ selectedProvider }) {
         //let apeTokensAddresses = await dataProviderContract.getReserveTokensAddresses(apeAssetData.tokenAddress);
         let aTokenContract = new ethers.Contract(apeAssetData.aToken.id, IErc20, signer);
 
-        let address = await signer.getAddress()
         let aaveApeAddress = writeContracts['AaveApe'].address
 
         let _approve = await aTokenContract.approve(aaveApeAddress, ethers.constants.MaxUint256)
         console.log(_approve)
+        notification.open({
+          message: `You gave approval on your aToken! 🦍`,
+          description:
+          <><Text>{`The ape can now move ${apeAssetData.symbol} on your behalf`}</Text></>,
+        });
         setAllowing(false)
       }
       catch (e) {
@@ -125,17 +174,37 @@ function Ape({ selectedProvider }) {
   }
   }
 
+  usePoller(async () => {
+    if(writeContracts && writeContracts['AaveApe']) {
+      let _apeEvents = await writeContracts['AaveApe'].queryFilter('Ape')
+      console.log(_apeEvents)
+      setApeEvents(_apeEvents)
+  }
+  }, 5000)
+
   let hasDelegatedCredit = creditDelegated&&creditDelegated.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
   let hasATokenAllowance = aTokenAllowance&&aTokenAllowance.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
 
   return (
+    <>
     <Row justify="center" align="middle" gutter={16}>
-    <Card title={`🦍 Aave Ape 🦍`} style={{ width: 600 }}
+    <Card title={<Space>
+                    <Text>{`🦍 Aave Ape`}</Text>{
+                    (writeContracts&&writeContracts['AaveApe']) ?
+                    <Address
+                        value={writeContracts['AaveApe'].address}
+                        fontSize={16}
+                    /> :
+                    <Text type="warning">Has the ape been deployed?</Text>}
+                  </Space>}
+          style={{ width: 600, textAlign: 'left'  }}
     extra={
       <AccountSettings userAccountData={userAccountData} userConfiguration={userConfiguration} userAssetList={userAssetList} />}
     >
-    {userAccountData?<AccountSummary userAccountData={userAccountData}/>:<Skeleton active/>}
-    <Divider/>
+    {(writeContracts&&writeContracts['AaveApe']) ?
+      <>
+      {userAccountData?<AccountSummary userAccountData={userAccountData}/>:<Skeleton active/>}
+      <Divider/>
             <Title level={4}>Select your ape asset 🙈</Title>
             <Text>This is the asset you are going Long</Text>
           <Row justify="center" align="middle" gutter={16}>
@@ -146,7 +215,7 @@ function Ape({ selectedProvider }) {
               }} filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               } optionFilterProp="children">
-              {reserveTokens&&reserveTokens.map(token => (
+              {assetData&&assetData.filter(function(asset) { return asset.usageAsCollateralEnabled }).map(token => (
                 <Option key={token.symbol} value={token.symbol}>{token.symbol}</Option>
               ))}
               </Select>
@@ -166,7 +235,7 @@ function Ape({ selectedProvider }) {
           }} filterOption={(input, option) =>
           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
           } optionFilterProp="children">
-          {reserveTokens&&reserveTokens.map(token => (
+          {assetData&&assetData.filter(function(asset) {return asset.borrowingEnabled;}).map(token => (
             <Option key={token.symbol} value={token.symbol}>{token.symbol}</Option>
           ))}
           </Select>
@@ -235,8 +304,15 @@ function Ape({ selectedProvider }) {
             </>
           )} />
         </Steps>
+        </>:<Skeleton avatar paragraph={{ rows: 4 }} />}
     </Card>
     </Row>
+    <Row justify="center" align="middle" gutter={16}>
+    <Card title={'Events'} style={{ width: 800 }}>
+    <Table rowKey='key' dataSource={apeEvents} columns={eventColumns} pagination={false} />
+    </Card>
+    </Row>
+    </>
   )
 
 }

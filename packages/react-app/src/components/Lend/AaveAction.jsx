@@ -104,7 +104,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, type, a
     <Modal title={`${type.charAt(0).toUpperCase() + type.slice(1)} ${assetData&&assetData.symbol}`}
       visible={modalVisible}
       onCancel={handleModalCancel}
-      width={800}
+
       footer={[
         <Button key="back" onClick={handleModalCancel}>
           cancel
@@ -146,7 +146,7 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, type, a
       />
       </Form.Item>}
       {["borrow","repay"].includes(type)&&(
-        <Form.Item label="Amount">
+        <Form.Item label="Interest Rate Mode">
           <Select defaultValue="Variable" style={{ width: 120 }} onChange={(value) => {
             setInterestRateMode(value)
           }}>

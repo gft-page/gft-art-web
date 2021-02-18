@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Space, Row, Col, Radio, Card, Select, Statistic, Descriptions, Typography, Button, Divider, Drawer, Table, Skeleton, Tabs } from "antd";
-import { SettingOutlined } from '@ant-design/icons';
-import { Percent } from '@uniswap/sdk'
-import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
+import React, { useState } from "react";
+import { Space, Radio, Card, Typography, Divider, Table, Skeleton } from "antd";
+import { formatUnits, formatEther } from "@ethersproject/units";
 import { TxBuilderV2, Network, Market } from '@aave/protocol-js'
 import { ethers } from "ethers";
 import AaveAction from "./AaveAction"
@@ -31,8 +29,8 @@ function Lend({ selectedProvider, ethPrice, localProvider }) {
 
   const [liveAsset, setLiveAsset] = useState()
 
-  const { reserveTokens, assetData, assetPrices, userAccountData, userConfiguration,  userAssetList, userAssetData, contracts } = useAaveData({ selectedProvider, liveAsset })
-  const { addressProviderContract, dataProviderContract, lendingPoolContract, priceOracleContract } = contracts
+  const { assetData, userAccountData, userConfiguration,  userAssetList, userAssetData, contracts } = useAaveData({ selectedProvider, liveAsset })
+  const { lendingPoolContract } = contracts
 
   const [showActiveAssets, setShowActiveAssets] = useState(false)
 

@@ -5,8 +5,7 @@ import "./AaveUniswapBase.sol";
 
 contract AaveApe is AaveUniswapBase {
 
-  event Ape(address ape, address apeAsset, address borrowAsset, uint256 borrowAmount, uint256 apeAmount, uint256 interestRateMode);
-  event Unwind(address ape, address apeAsset, address borrowAsset, uint256 amountOwing, uint256 apeAmount, uint256 interestRateMode);
+  event Ape(address ape, string action, address apeAsset, address borrowAsset, uint256 borrowAmount, uint256 apeAmount, uint256 interestRateMode);
 
   // Gets the amount available to borrow for a given address for a given asset
   function getAvailableBorrowInAsset(address borrowAsset, address ape) public view returns (uint256) {
@@ -68,7 +67,7 @@ contract AaveApe is AaveUniswapBase {
         0
       );
 
-      emit Ape(msg.sender, apeAsset, borrowAsset, borrowAmount, outputAmount, interestRateMode);
+      emit Ape(msg.sender, 'open', apeAsset, borrowAsset, borrowAmount, outputAmount, interestRateMode);
 
       return true;
   }
@@ -222,7 +221,7 @@ contract AaveApe is AaveUniswapBase {
     // Approve Aave to withdraw the owed amount
     IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), amountOwing);
 
-    emit Unwind(ape, apeAsset, borrowAsset, amountOwing, amounts[0], rateMode);
+    emit Ape(ape, 'close', apeAsset, borrowAsset, amountOwing, amounts[0], rateMode);
 
     return true;
   }

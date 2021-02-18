@@ -18,7 +18,7 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
   const [receiverBalance, setReceiverBalance] = useState();
   const [token, setToken] = useState(DAI_ADDRESS)
   const [tokenList, setTokenList] = useState([])
-  const [amount, setAmount] = useState()
+  const [amount, setAmount] = useState(10)
 
   let defaultToken = 'DAI'
   let defaultDecimals = 18
@@ -133,7 +133,8 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
         </Select>
       </Form.Item>
       <Form.Item label="Amount">
-        <InputNumber onChange={(value) => {
+        <InputNumber defaultValue={amount} onChange={(value) => {
+          console.log(value)
           setAmount(value)
         }
         } />

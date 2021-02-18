@@ -16,3 +16,4 @@ export { default as GasGauge } from "./GasGauge";
 export { default as Swap } from "./Swap";
 export { Lend } from "./Lend";
 export { default as SnatchToken } from "./SnatchToken";
+export { default as Approver } from "./Approver";

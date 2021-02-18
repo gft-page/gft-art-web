@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Percent } from '@uniswap/sdk'
-import { parseUnits, formatUnits, formatEther } from "@ethersproject/units";
+import { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { useBlockNumber, usePoller } from "eth-hooks";
+import { usePoller } from "eth-hooks";
 import { useQuery, gql } from '@apollo/client';
 import { abi as IAddressProvider } from './abis/LendingPoolAddressProvider.json'
 import { abi as IDataProvider } from './abis/ProtocolDataProvider.json'
@@ -42,6 +40,7 @@ export function useAaveData({ selectedProvider, markets }) {
           decimals
           usageAsCollateralEnabled
           borrowingEnabled
+          stableBorrowRateEnabled
           isActive
           isFrozen
           price {
@@ -67,7 +66,7 @@ export function useAaveData({ selectedProvider, markets }) {
     }
   `
   const RESERVE_GQL = gql(RESERVE_GRAPHQL)
-  const { loading, data } = useQuery(RESERVE_GQL,{pollInterval: 6000});
+  const { data } = useQuery(RESERVE_GQL,{pollInterval: 6000});
 
 /*
   const getReserveData = async () => {
@@ -90,7 +89,6 @@ export function useAaveData({ selectedProvider, markets }) {
   useEffect(() => {
     getReserveData()
     getPriceData()
-    console.log(reserveTokens)
   }, [reserveTokens])
 
 
@@ -110,7 +108,6 @@ export function useAaveData({ selectedProvider, markets }) {
 */
   const checkUserConfiguration = async (_configuration) => {
     if(_configuration && reserveTokens) {
-      let _userActiveAssets = {}
       let configBits = parseInt(userConfiguration.toString(), 10).toString(2)
       let reversedBits = configBits.split("").reverse()
       let _userAssetList = {}
