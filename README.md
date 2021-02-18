@@ -29,7 +29,7 @@ yarn start
 > in a second terminal window:
 
 ```bash
-
+cd scaffold-eth
 yarn chain
 
 ```
@@ -37,7 +37,7 @@ yarn chain
 > in a third terminal window:
 
 ```bash
-
+cd scaffold-eth
 yarn deploy
 
 ```
@@ -45,6 +45,8 @@ yarn deploy
 🔏 Edit your smart contract `StreamingMetaMultiSigWallet.sol` in `packages/hardhat/contracts`
 
 📝 Edit your frontend `App.jsx` in `packages/react-app/src`
+
+💼 Edit your deployment script `deploy.js` in `packages/hardhat/scripts`
 
 📱 Open http://localhost:3000 to see the app
 
@@ -100,15 +102,9 @@ The transction will appear as "executed" on the front page:
 ![image](https://user-images.githubusercontent.com/2653167/99156918-6199b780-2682-11eb-89d4-7379fe5adb54.png)
 
 
-<<<<<<< HEAD
 > Create a transaction to open a stream to your frontend account:
 
 ![image](https://user-images.githubusercontent.com/2653167/99156945-8db53880-2682-11eb-8477-059094a99723.png)
-=======
-🛰 The Graph -- [ 🎥 speed run tutorial video ](https://youtu.be/T5ylzOTkn-Q)
-
-⛽️ GSN -- See Nifty.ink!
->>>>>>> master
 
 Again, this will take you to a populated transaction form:
 

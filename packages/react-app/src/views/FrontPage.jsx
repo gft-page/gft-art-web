@@ -28,7 +28,7 @@ export default function FrontPage({ executeTransactionEvents, contractName, loca
         </div>
         <div>
           <Address
-            value={readContracts?readContracts[contractName].address:readContracts}
+            address={readContracts?readContracts[contractName].address:readContracts}
             ensProvider={mainnetProvider}
             blockExplorer={blockExplorer}
             fontSize={32}
@@ -53,7 +53,7 @@ export default function FrontPage({ executeTransactionEvents, contractName, loca
                 <Blockie size={4} scale={8} address={item.hash} /> {item.hash.substr(0,6)}
               </span>
               <Address
-                value={item.to}
+                address={item.to}
                 ensProvider={mainnetProvider}
                 blockExplorer={blockExplorer}
                 fontSize={16}

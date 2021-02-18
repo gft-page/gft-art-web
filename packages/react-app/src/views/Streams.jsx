@@ -119,7 +119,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
               <List.Item key={"withdrawal_"+index++}>
               <div>
                 <Address
-                  value={item.to}
+                  address={item.to}
                   ensProvider={mainnetProvider}
                   fontSize={16}
                 />
@@ -154,7 +154,7 @@ export default function Streams({withdrawStreamEvents, openStreamEvents, contrac
 
           let addressDisplay = (
             <Address
-              value={item}
+              address={item}
               ensProvider={mainnetProvider}
               blockExplorer={blockExplorer}
               fontSize={32}

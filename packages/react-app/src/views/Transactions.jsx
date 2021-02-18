@@ -105,7 +105,7 @@ export default function Transactions({poolServerUrl, contractName, signaturesReq
               <Blockie size={4} scale={8} address={item.hash} /> {item.hash.substr(0,6)}
             </span>
             <Address
-              value={item.to}
+              address={item.to}
               ensProvider={mainnetProvider}
               blockExplorer={blockExplorer}
               fontSize={16}

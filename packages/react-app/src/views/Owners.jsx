@@ -31,7 +31,7 @@ export default function Owners({contractName, ownerEvents, signaturesRequired, a
           return (
             <List.Item key={"owner_"+item[0]}>
             <Address
-              value={item[0]}
+              address={item[0]}
               ensProvider={mainnetProvider}
               blockExplorer={blockExplorer}
               fontSize={32}
