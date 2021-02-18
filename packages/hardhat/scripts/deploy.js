@@ -11,8 +11,12 @@ const main = async () => {
 
 
   const streamingMetaMultiSigWallet = await deploy("StreamingMetaMultiSigWallet",[
-    31337,
-    [ "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1" ],
+    1,
+    [
+      "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1", //austin burner
+      "0x34aA3F359A9D614239015126635CE7732c18fDF3", //austingriffith.eth
+      "0xa81a6a910FeD20374361B35C451a4a44F86CeD46" //build guild signer
+    ],
     1
   ])
 

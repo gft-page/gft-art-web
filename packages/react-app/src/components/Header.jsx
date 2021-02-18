@@ -5,10 +5,10 @@ import { PageHeader } from "antd";
 
 export default function Header() {
   return (
-    <a href="https://github.com/austintgriffith/scaffold-eth" target="_blank" rel="noopener noreferrer">
+    <a href="/">
       <PageHeader
-        title="🏗 scaffold-eth"
-        subTitle="streaming-meta-multi-sig example"
+        title="👨‍🎤 mrdee.eth "
+        subTitle="⏳ ETH Stream"
         style={{ cursor: "pointer" }}
       />
     </a>
