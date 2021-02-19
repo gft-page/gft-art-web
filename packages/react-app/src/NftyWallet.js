@@ -309,7 +309,7 @@ export default function NftyWallet(props) {
 
       </Tabs>
 
-      {supportButton}
+      {/* {supportButton} */}
       {accountWithCreateButton}
 
       <Switch>
