@@ -24,8 +24,8 @@
     "ramda": "^0.27.1"
   },
   "scripts": {
-    "chain": "hardhat node",
-    "fork": "hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/ghvsKtOkSCEpkeMz141jgzx5AeHPq9hU",
+    "chain": "hardhat node --hostname 0.0.0.0",
+    "fork": "hardhat node --hostname 0.0.0.0 --fork https://eth-mainnet.alchemyapi.io/v2/ghvsKtOkSCEpkeMz141jgzx5AeHPq9hU",
     "test": "hardhat test --network hardhat",
     "compile": "hardhat compile --show-stack-traces",
     "deploy": "hardhat run scripts/deploy.js && hardhat run scripts/publish.js",

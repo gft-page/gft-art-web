@@ -22,7 +22,7 @@ const blockExplorer = "https://etherscan.io/" // for xdai: "https://blockscout.c
 
 const mainnetProvider = new JsonRpcProvider("https://mainnet.infura.io/v3/"+INFURA_ID)
 
-const localProviderUrl = "http://localhost:8545"; // for xdai: https://dai.poa.network
+const localProviderUrl = "http://" + window.location.hostname + ":8545"; // for xdai: https://dai.poa.network
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
 
