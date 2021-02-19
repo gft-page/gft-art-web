@@ -7,11 +7,21 @@ import { abi as IDataProvider } from './abis/ProtocolDataProvider.json'
 import { abi as ILendingPool } from './abis/LendingPool.json'
 import { abi as IPriceOracle } from './abis/PriceOracle.json'
 
-const POOL_ADDRESSES_PROVIDER_ADDRESS = '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
-const PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
-const LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
-
 export function useAaveData({ selectedProvider, markets }) {
+
+  let POOL_ADDRESSES_PROVIDER_ADDRESS
+  let PROTOCOL_DATA_PROVIDER
+  let LENDING_POOL
+
+  if (process.env.REACT_APP_NETWORK==='kovan') {
+    POOL_ADDRESSES_PROVIDER_ADDRESS = '0x88757f2f99175387ab4c6a4b3067c77a695b0349'
+    PROTOCOL_DATA_PROVIDER = '0x3c73A5E5785cAC854D468F727c606C07488a29D6'
+    LENDING_POOL = '0xE0fBa4Fc209b4948668006B2bE61711b7f465bAe'
+  } else {
+    POOL_ADDRESSES_PROVIDER_ADDRESS = '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5'
+    PROTOCOL_DATA_PROVIDER = '0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'
+    LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'
+  }
 
   const [userConfiguration, setUserConfiguration] = useState()
   const [userAccountData, setUserAccountData] = useState()
@@ -134,8 +144,8 @@ export function useAaveData({ selectedProvider, markets }) {
   const getUserAssetData = async () => {
     if(userAssetList && reserveTokens) {
       let address = await signer.getAddress()
-
-      if(userAssetList.length === 0) {
+      console.log(Object.keys(userAssetList).length)
+      if(Object.keys(userAssetList).length === 0) {
         setUserAssetData({})
         return
       }

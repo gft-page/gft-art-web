@@ -20,6 +20,7 @@ const Approver = ({ userProvider, tx }) => {
   const [senderAddress, setSenderAddress] = useState()
   const [senderAllowance, setSenderAllowance] = useState();
   const [useMax, setUseMax] = useState(false)
+  const [manualToken, setManualToken] = useState(process.env.REACT_APP_NETWORK==='kovan')
 
   let defaultToken = 'DAI'
   let defaultDecimals = 18
@@ -78,7 +79,9 @@ const Approver = ({ userProvider, tx }) => {
 
     console.log(useMax===true, useMax, senderAddress, _amount)
 
-    await tx(myTokenContract.approve(senderAddress, _amount));
+    let _tx = await tx(myTokenContract.approve(senderAddress, _amount))
+    let receipt = await _tx.wait(1)
+    console.log(_tx, receipt);
     getAllowance()
   }, [senderAddress, token, amount]);
 
@@ -93,8 +96,16 @@ const Approver = ({ userProvider, tx }) => {
         marginTop: "30px",
       }}
     >
+      {process.env.REACT_APP_NETWORK!=='kovan'&&<Form.Item label={`Set maximum`}>
+      <Switch onChange={(e)=>{
+                  console.log(`Set manual: ${e}`)
+                  setManualToken(e)
+                }} />
+      </Form.Item>}
       <Form.Item label="Token">
-        <Select showSearch defaultValue={defaultToken} onChange={(value) => setToken(value)}
+        {manualToken === true ?
+          <Input value={token} onChange={e => setToken(e.target.value)} /> :
+          <Select showSearch defaultValue={defaultToken} onChange={(value) => setToken(value)}
         filterOption={(input, option) =>
         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
         } optionFilterProp="children">
@@ -102,6 +113,7 @@ const Approver = ({ userProvider, tx }) => {
             <Option key={token.address} value={token.address}>{token.symbol}</Option>
           ))}
         </Select>
+        }
       </Form.Item>
       <Form.Item label="Address to approve:">
           <Input value={senderAddress} onChange={e => setSenderAddress(e.target.value)} />

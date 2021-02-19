@@ -5,22 +5,21 @@ import "./AaveUniswapBase.sol";
 
 contract AaveApe is AaveUniswapBase {
 
+  constructor(address lendingPoolAddressesProviderAddress, address uniswapRouterAddress) AaveUniswapBase(lendingPoolAddressesProviderAddress, uniswapRouterAddress) public {}
+
   event Ape(address ape, string action, address apeAsset, address borrowAsset, uint256 borrowAmount, uint256 apeAmount, uint256 interestRateMode);
 
   // Gets the amount available to borrow for a given address for a given asset
   function getAvailableBorrowInAsset(address borrowAsset, address ape) public view returns (uint256) {
     ( ,,uint256 availableBorrowsETH,,,) = getLendingPool().getUserAccountData(ape);
-    console.log('availableBorrows', availableBorrowsETH);
     return getAssetAmount(borrowAsset, availableBorrowsETH);
   }
 
   // Converts an amount denominated in ETH into an asset based on the Aave oracle
   function getAssetAmount(address asset, uint256 amountInEth) public view returns (uint256) {
     uint256 assetPrice = getPriceOracle().getAssetPrice(asset);
-    console.log('assetPrice', assetPrice);
     (uint256 decimals ,,,,,,,,,) = getProtocolDataProvider().getReserveConfigurationData(asset);
     uint256 assetAmount = amountInEth.mul(10**decimals).div(assetPrice);
-    console.log('assetAmount', assetAmount);
     return assetAmount;
   }
 
@@ -47,14 +46,14 @@ contract AaveApe is AaveUniswapBase {
       );
 
       // Approve the Uniswap Router on the borrowed asset
-      IERC20(borrowAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, borrowAmount);
+      IERC20(borrowAsset).approve(UNISWAP_ROUTER_ADDRESS, borrowAmount);
 
       // Execute trade on Uniswap
       address[] memory path = new address[](2);
       path[0] = borrowAsset;
       path[1] = apeAsset;
 
-      uint[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(borrowAmount, 0, path, address(this), block.timestamp);
+      uint[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(borrowAmount, 0, path, address(this), block.timestamp + 5);
 
       // get the output amount, approve the Lending Pool to move that amount of erc20 & deposit
       uint outputAmount = amounts[amounts.length - 1];
@@ -90,14 +89,14 @@ contract AaveApe is AaveUniswapBase {
   ) internal returns (uint[] memory amounts) {
 
     // Approve the transfer
-    IERC20(fromAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, amountInMax);
+    IERC20(fromAsset).approve(UNISWAP_ROUTER_ADDRESS, amountInMax);
 
     // Prepare and execute the swap
     address[] memory path = new address[](2);
     path[0] = fromAsset;
     path[1] = toAsset;
 
-    return UNISWAP_ROUTER.swapTokensForExactTokens(amountOut, amountInMax, path, address(this), block.timestamp);
+    return UNISWAP_ROUTER.swapTokensForExactTokens(amountOut, amountInMax, path, address(this), block.timestamp + 5);
   }
 
   // Unwind a position (long apeAsset, short borrowAsset)
@@ -202,7 +201,7 @@ contract AaveApe is AaveUniswapBase {
     );
 
     // Make the swap on Uniswap
-    IERC20(apeAsset).approve(Constants.UNISWAP_ROUTER_ADDRESS, maxCollateralAmount);
+    IERC20(apeAsset).approve(UNISWAP_ROUTER_ADDRESS, maxCollateralAmount);
 
     uint[] memory amounts = uniswapTokensForExactTokens(amountOwing, maxCollateralAmount, apeAsset, borrowAsset);
 

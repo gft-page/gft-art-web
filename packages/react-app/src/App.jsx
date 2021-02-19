@@ -119,15 +119,12 @@ function App(props) {
           <Menu.Item key="/approve">
             <Link onClick={()=>{setRoute("/approve")}} to="/approve">Approve</Link>
           </Menu.Item>
+          <Menu.Item key="/aave-ape">
+            <Link onClick={()=>{setRoute("/aave-ape")}} to="/aave-ape">Ape</Link>
+          </Menu.Item>
           {onLocalChain&&(<>
           <Menu.Item key="/snatch">
             <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
-          </Menu.Item>
-          <Menu.Item key="/simple-lend">
-            <Link onClick={()=>{setRoute("/simple-lend")}} to="/simple-lend">SimpleLend</Link>
-          </Menu.Item>
-          <Menu.Item key="/aave-ape">
-            <Link onClick={()=>{setRoute("/aave-ape")}} to="/aave-ape">Ape</Link>
           </Menu.Item>
           <Menu.Item key="/aaveth">
             <Link onClick={()=>{setRoute("/aaveth")}} to="/aaveth">AavEth</Link>
@@ -199,6 +196,12 @@ function App(props) {
           </Route>
           <Route exact path="/aave-ape">
             <Ape selectedProvider={userProvider}/>
+            <Contract
+              name="AaveApe"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+            />
           </Route>
           <Route exact path="/snatch">
             <SnatchToken

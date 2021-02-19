@@ -5,6 +5,8 @@ import "./AaveUniswapBase.sol";
 
 contract AavEth is AaveUniswapBase {
 
+  constructor(address lendingPoolAddressesProviderAddress, address uniswapRouterAddress) AaveUniswapBase(lendingPoolAddressesProviderAddress, uniswapRouterAddress) public {}
+
   event Deposit(address sender, address asset, uint256 EthAmount, uint256 assetAmount);
   event Withdraw(address sender, address asset, uint256 EthAmount, uint256 assetAmount);
 

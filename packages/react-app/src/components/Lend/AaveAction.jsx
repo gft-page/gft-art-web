@@ -44,7 +44,8 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, type, a
     let results = []
     for (const t in _requests) {
       let tx = await signer.sendTransaction(await _requests[t].tx())
-      console.log(_requests[t].txType, tx);
+      let receipt = await tx.wait(1)
+      console.log(_requests[t].txType, tx, receipt);
       results.push(tx)
     }
     return results

@@ -23,7 +23,8 @@ function Lend({ selectedProvider, ethPrice, localProvider }) {
   let lendingPool
 
   if(customProvider) {
-    txBuilder = new TxBuilderV2(Network.main, customProvider);
+    let aaveNetwork = process.env.REACT_APP_NETWORK==='kovan' ? Network.kovan : Network.main
+    txBuilder = new TxBuilderV2(aaveNetwork, customProvider);
     lendingPool = txBuilder.getLendingPool(Market.Proto); // get all lending pool methods
   }
 

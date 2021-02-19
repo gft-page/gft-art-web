@@ -245,7 +245,8 @@ function Ape({ selectedProvider }) {
         {(assetData&&userAssetData&&userAssetData[borrowAsset]&&borrowAssetData)&&<Statistic title={`Stable debt`} value={(userAssetData&&userAssetData[borrowAsset]['currentStableDebt'])?parseFloat(formatUnits(userAssetData[borrowAsset]['currentStableDebt'], borrowAssetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={borrowAssetData.symbol}/>}
         </Col>
         </Row>
-        <Divider/>
+
+        {(borrowAssetData&&apeAssetData)&&<><Divider/><Statistic title={"Current price"} value={parseFloat(ethers.utils.formatUnits(apeAssetData['price']['priceInEth'],18) / ethers.utils.formatUnits(borrowAssetData['price']['priceInEth'], 18)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5})} suffix={borrowAsset}/><Divider/></>}
         <Title level={4}>How to go ape 🦍</Title>
         <Steps>
           <Step status={hasDelegatedCredit?'finish':'wait'} title="Delegate credit" description={creditDelegated&&(hasDelegatedCredit?<p>You have delegated credit to the Aave Ape 🏦</p>:<Button loading={delegating} onClick={setFullCreditAllowance}>{"Delegate!"}</Button>)} />
@@ -255,6 +256,7 @@ function Ape({ selectedProvider }) {
               <Button loading={aping} type="primary" onClick={async () => {
               try {
               setAping(true)
+              console.log(apeAssetData.underlyingAsset, borrowAssetData.underlyingAsset, debtLookup[debtType])
               let _ape = await writeContracts.AaveApe['ape'](apeAssetData.underlyingAsset, borrowAssetData.underlyingAsset, debtLookup[debtType])
               console.log(_ape)
               notification.open({

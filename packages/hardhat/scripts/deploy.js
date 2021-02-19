@@ -10,7 +10,8 @@ const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
   // await deploy("AavEth") // <-- add in constructor args like line 16 vvvv
-  await deploy("AaveApe") // <-- add in constructor args like line 16 vvvv
+  //await deploy("AaveApe",["0x88757f2f99175387ab4c6a4b3067c77a695b0349","0xfcd87315f0e4067070ade8682fcdbc3006631441"]) // Kovan config - using Aave's mock Uniswap contract... https://kovan.etherscan.io/address/0xC18451d36aA370fDACe8d45839bF975F48f7AEa1#readContract
+  await deploy("AaveApe",["0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5","0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"]) // Mainnet config
 
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")

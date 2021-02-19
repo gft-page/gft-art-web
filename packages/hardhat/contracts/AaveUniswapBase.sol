@@ -16,13 +16,15 @@ contract AaveUniswapBase {
 
   using SafeMath for uint256;
 
-  constructor() public {
-    ADDRESSES_PROVIDER = ILendingPoolAddressesProvider(Constants.LENDING_POOL_ADDRESSES_PROVIDER_ADDRESS);
-    UNISWAP_ROUTER = IUniswapV2Router02(Constants.UNISWAP_ROUTER_ADDRESS);
+  constructor(address lendingPoolAddressesProviderAddress, address uniswapRouterAddress) public {
+    ADDRESSES_PROVIDER = ILendingPoolAddressesProvider(lendingPoolAddressesProviderAddress);
+    UNISWAP_ROUTER = IUniswapV2Router02(uniswapRouterAddress);
+    UNISWAP_ROUTER_ADDRESS = uniswapRouterAddress;
   }
 
   ILendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
   IUniswapV2Router02 public immutable UNISWAP_ROUTER;
+  address public immutable UNISWAP_ROUTER_ADDRESS;
 
   function getLendingPool() internal view returns (ILendingPool) {
     address _lendingPoolAddress = ADDRESSES_PROVIDER.getLendingPool();

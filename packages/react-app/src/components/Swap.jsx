@@ -82,6 +82,8 @@ function Swap({ selectedProvider, tokenListURI }) {
   const debouncedAmountIn = useDebounce(amountIn, 500);
   const debouncedAmountOut = useDebounce(amountOut, 500);
 
+  const activeChainId = (process.env.REACT_APP_NETWORK === 'kovan' ? ChainId.KOVAN : ChainId.MAINNET)
+
   useEffect(() => {
     const getTokenList = async () => {
       console.log(_tokenListUri)
@@ -89,9 +91,9 @@ function Swap({ selectedProvider, tokenListURI }) {
       let tokenList = await fetch(_tokenListUri)
       let tokenListJson = await tokenList.json()
       let filteredTokens = tokenListJson.tokens.filter(function (t) {
-        return t.chainId === ChainId.MAINNET
+        return t.chainId === activeChainId
       })
-      let ethToken = WETH[ChainId.MAINNET]
+      let ethToken = WETH[activeChainId]
       ethToken.name = 'Ethereum'
       ethToken.symbol = 'ETH'
       ethToken.logoURI = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png"
@@ -369,9 +371,9 @@ function Swap({ selectedProvider, tokenListURI }) {
 
   let swapModal = (
     <Modal title="Confirm swap" visible={swapModalVisible} onOk={handleSwapModalOk} onCancel={handleSwapModalCancel}>
-      <Row><Space><img src={logoIn} alt={logoIn} width='30'/>{amountIn}{tokenIn}</Space></Row>
+      <Row><Space><img src={logoIn} alt={tokenIn} width='30'/>{amountIn}{tokenIn}</Space></Row>
       <Row justify='center' align='middle' style={{width:30}}><span>↓</span></Row>
-      <Row><Space><img src={logoOut} alt={logoOut} width='30'/>{amountOut}{tokenOut}</Space></Row>
+      <Row><Space><img src={logoOut} alt={tokenOut} width='30'/>{amountOut}{tokenOut}</Space></Row>
       <Divider/>
       <Row>{priceWidget}</Row>
       <Row>{trades&&(amountOutMin || amountInMax)?(exact==='in'?`Output is estimated. You will receive at least ${amountOutMin.toSignificant(6)} ${tokenOut} or the transaction will revert.`:`Input is estimated. You will sell at most ${amountInMax.toSignificant(6)} ${tokenIn} or the transaction will revert.`):null}</Row>
@@ -382,7 +384,7 @@ function Swap({ selectedProvider, tokenListURI }) {
     <Card title={<Space><img src="https://ipfs.io/ipfs/QmXttGpZrECX5qCyXbBQiqgQNytVGeZW5Anewvh2jc4psg" width='40' alt='uniswapLogo'/><Typography>Uniswapper</Typography></Space>} extra={<Button type="text" onClick={() => {setSettingsVisible(true)}}><SettingOutlined /></Button>}>
     <Space direction="vertical">
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`From${exact==='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<><img src={logoIn} alt={logoIn} width='30'/><Button type="link" onClick={() => {
+    <Card size="small" type="inner" title={`From${exact==='out' && tokenIn && tokenOut?' (estimate)':''}`} extra={<><img src={logoIn} alt={tokenIn} width='30'/><Button type="link" onClick={() => {
       setAmountOut()
       setAmountIn(formatUnits(balanceIn,tokens[tokenIn].decimals))
       setAmountOutMin()
@@ -421,7 +423,7 @@ function Swap({ selectedProvider, tokenListURI }) {
       <Tooltip title={route.join("->")}><span>↓</span></Tooltip>
     </Row>
     <Row justify="center" align="middle">
-    <Card size="small" type="inner" title={`To${exact==='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<><img src={logoOut} width='30' alt={logoOut}/><Button type="text">{formattedBalanceOut}</Button></>} style={{ width: 400, textAlign: 'left' }}>
+    <Card size="small" type="inner" title={`To${exact==='in' && tokenIn && tokenOut?' (estimate)':''}`} extra={<><img src={logoOut} width='30' alt={tokenOut}/><Button type="text">{formattedBalanceOut}</Button></>} style={{ width: 400, textAlign: 'left' }}>
       <InputNumber style={{width: '160px'}} size={'large'} min={0} value={amountOut} onChange={(e) => {
         setAmountOut(e)
         setAmountIn()
