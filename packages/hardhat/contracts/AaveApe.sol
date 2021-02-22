@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: agpl-3.0
 pragma solidity >=0.6.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
@@ -11,7 +12,7 @@ contract AaveApe is AaveUniswapBase {
 
   // Gets the amount available to borrow for a given address for a given asset
   function getAvailableBorrowInAsset(address borrowAsset, address ape) public view returns (uint256) {
-    ( ,,uint256 availableBorrowsETH,,,) = getLendingPool().getUserAccountData(ape);
+    ( ,,uint256 availableBorrowsETH,,,) = LENDING_POOL().getUserAccountData(ape);
     return getAssetAmount(borrowAsset, availableBorrowsETH);
   }
 
@@ -34,7 +35,7 @@ contract AaveApe is AaveUniswapBase {
 
       require(borrowAmount > 0, "Requires credit on Aave!");
 
-      ILendingPool _lendingPool = getLendingPool();
+      ILendingPool _lendingPool = LENDING_POOL();
 
       // Borrow from Aave
       _lendingPool.borrow(
@@ -112,6 +113,8 @@ contract AaveApe is AaveUniswapBase {
       repayAmount = variableDebt;
     }
 
+    require(repayAmount > 0, "Requires debt on Aave!");
+
     // Prepare the flashLoan parameters
     address receiverAddress = address(this);
 
@@ -129,7 +132,7 @@ contract AaveApe is AaveUniswapBase {
     bytes memory params = abi.encode(msg.sender, apeAsset, interestRateMode);
     uint16 referralCode = 0;
 
-    getLendingPool().flashLoan(
+    LENDING_POOL().flashLoan(
         receiverAddress,
         assets,
         amounts,
@@ -153,14 +156,15 @@ contract AaveApe is AaveUniswapBase {
           returns (bool)
       {
         require(msg.sender == ADDRESSES_PROVIDER.getLendingPool(), 'only the lending pool can call this function');
-
-        // Decode the parameters
-        (address ape, address apeAsset, uint256 rateMode) = abi.decode(params, (address, address, uint256));
+        require(initiator == address(this), 'the ape did not initiate this flashloan');
 
         // Calculate the amount owed back to the lendingPool
         address borrowAsset = assets[0];
         uint256 repayAmount = amounts[0];
         uint256 amountOwing = repayAmount.add(premiums[0]);
+
+        // Decode the parameters
+        (address ape, address apeAsset, uint256 rateMode) = abi.decode(params, (address, address, uint256));
 
         // Close position & repay the flashLoan
         return closePosition(ape, apeAsset, borrowAsset, repayAmount, amountOwing, rateMode);
@@ -173,7 +177,7 @@ contract AaveApe is AaveUniswapBase {
     IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), repayAmount);
 
     // Repay the amount owed
-    getLendingPool().repay(
+    LENDING_POOL().repay(
       borrowAsset,
       repayAmount,
       rateMode,
@@ -194,7 +198,7 @@ contract AaveApe is AaveUniswapBase {
     // transfer the aTokens to this address, then withdraw the Tokens from Aave
     _aToken.transferFrom(ape, address(this), maxCollateralAmount);
 
-    getLendingPool().withdraw(
+    LENDING_POOL().withdraw(
       apeAsset,
       maxCollateralAmount,
       address(this)
@@ -208,16 +212,19 @@ contract AaveApe is AaveUniswapBase {
     // Deposit any leftover back into Aave on behalf of the user
     uint256 leftoverAmount = maxCollateralAmount.sub(amounts[0]);
 
-    IERC20(apeAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), leftoverAmount);
+    if(leftoverAmount > 0) {
 
-    getLendingPool().deposit(
-      apeAsset,
-      leftoverAmount,
-      ape,
-      0
-    );
+      IERC20(apeAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), leftoverAmount);
 
-    // Approve Aave to withdraw the owed amount
+      LENDING_POOL().deposit(
+        apeAsset,
+        leftoverAmount,
+        ape,
+        0
+      );
+    }
+
+    // Approve the Aave Lending Pool to recover the flashloaned amount
     IERC20(borrowAsset).approve(ADDRESSES_PROVIDER.getLendingPool(), amountOwing);
 
     emit Ape(ape, 'close', apeAsset, borrowAsset, amountOwing, amounts[0], rateMode);

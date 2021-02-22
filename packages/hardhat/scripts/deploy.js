@@ -1,7 +1,7 @@
 /* eslint no-use-before-define: "warn" */
 const fs = require("fs");
 const chalk = require("chalk");
-const { config, ethers } = require("hardhat");
+const { config, ethers, tenderly } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
 
@@ -9,13 +9,20 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-  // await deploy("AavEth") // <-- add in constructor args like line 16 vvvv
-  //await deploy("AaveApe",["0x88757f2f99175387ab4c6a4b3067c77a695b0349","0xfcd87315f0e4067070ade8682fcdbc3006631441"]) // Kovan config - using Aave's mock Uniswap contract... https://kovan.etherscan.io/address/0xC18451d36aA370fDACe8d45839bF975F48f7AEa1#readContract
-  await deploy("AaveApe",["0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5","0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"]) // Mainnet config
+  let mainnetConfig = {
+    lendingPoolAddressesProvider: "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5",
+    uniswapRouterAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
+  }
 
-  // const exampleToken = await deploy("ExampleToken")
-  // const examplePriceOracle = await deploy("ExamplePriceOracle")
-  // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
+  // Kovan Aave has a dedicated mock Uniswap contract... https://kovan.etherscan.io/address/0xC18451d36aA370fDACe8d45839bF975F48f7AEa1#readContract
+  let kovanConfig = {
+    lendingPoolAddressesProvider: "0x88757f2f99175387ab4c6a4b3067c77a695b0349",
+    uniswapRouterAddress: "0xfcd87315f0e4067070ade8682fcdbc3006631441"
+  }
+
+  let deployConfig = (process.env.HARDHAT_NETWORK === 'kovan' || config.defaultNetwork === 'kovan') ? kovanConfig : mainnetConfig
+
+  const aaveApe = await deploy("AaveApe",[deployConfig.lendingPoolAddressesProvider, deployConfig.uniswapRouterAddress])
 
   console.log(
     " 💾  Artifacts (address, abi, and args) saved to: ",

@@ -144,7 +144,6 @@ export function useAaveData({ selectedProvider, markets }) {
   const getUserAssetData = async () => {
     if(userAssetList && reserveTokens) {
       let address = await signer.getAddress()
-      console.log(Object.keys(userAssetList).length)
       if(Object.keys(userAssetList).length === 0) {
         setUserAssetData({})
         return

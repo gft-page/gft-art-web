@@ -42,7 +42,7 @@ module.exports = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/ghvsKtOkSCEpkeMz141jgzx5AeHPq9hU"
+        url: "https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad"
       }
     },
     localhost: {

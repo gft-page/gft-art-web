@@ -11,7 +11,7 @@ import AccountSettings from "./AccountSettings"
 
 var Web3 = require('web3');
 
-function Lend({ selectedProvider, ethPrice, localProvider }) {
+function Lend({ selectedProvider, ethPrice }) {
 
   const httpProvider = new Web3.providers.HttpProvider(
       process.env.REACT_APP_PROVIDER ||
@@ -157,7 +157,7 @@ function Lend({ selectedProvider, ethPrice, localProvider }) {
         >
     {userAccountDisplay}
     <Divider/>
-        <Table dataSource={assetData.filter(asset => (showActiveAssets&&userAssetList)?Object.keys(userAssetList).includes(asset.symbol):true)} columns={columns} pagination={false} scroll={{ x: 1300 }}/>
+        <Table dataSource={assetData.filter(asset => (showActiveAssets&&userAssetList)?Object.keys(userAssetList).includes(asset.symbol):true)} columns={columns} pagination={false} scroll={{ x: 'max-content' }}/>
     </Card>
   )
 

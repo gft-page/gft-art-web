@@ -1,10 +1,16 @@
-# 🏗 scaffold-eth: Defi
+# 🏗 scaffold-eth: Aave & the Ape
 
-> a box of Defi components built on top of a mainnet fork & uniswap & aave
+> This branch demonstrates several ways to integrate Aave with scaffold-eth...
+
+<Lend/> is a simple React component, leveraging the Aave subgraph for market data, a custom useAaveData react hook to fetch user data, and aave-js to prepare transactions. Read more here!
+
+The Aave Ape is a helper contract that lets you go long ("ape") the Aave asset of your choice, borrowing a "short" asset on Aave to buy more of the "ape" asset. It also lets you unwind your position with an Aave flashloan. We walk through the mechanics, testing and the simple <Ape/> frontend in this post.
+
+> 🚨 This is experimental code written for educational & learning purposes only, use at your own risk!
 
 ---
 
-## quickstart
+## Quickstart
 
 ```bash
 git clone -b aave-ape https://github.com/austintgriffith/scaffold-eth.git aave-ape
@@ -17,6 +23,8 @@ cd aave-ape
 yarn install
 
 ```
+
+### Local development
 
 ```bash
 
@@ -38,44 +46,50 @@ This branch uses a local fork of mainnet, which is easy to do with Hardhat ([see
 - In a third terminal window run:
 
 ```bash
-
+yarn test
 yarn deploy
 
 ```
-> This deploys the associated contracts (AaveApe, AavEth, see below)
+> This tests then deploys the Aave Ape contract
 
-📱 Open http://localhost:3000 to see the app
+📱 Open http://localhost:3000 to see the app!
+
+### Running on Kovan
+To run the frontend on Kovan, add the following to your .env file in `packages/react-app/`
+```
+REACT_APP_PROVIDER=https://kovan.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad
+REACT_APP_NETWORK=kovan
+```
+
+- To use the already-deployed Aave Ape contract, unzip the `kovan-contracts.zip` folder
+- To deploy your own...
+```
+yarn generate
+yarn account
+```
+Send your newly generated account some Kovan ETH, then run...
+```
+yarn workspace @scaffold-eth/hardhat hardhat --network kovan run scripts/deploy.js
+yarn workspace @scaffold-eth/hardhat hardhat run scripts/publish.js
+```
+
+### Running on Mainnet
+To run the frontend on mainnet, add the following to your .env file in `packages/react-app/`
+```
+REACT_APP_PROVIDER=https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad
+REACT_APP_NETWORK=mainnet
+```
+
+**The Ape is not currently deployed on Mainnet**
 
 ## The components
 
-🎶 Quick note! The mainnet fork a little while to get going - you may need to refresh several times before everything is cached and the app is fast and loading 💨💨💨
-
-There are a few types of components in this branch:
-- Utilities: simple helpers to aid local development (one so far!)
-- Minimum viable components: recreating the apps of Defi protocols in a simple React component (Uniswap, Aave so far)
-- New smart contracts: based on new smart contracts written in the /hardhat/ package
-
-### SnatchToken
-One of the benefits of using a mainnet fork is that you can impersonate Ethereum accounts you don't own, which is great for getting your hands on tokens! Building on top of an initial component by [@ironsoul](https://twitter.com/ironsoul0), this lets you specify the target, the token you are after and the amount you would like.
-- Your target will need enough of the token, as well as some ETH to pay for the gas fee.
-- The list of tokens comes from the [1inch tokenlist](https://tokenlists.org/token-list?url=tokens.1inch.eth)
-
-### Swap
-This is a minimum viable Uniswap UI (see more detail [here](https://azfuller20.medium.com/swap-with-uniswap-wip-f15923349b3d)), using token-lists. All you need to instantiate this is a provider with a signer (userProvider in scaffold-eth works fine!)
-- You can update the token-list for the Swap component in the "Hints" tab
-- Kudos to @ironsoul for the fresh Debounce hook
-- TODO: split out data-fetching into a useUniswap() hook
-- TODO: break it down into smaller components
+🎶 Quick note! The mainnet fork can take a little while to get going - you may need to refresh several times before everything is cached and the app is fast and loading 💨💨💨
 
 ### Lend
-_This can be slow to load the first couple of times on a mainnet fork_
-
 This component is a lightweight take on the Aave V2 market. You can view your overall position, key market stats, and your detailed asset position, viewing in native / ETH / USD. You can also make the key Aave transactions (deposit, withdraw, borrow, repay).
 
-### SimpleLend
-_Work in progress, missing some logical checks and UI improvements_
-
-This is a simple component that lets you deposit or withdraw a single asset into the Aave V2 protocol.
+Data is fetched via a custom `useAaveData()` hook. Data is sourced from Aave subgraphs for market data, and on-chain for user data (to enable local development)
 
 ### Ape
 This is an experimental contract as part of this branch. The Aave Ape smart contract lets you increase your leverage, based on collateral deposited in Aave. The component walks you through the stages, but...
@@ -85,10 +99,17 @@ This is an experimental contract as part of this branch. The Aave Ape smart cont
 4. Call the `ape()` function, or the `superApe()` function to leverage up multiple times in one transaction. This function uses your collateral to borrow the Short asset, swaps that for the Long asset, then deposits that back into Aave.
 5. You can unwind your position by calling the `unwindApe()` function (you need to give the AaveApe contract an allowance on your aToken first, so it can withdraw it). Unwinding creates a flash loan to repay your owed amount in the Short token, then withdraws your Long token collateral, swaps it for the right amount of Short token, repays the flash loan and deposits any left-over collateral back into Aave
 
-TODO:
-- Test on mainnet
-- Improving visibility of your position & health
-- Supporting multi-currency?
+## Other components
 
-### AavEth
-Frontend component work in progress, this contract lets you deposit ETH into other assets in Aave (swapping via Uniswap, saving a transaction or two!), and then withdraw those same assets back to ETH.
+### Swap
+This is a minimum viable Uniswap UI (see more detail [here](https://azfuller20.medium.com/swap-with-uniswap-wip-f15923349b3d)), using token-lists. All you need to instantiate this is a provider with a signer (userProvider in scaffold-eth works fine!)
+- You can update the token-list for the Swap component in the "Hints" tab
+- Kudos to @ironsoul for the fresh Debounce hook
+
+### SnatchToken
+One of the benefits of using a mainnet fork is that you can impersonate Ethereum accounts you don't own, which is great for getting your hands on tokens! Building on top of an initial component by [@ironsoul](https://twitter.com/ironsoul0), this lets you specify the target, the token you are after and the amount you would like.
+- Your target will need enough of the token, as well as some ETH to pay for the gas fee.
+- The list of tokens comes from the [1inch tokenlist](https://tokenlists.org/token-list?url=tokens.1inch.eth)
+
+### Approver
+A minimal component for Approving specific accounts to spend your ERC20s, with mainnet tokens selectable from a tokenlist, plus an option to manually enter the ERC20 of your choice.

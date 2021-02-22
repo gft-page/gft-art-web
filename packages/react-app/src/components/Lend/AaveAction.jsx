@@ -110,14 +110,14 @@ function AaveAction({ assetData, userAssetData, userAccountData, signer, type, a
         <Button key="back" onClick={handleModalCancel}>
           cancel
         </Button>,
-        <Button key="submit" type="primary" loading={transacting} onClick={handleModalOk}>
+        <Button key="submit" type="primary" loading={transacting} onClick={handleModalOk} disabled={amount===0&&useMax===false}>
           {type}
         </Button>,
       ]}
       >
       <Row>
         <Space>
-          {(balance&&assetData)&&<Statistic title={`Wallet balance`} value={balance&&formatUnits(balance, assetData.decimals)} suffix={assetData.symbol}/>}
+          {(balance&&assetData)&&<Statistic title={`Wallet balance`} value={balance&&parseFloat(formatUnits(balance, assetData.decimals)).toFixed(4)} suffix={assetData.symbol}/>}
           {(assetData)&&<Statistic title={`Deposited`} value={(userAssetData&&userAssetData['currentATokenBalance'])?parseFloat(formatUnits(userAssetData['currentATokenBalance'], assetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={assetData.symbol}/>}
           {(assetData)&&<Statistic title={`Variable debt`} value={(userAssetData&&userAssetData['currentVariableDebt'])?parseFloat(formatUnits(userAssetData['currentVariableDebt'], assetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={assetData.symbol}/>}
           {(assetData)&&<Statistic title={`Stable debt`} value={(userAssetData&&userAssetData['currentStableDebt'])?parseFloat(formatUnits(userAssetData['currentStableDebt'], assetData.decimals)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5}):"0"} suffix={assetData.symbol}/>}

@@ -12,7 +12,7 @@ import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useC
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Swap, Lend, SnatchToken, Approver } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
-import { Hints, Ape, SimpleLend } from "./views"
+import { Hints, Ape } from "./views"
 
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI } from "./constants";
 const { Text, Title, Paragraph } = Typography;
@@ -116,21 +116,15 @@ function App(props) {
           <Menu.Item key="/lend">
             <Link onClick={()=>{setRoute("/lend")}} to="/lend">Lend</Link>
           </Menu.Item>
-          <Menu.Item key="/approve">
-            <Link onClick={()=>{setRoute("/approve")}} to="/approve">Approve</Link>
-          </Menu.Item>
           <Menu.Item key="/aave-ape">
             <Link onClick={()=>{setRoute("/aave-ape")}} to="/aave-ape">Ape</Link>
+          </Menu.Item>
+          <Menu.Item key="/approve">
+            <Link onClick={()=>{setRoute("/approve")}} to="/approve">Approve</Link>
           </Menu.Item>
           {onLocalChain&&(<>
           <Menu.Item key="/snatch">
             <Link onClick={()=>{setRoute("/snatch")}} to="/snatch">Snatch</Link>
-          </Menu.Item>
-          <Menu.Item key="/aaveth">
-            <Link onClick={()=>{setRoute("/aaveth")}} to="/aaveth">AavEth</Link>
-          </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
           </Menu.Item></>)}
         </Menu>
         <Modal visible={showNetworkWarning} title={"Unknown network"} footer={null} closable={false}>
@@ -155,53 +149,17 @@ function App(props) {
           <Lend
             selectedProvider={userProvider}
             ethPrice={price}
-            localProvider={localProvider}
             />
           </Row>
         </Route>
-          <Route path="/hints">
-            <Title level={3}>Using the Uniswapper</Title>
-            <Paragraph><Text code>{`<Swap/>`}</Text> is a minimal Uniswap interface, requiring an <a href="https://docs.ethers.io/v5/" target="_blank">ethers.js</a> Provider.</Paragraph>
-            <Paragraph>Click the <SettingOutlined/> on the Swapper widget to view more detailed settings (slippage tolerance, time limit) and other calculations.</Paragraph>
-            <Input placeholder="Enter tokenlist URL" value={tokenListURI} onChange={(e) => {
-              console.log(e.target.value)
-              setTokenListURI(e.target.value) }}
-              style={{width:400}}
-              />
-            <Paragraph>Enter the token list URI you would like to use (an optional parameter). Go to <a href="https://tokenlists.org/" target="_blank">tokenlists.org</a> to learn more</Paragraph>
-            <Title level={3}>Using <Text code>{`yarn fork`}</Text> </Title>
-            {onLocalChain?<Paragraph>Add an <a href="https://alchemyapi.io/" target="_blank">Alchemy API URL</a> to the fork script at <Text code>/packages/hardhat/package.json</Text> to avoid <Text code>archive node</Text> errors</Paragraph>:null}
-            <Paragraph>It can sometimes take a local fork a while to get up and running, you might have to refresh a few times, and wait a bit</Paragraph>
-            <Title level={3}>Using the Lender</Title>
-            <Paragraph>Use the Faucet to get some funds to play with (you will have to use the Uniswapper to get an ERC20 to get started)</Paragraph>
-            <Paragraph>Deposit, Withdraw, Borrow and Lend across all the available Aave markets. You can see your total Collateral, Debt and Borrowing allowance at the top of the page</Paragraph>
-            <Paragraph>Specify the currency conversion you want to see: Native, ETH or USD</Paragraph>
-            <Paragraph>Click the settings button <SettingOutlined/> to see more details about your account</Paragraph>
-          </Route>
-          <Route exact path="/simple-lend">
-            <Row justify="center">
-            <SimpleLend
-              selectedProvider={userProvider}
-              ethPrice={price}
-              />
-            </Row>
-          </Route>
-          <Route exact path="/aaveth">
-            <Contract
-              name="AavEth"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-            />
-          </Route>
           <Route exact path="/aave-ape">
             <Ape selectedProvider={userProvider}/>
-            <Contract
+            {onLocalChain&&<Contract
               name="AaveApe"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
-            />
+            />}
           </Route>
           <Route exact path="/snatch">
             <SnatchToken

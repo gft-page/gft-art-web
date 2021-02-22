@@ -24,7 +24,6 @@ function Ape({ selectedProvider }) {
   const [borrowAsset, setBorrowAsset] = useState('DAI')
   const [debtType, setDebtType] = useState('v')
 
-
   let debtLookup = {
     's': "1",
     'v': "2"
@@ -177,13 +176,14 @@ function Ape({ selectedProvider }) {
   usePoller(async () => {
     if(writeContracts && writeContracts['AaveApe']) {
       let _apeEvents = await writeContracts['AaveApe'].queryFilter('Ape')
-      console.log(_apeEvents)
       setApeEvents(_apeEvents)
   }
   }, 5000)
 
   let hasDelegatedCredit = creditDelegated&&creditDelegated.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
   let hasATokenAllowance = aTokenAllowance&&aTokenAllowance.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
+
+  console.log(userAccountData?formatUnits(userAccountData.availableBorrowsETH,18)==="0.0":null)
 
   return (
     <>
@@ -205,6 +205,8 @@ function Ape({ selectedProvider }) {
       <>
       {userAccountData?<AccountSummary userAccountData={userAccountData}/>:<Skeleton active/>}
       <Divider/>
+      {userAccountData&&formatUnits(userAccountData.availableBorrowsETH,18)==="0.0"?<Text>You need a borrow allowance to go Ape, have you deposited any bananas? 🍌</Text> :
+      <>
             <Title level={4}>Select your ape asset 🙈</Title>
             <Text>This is the asset you are going Long</Text>
           <Row justify="center" align="middle" gutter={16}>
@@ -246,13 +248,13 @@ function Ape({ selectedProvider }) {
         </Col>
         </Row>
 
-        {(borrowAssetData&&apeAssetData)&&<><Divider/><Statistic title={"Current price"} value={parseFloat(ethers.utils.formatUnits(apeAssetData['price']['priceInEth'],18) / ethers.utils.formatUnits(borrowAssetData['price']['priceInEth'], 18)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5})} suffix={borrowAsset}/><Divider/></>}
+        {(borrowAssetData&&apeAssetData)&&<><Divider/><Statistic title={`Current ${apeAsset} price`} value={parseFloat(ethers.utils.formatUnits(apeAssetData['price']['priceInEth'],18) / ethers.utils.formatUnits(borrowAssetData['price']['priceInEth'], 18)).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 5})} suffix={borrowAsset}/><Divider/></>}
         <Title level={4}>How to go ape 🦍</Title>
         <Steps>
           <Step status={hasDelegatedCredit?'finish':'wait'} title="Delegate credit" description={creditDelegated&&(hasDelegatedCredit?<p>You have delegated credit to the Aave Ape 🏦</p>:<Button loading={delegating} onClick={setFullCreditAllowance}>{"Delegate!"}</Button>)} />
           <Step status={hasDelegatedCredit?'finish':'wait'} title="Go ape!"
             description={creditDelegated&&(hasDelegatedCredit&&<>
-              <Paragraph>{`Borrow the maximum, swap to ${apeAsset} and deposit to Aave`}</Paragraph>
+              <Paragraph>{`Borrow ${borrowAsset}, swap to ${apeAsset} and deposit to Aave`}</Paragraph>
               <Button loading={aping} type="primary" onClick={async () => {
               try {
               setAping(true)
@@ -281,7 +283,7 @@ function Ape({ selectedProvider }) {
         <Steps>
           <Step status={hasATokenAllowance?'finish':'wait'} title={`Add a${apeAsset} allowance`} description={aTokenAllowance&&(hasATokenAllowance?<p>You have given an allowance to the Aave Ape 🏦</p>:<Button loading={allowing} onClick={setFullATokenAllowance}>{"Allow on the aToken!"}</Button>)} />
           <Step status={hasATokenAllowance?'finish':'wait'} title="Unwind your ape" description={aTokenAllowance&&(hasATokenAllowance&&<>
-            <Paragraph>{`Flashloan the ${borrowAsset} you need to repay your debt, then withdraw some ${apeAsset} and swap it to settle up`}</Paragraph>
+            <Paragraph>{`Flashloan ${borrowAsset} to repay your debt, then withdraw ${apeAsset} and swap it to settle up`}</Paragraph>
             <Button loading={unwinding} type="primary" onClick={async () => {
               try {
               setUnwinding(true)
@@ -305,12 +307,12 @@ function Ape({ selectedProvider }) {
           }}>{"Unwind Ape"}</Button>
             </>
           )} />
-        </Steps>
+        </Steps></>}
         </>:<Skeleton avatar paragraph={{ rows: 4 }} />}
     </Card>
     </Row>
     <Row justify="center" align="middle" gutter={16}>
-    <Card title={'Events'} style={{ width: 800 }}>
+    <Card title={'Aave Ape Events'} style={{ width: 800 }}>
     <Table rowKey='key' dataSource={apeEvents} columns={eventColumns} pagination={false} />
     </Card>
     </Row>
