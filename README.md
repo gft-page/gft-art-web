@@ -2,11 +2,11 @@
 
 > This branch demonstrates several ways to integrate Aave with scaffold-eth...
 
-<Lend/> is a simple React component, leveraging the Aave subgraph for market data, a custom useAaveData react hook to fetch user data, and aave-js to prepare transactions. Read more here!
+Lend is a simple React component, leveraging the Aave subgraph for market data, a custom useAaveData react hook to fetch user data, and aave-js to prepare transactions. [Read more here](https://medium.com/@azfuller20/lend-with-aave-v2-draft-20bacceedade)!
 
-The Aave Ape is a helper contract that lets you go long ("ape") the Aave asset of your choice, borrowing a "short" asset on Aave to buy more of the "ape" asset. It also lets you unwind your position with an Aave flashloan. We walk through the mechanics, testing and the simple <Ape/> frontend in this post.
+The Aave Ape is a helper contract that lets you go long ("ape") the Aave asset of your choice, borrowing a "short" asset on Aave to buy more of the "ape" asset. It also lets you unwind your position with an Aave flashloan. We walk through the mechanics, testing and the simple Ape frontend in [this post](https://medium.com/@azfuller20/aave-ape-with-%EF%B8%8F-scaffold-eth-draft-c687874c079e).
 
-> 🚨 This is experimental code written for educational & learning purposes only, use at your own risk!
+> 🚨 This is experimental code written for educational & learning purposes only, use at your own risk! 🚨
 
 ---
 
@@ -32,7 +32,7 @@ yarn start
 
 ```
 
-- In a second terminal window run:
+In a second terminal window run:
 
 ```bash
 
@@ -43,7 +43,7 @@ This branch uses a local fork of mainnet, which is easy to do with Hardhat ([see
 - Go to alchemyapi.io and get an API key for mainnet
 - Replace the Infura URL with an Alchemy URL with your API key (i.e. https://eth-mainnet.alchemyapi.io/v2/<API_KEY_HERE>) into the `fork` script on line 28 of /packages/hardhat/package.json
 
-- In a third terminal window run:
+In a third terminal window run:
 
 ```bash
 yarn test
@@ -61,8 +61,8 @@ REACT_APP_PROVIDER=https://kovan.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad
 REACT_APP_NETWORK=kovan
 ```
 
-- To use the already-deployed Aave Ape contract, unzip the `kovan-contracts.zip` folder
-- To deploy your own...
+To use the already-deployed Aave Ape contract, unzip the `kovan-contracts.zip` folder
+To deploy your own...
 ```
 yarn generate
 yarn account
