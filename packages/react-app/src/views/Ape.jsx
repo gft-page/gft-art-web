@@ -183,8 +183,6 @@ function Ape({ selectedProvider }) {
   let hasDelegatedCredit = creditDelegated&&creditDelegated.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
   let hasATokenAllowance = aTokenAllowance&&aTokenAllowance.gt(ethers.constants.MaxUint256.div(ethers.BigNumber.from("10"))) ? true : false
 
-  console.log(userAccountData?formatUnits(userAccountData.availableBorrowsETH,18)==="0.0":null)
-
   return (
     <>
     <Row justify="center" align="middle" gutter={16}>

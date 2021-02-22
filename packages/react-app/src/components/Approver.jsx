@@ -25,7 +25,7 @@ const Approver = ({ userProvider, tx }) => {
   let defaultToken = 'DAI'
   let defaultDecimals = 18
 
-  let tokenListUri = 'http://tokens.1inch.eth.link'
+  let tokenListUri = 'https://tokens.1inch.eth.link'
 
   useEffect(() => {
     const getTokenList = async () => {
@@ -36,7 +36,6 @@ const Approver = ({ userProvider, tx }) => {
         return t.chainId === 1
       })
       setTokenList(filteredTokens)
-      console.log(filteredTokens)
     } catch (e) {
       console.log(e)
     }
@@ -96,7 +95,7 @@ const Approver = ({ userProvider, tx }) => {
         marginTop: "30px",
       }}
     >
-      {process.env.REACT_APP_NETWORK!=='kovan'&&<Form.Item label={`Set maximum`}>
+      {process.env.REACT_APP_NETWORK!=='kovan'&&<Form.Item label={`Manual token entry`}>
       <Switch onChange={(e)=>{
                   console.log(`Set manual: ${e}`)
                   setManualToken(e)

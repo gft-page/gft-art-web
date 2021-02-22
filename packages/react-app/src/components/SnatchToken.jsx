@@ -23,7 +23,7 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
   let defaultToken = 'DAI'
   let defaultDecimals = 18
 
-  let tokenListUri = 'http://tokens.1inch.eth.link'
+  let tokenListUri = 'https://tokens.1inch.eth.link'
 
   useEffect(() => {
     const getTokenList = async () => {
@@ -34,7 +34,6 @@ const SnatchToken = ({ mainnetProvider, localProvider, tx }) => {
         return t.chainId === 1
       })
       setTokenList(filteredTokens)
-      console.log(filteredTokens)
     } catch (e) {
       console.log(e)
     }

@@ -8,8 +8,6 @@ export default function Header() {
 
   let network = process.env.REACT_APP_NETWORK ? ` on ${process.env.REACT_APP_NETWORK}!` : ' on localhost'
 
-  console.log(process.env.REACT_APP_NETWORK)
-
   return (
     <a href="https://github.com/austintgriffith/scaffold-eth/tree/aave-ape" target="_blank" rel="noopener noreferrer">
       <PageHeader
