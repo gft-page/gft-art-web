@@ -1,8 +1,8 @@
-const { ethers } = require("hardhat");
+const { ethers: l2ethers } = require("hardhat");
 require("@nomiclabs/hardhat-waffle");
 const { use, expect } = require("chai");
 
-describe("My Dapp", function () {
+describe("My Optimistic Dapp", function () {
   let myContract;
 
   describe("YourContract", function () {
@@ -17,6 +17,7 @@ describe("My Dapp", function () {
         const newPurpose = "Test Purpose";
 
         await myContract.setPurpose(newPurpose);
+        let retrievedPurpose = await myContract.purpose()
         expect(await myContract.purpose()).to.equal(newPurpose);
       });
     });

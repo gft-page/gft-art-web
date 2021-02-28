@@ -1,3 +1,5 @@
+require('@eth-optimism/plugins/hardhat/compiler');
+require('@eth-optimism/plugins/hardhat/ethers');   // Now just add this one!
 const { utils } = require("ethers");
 const fs = require("fs");
 const chalk = require("chalk");
@@ -95,13 +97,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.0",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200
-          }
-        }
+        version: "0.7.6"
       },
       {
         version: "0.5.5",

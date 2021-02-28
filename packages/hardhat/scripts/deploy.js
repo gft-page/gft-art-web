@@ -1,7 +1,7 @@
 /* eslint no-use-before-define: "warn" */
 const fs = require("fs");
 const chalk = require("chalk");
-const { config, ethers } = require("hardhat");
+const { config, ethers: l2ethers } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
 
