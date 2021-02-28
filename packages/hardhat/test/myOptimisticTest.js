@@ -1,4 +1,4 @@
-const { ethers: l2ethers } = require("hardhat");
+const { l2ethers } = require("hardhat");
 require("@nomiclabs/hardhat-waffle");
 const { use, expect } = require("chai");
 
@@ -7,7 +7,7 @@ describe("My Optimistic Dapp", function () {
 
   describe("YourContract", function () {
     it("Should deploy YourContract", async function () {
-      const YourContract = await ethers.getContractFactory("YourContract");
+      const YourContract = await l2ethers.getContractFactory("YourContract");
 
       myContract = await YourContract.deploy();
     });

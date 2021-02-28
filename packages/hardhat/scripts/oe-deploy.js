@@ -4,64 +4,37 @@ const chalk = require("chalk");
 const { config, ethers } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
+const {  JsonRpcProvider } = require("@ethersproject/providers");
 
 const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
 
-  const yourContract = await deploy("YourContract") // <-- add in constructor args like line 19 vvvv
+  const yourContract = await deploy({contractName: "YourContract"}) // <-- add in constructor args like line 19 vvvv
 
-  //const secondContract = await deploy("SecondContract")
-
-  // const exampleToken = await deploy("ExampleToken")
-  // const examplePriceOracle = await deploy("ExamplePriceOracle")
-  // const smartContractWallet = await deploy("SmartContractWallet",[exampleToken.address,examplePriceOracle.address])
-
-
-
-  /*
-  //If you want to send value to an address from the deployer
-  const deployerWallet = ethers.provider.getSigner()
-  await deployerWallet.sendTransaction({
-    to: "0x34aA3F359A9D614239015126635CE7732c18fDF3",
-    value: ethers.utils.parseEther("0.001")
-  })
-  */
-
-
-  /*
-  //If you want to send some ETH to a contract on deploy (make your constructor payable!)
-  const yourContract = await deploy("YourContract", [], {
-  value: ethers.utils.parseEther("0.05")
-  });
-  */
-
-
-  /*
-  //If you want to link a library into your contract:
-  // reference: https://github.com/austintgriffith/scaffold-eth/blob/using-libraries-example/packages/hardhat/scripts/deploy.js#L19
-  const yourContract = await deploy("YourContract", [], {}, {
-   LibraryName: **LibraryAddress**
-  });
-  */
-
-
-  console.log(
-    " 💾  Artifacts (address, abi, and args) saved to: ",
-    chalk.blue("packages/hardhat/artifacts/"),
-    "\n\n"
-  );
 };
 
-const deploy = async (contractName, _args = [], overrides = {}, libraries = {}) => {
+const deploy = async ({contractName, _args = [], overrides = {}, libraries = {}}) => {
   console.log(` 🛰  Deploying: ${contractName}`);
 
   const contractArgs = _args || [];
-  const contractArtifacts = await ethers.getContractFactory(contractName,{libraries: libraries});
+
+  const ABI_OVM = require(`${config.paths.artifacts}/contracts/${contractName}.sol/${contractName}.ovm.json`).abi;
+  const BYTECODE_OVM = require(`${config.paths.artifacts}/contracts/${contractName}.sol/${contractName}.ovm.json`).bytecode;
+
+  const optimisticProvider = new JsonRpcProvider("http://localhost:8545")
+  const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
+
+  const newWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
+  const signerProvider = newWallet.connect(optimisticProvider)
+
+  const contractArtifacts = new ethers.ContractFactory(ABI_OVM, BYTECODE_OVM, signerProvider);
+
   const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
   const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
+  console.log('here')
 
   let extraGasInfo = ""
   if(deployed&&deployed.deployTransaction){
