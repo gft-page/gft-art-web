@@ -26,7 +26,7 @@ const deploy = async ({contractName, _args = [], overrides = {}, libraries = {}}
   console.log(network.provider)
   const signerProvider = newWallet.connect(optimisticProvider)
 
-  const contractArtifacts = await l2ethers.getContractFactory(contractName)//, signerProvider);
+  const contractArtifacts = await l2ethers.getContractFactory(contractName, signerProvider);
 
   const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
   const encoded = abiEncodeArgs(deployed, contractArgs);

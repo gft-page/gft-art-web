@@ -68,12 +68,14 @@ export default function Balance(props) {
     floatBalance = parseFloat(etherBalance);
   }
 
-  let displayBalance = floatBalance.toFixed(4);
+  let prefix = props.prefix?props.prefix+" ":""
+
+  let displayBalance = `${prefix}$${(floatBalance).toFixed(4)}`
 
   const price = props.price || props.dollarMultiplier
 
   if (price && dollarMode) {
-    displayBalance = "$" + (floatBalance * price).toFixed(2);
+    displayBalance = `${prefix}$${(floatBalance * price).toFixed(2)}`;
   }
 
   return (

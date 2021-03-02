@@ -21,20 +21,12 @@ import { useState, useEffect } from "react";
   - Specify mainnetProvider
   - Specify DAI_ADDRESS and DAI_ABI, you can load/write them using constants.js
 */
-export default function useExternalContractLoader(provider, address, ABI, optionalBytecode) {
+export default function useExternalContractLoader(signer, address, ABI, optionalBytecode) {
   const [contract, setContract] = useState();
   useEffect(() => {
     async function loadContract() {
-      if (typeof provider !== "undefined" && address && ABI) {
+      if (typeof signer !== "undefined" && address && ABI) {
         try {
-          // we need to check to see if this provider has a signer or not
-          let signer;
-          const accounts = await provider.listAccounts();
-          if (accounts && accounts.length > 0) {
-            signer = provider.getSigner();
-          } else {
-            signer = provider;
-          }
 
           const customContract = new Contract(address, ABI, signer);
           if(optionalBytecode) customContract.bytecode = optionalBytecode
@@ -46,6 +38,6 @@ export default function useExternalContractLoader(provider, address, ABI, option
       }
     }
     loadContract();
-  }, [provider, address, ABI, optionalBytecode]);
+  }, [signer, address, ABI, optionalBytecode]);
   return contract;
 }
