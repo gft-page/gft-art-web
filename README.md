@@ -34,12 +34,17 @@ make up
 
 ```
 
-> in a third terminal window:
+> in a third terminal window, generate a local account:
 
 ```bash
 cd scaffold-eth
-yarn deploy-oe
+yarn generate
+```
+Send that account some ETH using the faucet from http://localhost:3000/ to fund the deployments
 
+> when the local nodes are up and running, deploy local contracts & attempt to go from L1 -> L2!
+```
+yarn deploy-oe
 ```
 
 ## Notes
