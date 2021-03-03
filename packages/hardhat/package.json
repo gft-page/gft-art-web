@@ -11,7 +11,7 @@
     "eslint-plugin-prettier": "^3.1.4"
   },
   "dependencies": {
-    "@eth-optimism/contracts": "^0.1.9",
+    "@eth-optimism/contracts": "^0.1.10",
     "@eth-optimism/plugins": "^0.0.16",
     "@eth-optimism/watcher": "^0.0.1-alpha.9",
     "@nomiclabs/hardhat-ethers": "^2.0.0",
@@ -33,7 +33,8 @@
     "test": "hardhat test --network hardhat",
     "compile": "hardhat compile",
     "deploy": "hardhat run scripts/deploy.js && hardhat run scripts/publish.js",
-    "deploy-oe": "hardhat run scripts/oe-deploy-v2.js && hardhat run scripts/publish.js",
+    "deploy-oe": "hardhat run scripts/oe-deploy.js",
+    "postdeploy-oe": "hardhat run scripts/publish.js",
     "watch": "node scripts/watch.js",
     "accounts": "hardhat accounts",
     "balance": "hardhat balance",

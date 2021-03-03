@@ -70,7 +70,7 @@ export default function Balance(props) {
 
   let prefix = props.prefix?props.prefix+" ":""
 
-  let displayBalance = `${prefix}$${(floatBalance).toFixed(4)}`
+  let displayBalance = `${prefix}Ξ${(floatBalance).toFixed(4)}`
 
   const price = props.price || props.dollarMultiplier
 
@@ -85,6 +85,7 @@ export default function Balance(props) {
         fontSize: props.size ? props.size : 24,
         padding: 8,
         cursor: "pointer",
+        color: props.color
       }}
       onClick={() => {
         setDollarMode(!dollarMode);

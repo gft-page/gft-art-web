@@ -24,7 +24,7 @@ contract L2DepositedERC20 is OVM_L2DepositedERC20 {
         string memory _name,
         string memory _symbol
     )
-        OVM_L2DepositedERC20(_l2CrossDomainMessenger, _decimals, _name, _symbol)
+        OVM_L2DepositedERC20(_l2CrossDomainMessenger, _name, _symbol)
     {}
 
 }

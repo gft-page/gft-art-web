@@ -23,20 +23,7 @@ import { iOVM_ERC20 } from "@eth-optimism/contracts/build/contracts/iOVM/precomp
  */
 contract L1ERC20Gateway is OVM_L1ERC20Gateway {
 
-    /********************************
-     * External Contract References *
-     ********************************/
 
-
-
-    /***************
-     * Constructor *
-     ***************/
-
-    /**
-     * @param _l1ERC20 L1 ERC20 address this contract stores deposits for
-     * @param _l2DepositedERC20 L2 Gateway address on the chain being deposited into
-     */
     constructor(
         iOVM_ERC20 _l1ERC20,
         address _l2DepositedERC20,

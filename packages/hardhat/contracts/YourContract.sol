@@ -1,13 +1,12 @@
 pragma solidity >=0.6.0 <0.9.0;
 //SPDX-License-Identifier: MIT
 
-import "hardhat/console.sol";
-
 contract YourContract {
 
-  event SetPurpose(address sender, string purpose);
+  event SetPurpose(address sender, string purpose, uint256 timestamp);
 
-  string public purpose = "Programming Unstoppable Money";
+  string public purpose = "Scaling Optimistically!";
+  uint256 public timestamp;
 
   constructor() {
     // what should we do on deploy?
@@ -15,8 +14,8 @@ contract YourContract {
 
   function setPurpose(string memory newPurpose) public {
     purpose = newPurpose;
-    console.log(msg.sender,"set purpose to",purpose);
-    emit SetPurpose(msg.sender, purpose);
+    timestamp = block.timestamp;
+    emit SetPurpose(msg.sender, purpose, block.timestamp);
   }
 
 }

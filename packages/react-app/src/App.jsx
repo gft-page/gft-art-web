@@ -3,11 +3,11 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Alert, Space, Card, Radio } from "antd";
+import { Row, Col, Button, Menu, Alert, Space, Card, Radio, Input, List} from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader, useBurnerSigner, useAddress } from "./hooks";
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader, useBurnerSigner, useAddress, useDebounce } from "./hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
@@ -85,20 +85,8 @@ function App(props) {
 
   const [layer, setLayer] = useState(1)
 
-  let ethAbi
-  let ethUser
-  let ethAddress
-  if (layer === 1) {
-    ethAbi =   L1ETHGATEWAY
-    ethUser = l1User
-    ethAddress = "0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1"
-  } else {
-    ethAbi =   L2DEPOSITEDERC20
-    ethUser = l2User
-    ethAddress = "0x4200000000000000000000000000000000000006"
-    }
 
-  const ETHContract = useExternalContractLoader(ethUser, ethAddress, ethAbi)
+  //const ETHContract = useExternalContractLoader(ethUser, ethAddress, ethAbi)
   //
   // Then read your DAI balance like:
   //const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
@@ -107,9 +95,8 @@ function App(props) {
   const l1Contracts = useContractLoader(l1Provider)
   const l2Contracts = useContractLoader(l2Provider)
 
-  // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(l2Contracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  let L1ETHGatewayContract = new ethers.Contract("0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1", L1ETHGATEWAY, l1User)
+  let L2ETHGatewayContract = new ethers.Contract("0x4200000000000000000000000000000000000006", L2DEPOSITEDERC20, l2User)
 
   //📟 Listen for broadcast events
   const setPurposeEvents = useEventListener(l2Contracts, "YourContract", "SetPurpose", l2Provider, 1);
@@ -230,12 +217,35 @@ function App(props) {
             */}
           </Route>
           <Route exact path="/your-contract">
-            <Button onClick={getCode}> Check code</Button>
             <Contract
               name="YourContract"
               signer={l2User}
               provider={l2Provider}
             />
+            <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+            <h2>Events:</h2>
+            <List
+              bordered
+              dataSource={setPurposeEvents}
+              renderItem={(item) => {
+
+                const milliseconds = parseInt(item[2].toString()) * 1000 // 1575909015000
+                const dateObject = new Date(milliseconds)
+                const humanDateFormat = dateObject.toLocaleString() //2019-12-9 10:30:15
+
+                return (
+                  <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
+                    <Address
+                        address={item[0]}
+                        ensProvider={mainnetProvider}
+                        fontSize={16}
+                      /> =>
+                    {humanDateFormat}
+                  </List.Item>
+                )
+              }}
+            />
+          </div>
             <Contract
               name="ERC20"
               signer={l1User}
@@ -282,13 +292,13 @@ function App(props) {
                   value={layer}
                   optionType="button"
                 />
-              <Contract
+              {/*<Contract
                 name={`Layer ${layer} ETH`}
                 customContract={ETHContract}
                 signer={layer === 1 ? l1User : l2User}
                 provider={layer === 2 ? l1Provider : l2Provider}
                 address={address}
-              />
+              />*/}
             </Space>
           </Route>
         </Switch>
@@ -297,6 +307,9 @@ function App(props) {
 
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
+        <Address address={address} ensProvider={mainnetProvider} />
+        <Balance address={address} provider={l1Provider} price={price} color={l1Network.color}/>
+        <Balance address={address} provider={l2Provider} price={price} prefix={"L2"} color={l2Network.color}/>
          {modalButtons}
 
       </div>
