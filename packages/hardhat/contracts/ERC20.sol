@@ -34,7 +34,7 @@ contract ERC20 is IERC20 {
         string memory _name,
         uint8 _decimalUnits
     ) {
-        balances[0x8C6655D20431AeefBC9391545D9865Fc384B486C] = _initialSupply;
+        balances[msg.sender] = _initialSupply;
         totalSupply = _initialSupply;
         name = _name;
         decimals = _decimalUnits;
@@ -44,6 +44,25 @@ contract ERC20 is IERC20 {
     /********************
      * Public Functions *
      ********************/
+
+     /**
+      * Mints new coins to the sender.
+      * @param _amount  Amount to mint.
+      * @return true if the mint was successful.
+      */
+     function mint(
+         uint256 _amount
+     )
+         public
+         returns (
+             bool
+         )
+     {
+         //TODO SafeMath here
+         balances[msg.sender] += _amount;
+         totalSupply += _amount;
+         return true;
+     }
 
     /**
      * Checks the balance of an address.

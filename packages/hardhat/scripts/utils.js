@@ -1,7 +1,7 @@
 /* eslint no-use-before-define: "warn" */
 const fs = require("fs");
 const chalk = require("chalk");
-const { config, l2ethers, network } = require("hardhat");
+const { config, l2ethers, network, tenderly } = require("hardhat");
 const { utils } = require("ethers");
 const R = require("ramda");
 const {  JsonRpcProvider } = require("@ethersproject/providers");
@@ -14,7 +14,6 @@ async function deploy({rpcUrl, contractName, ovm = false, mnemonicFile="./mnemon
   const optimisticProvider = new JsonRpcProvider(rpcUrl)
   const mnemonic = fs.readFileSync(mnemonicFile).toString().trim()
   const newWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
-  console.log(network.provider)
   const signerProvider = newWallet.connect(optimisticProvider)
 
   let contractArtifacts
@@ -28,13 +27,17 @@ async function deploy({rpcUrl, contractName, ovm = false, mnemonicFile="./mnemon
   const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
   const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
-  console.log('here')
 
   let extraGasInfo = ""
   if(deployed&&deployed.deployTransaction){
     const gasUsed = deployed.deployTransaction.gasLimit.mul(deployed.deployTransaction.gasPrice)
     extraGasInfo = "("+utils.formatEther(gasUsed)+" ETH)"
   }
+
+  await tenderly.persistArtifacts({
+    name: contractName,
+    address: deployed.address
+  });
 
   console.log(
     " 📄",
