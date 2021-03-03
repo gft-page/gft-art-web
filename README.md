@@ -38,7 +38,7 @@ make up
 
 ```bash
 cd scaffold-eth
-yarn deploy
+yarn deploy-oe
 
 ```
 

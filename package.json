@@ -54,7 +54,9 @@
     ],
     "nohoist": [
       "**/@graphprotocol/graph-ts",
-      "**/@graphprotocol/graph-ts/**"
+      "**/@graphprotocol/graph-ts/**",
+      "**/@eth-optimism/contracts/**",
+      "**/@eth-optimism/contracts"
     ]
   }
 }

@@ -236,6 +236,21 @@ function App(props) {
               signer={l2User}
               provider={l2Provider}
             />
+            <Contract
+              name="ERC20"
+              signer={l1User}
+              provider={l1Provider}
+            />
+            <Contract
+              name="L1ERC20Gateway"
+              signer={l1User}
+              provider={l1Provider}
+            />
+            <Contract
+              name="L2DepositedERC20"
+              signer={l2User}
+              provider={l2Provider}
+            />
 
 
             { /* uncomment for a second contract:

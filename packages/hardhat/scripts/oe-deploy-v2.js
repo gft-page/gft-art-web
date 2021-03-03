@@ -1,99 +1,31 @@
 /* eslint no-use-before-define: "warn" */
-const fs = require("fs");
-const chalk = require("chalk");
-const { config, l2ethers, network } = require("hardhat");
-const { utils } = require("ethers");
-const R = require("ramda");
-const {  JsonRpcProvider } = require("@ethersproject/providers");
+const { deploy } = require('./utils')
 
 const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
+  const l1MessengerAddress = '0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736'
+  const l2MessengerAddress = '0x4200000000000000000000000000000000000007'
 
-  const yourContract = await deploy({contractName: "YourContract"}) // <-- add in constructor args like line 19 vvvv
+  const decimals = 18
+  const name = "OldEnglish"
+  const symbol = "OE"
+  const initialSupply = "100"
 
+  const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: "http://localhost:8545", ovm: true})
+
+  const erc20 = await deploy({contractName: "ERC20", rpcUrl: "http://localhost:9545", ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
+
+  const l2Deposited = await deploy({contractName: "L2DepositedERC20", rpcUrl: "http://localhost:8545", ovm: true, _args: [l2MessengerAddress, decimals, name, symbol]})
+
+  const l1Erc20Gateway = await deploy({contractName: "L1ERC20Gateway", rpcUrl: "http://localhost:9545", ovm: false, _args: [erc20.address, l2Deposited.address, l1MessengerAddress]})
+
+  const init = await l2Deposited.init(l1Erc20Gateway.address)
+  console.log(init)
+  //_l2CrossDomainMessenger, _decimals, _name, _symbol
+  //_l1ERC20,_l2DepositedERC20,_l1messenger
 };
-
-const deploy = async ({contractName, _args = [], overrides = {}, libraries = {}}) => {
-  console.log(` 🛰  Deploying: ${contractName}`);
-
-  const contractArgs = _args || [];
-
-  const optimisticProvider = new JsonRpcProvider("http://localhost:8545")
-  const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
-  const newWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
-  console.log(network.provider)
-  const signerProvider = newWallet.connect(optimisticProvider)
-
-  const contractArtifacts = await l2ethers.getContractFactory(contractName, signerProvider);
-
-  const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
-  const encoded = abiEncodeArgs(deployed, contractArgs);
-  fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
-  console.log('here')
-
-  let extraGasInfo = ""
-  if(deployed&&deployed.deployTransaction){
-    const gasUsed = deployed.deployTransaction.gasLimit.mul(deployed.deployTransaction.gasPrice)
-    extraGasInfo = "("+utils.formatEther(gasUsed)+" ETH)"
-  }
-
-  console.log(
-    " 📄",
-    chalk.cyan(contractName),
-    "deployed to:",
-    chalk.magenta(deployed.address),
-    chalk.grey(extraGasInfo)
-  );
-
-  if (!encoded || encoded.length <= 2) return deployed;
-  fs.writeFileSync(`artifacts/${contractName}.args`, encoded.slice(2));
-
-  return deployed;
-};
-
-
-// ------ utils -------
-
-// abi encodes contract arguments
-// useful when you want to manually verify the contracts
-// for example, on Etherscan
-const abiEncodeArgs = (deployed, contractArgs) => {
-  // not writing abi encoded args if this does not pass
-  if (
-    !contractArgs ||
-    !deployed ||
-    !R.hasPath(["interface", "deploy"], deployed)
-  ) {
-    return "";
-  }
-  const encoded = utils.defaultAbiCoder.encode(
-    deployed.interface.deploy.inputs,
-    contractArgs
-  );
-  return encoded;
-};
-
-// checks if it is a Solidity file
-const isSolidity = (fileName) =>
-  fileName.indexOf(".sol") >= 0 && fileName.indexOf(".swp") < 0 && fileName.indexOf(".swap") < 0;
-
-const readArgsFile = (contractName) => {
-  let args = [];
-  try {
-    const argsFile = `./contracts/${contractName}.args`;
-    if (!fs.existsSync(argsFile)) return args;
-    args = JSON.parse(fs.readFileSync(argsFile));
-  } catch (e) {
-    console.log(e);
-  }
-  return args;
-};
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 main()
   .then(() => process.exit(0))
