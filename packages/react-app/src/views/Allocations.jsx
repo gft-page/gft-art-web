@@ -16,6 +16,7 @@ export default function ExampleUI({ denominator, allocations, mainnetProvider })
           bordered
           dataSource={allocations}
           renderItem={(item) => {
+            console.log("item",item)
             return (
               <List.Item key={item.wallet}>
                 <span style={{fontSize:24,padding:8,border:"1px solid #efefef"}}>

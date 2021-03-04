@@ -61,6 +61,8 @@ contract Allocator is ReentrancyGuard, Ownable{
     require( wallets.length > 0 ,"Not enough wallets");
     require( wallets.length < 256 ,"Too many wallets");
     require( wallets.length == ratios.length ,"Wallet and Ratio length not equal");
+    denominator=0;//<---- new line
+    delete allocations;
     for(uint8 r=0;r<ratios.length;r++){
       denominator += ratios[r];
       emit AllocationAdded(wallets[r],ratios[r]);

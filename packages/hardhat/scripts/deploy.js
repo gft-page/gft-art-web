@@ -9,14 +9,15 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-  //const WETH = await deploy("WETH9")
+  const WETH = await deploy("WETH9")
   //deployer is 0x02f6e9f21a4aac2eae9865a90ea8f5ee741d9b58 <-- hit with faucet funds
 
   const allocator = await deploy(
     "Allocator",
     [
-      "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", //WETH9 address on main
-      "0x4F2b9D0e9FCA80e967CEDBB95a7356D388605ED1", //gnosis safe with auryn, austin, and owocki as owners
+      //"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", //WETH9 address on main
+      WETH.address,
+      "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", //gnosis safe with auryn, austin, and owocki as owners
       [
         "0xFcC41c4614bD464bA28ad96f93aAdaA7bA6c8680",//clr fund
         "0xde21F729137C5Af1b01d73aF1dC21eFfa2B8a0d6",// gitcoin
@@ -28,6 +29,19 @@ const main = async () => {
         33
       ]
     ])
+
+  await allocator.setAllocation(
+    [
+      "0xFcC41c4614bD464bA28ad96f93aAdaA7bA6c8680",//clr fund
+      "0xde21F729137C5Af1b01d73aF1dC21eFfa2B8a0d6",// gitcoin
+      "0x97843608a00e2bbc75ab0C1911387E002565DEDE"// buidl guidl safe
+    ],
+    [
+      1,
+      2,
+      3
+    ]
+  )
 
   console.log("ADDRESS IS",allocator.address)
   console.log("GAS LIMIT",allocator.deployTransaction.gasLimit.toNumber())

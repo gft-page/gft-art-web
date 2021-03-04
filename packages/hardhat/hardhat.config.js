@@ -17,7 +17,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "mainnet";
+const defaultNetwork = "localhost";
 
 function mnemonic() {
   try {
@@ -46,7 +46,7 @@ module.exports = {
         notice no mnemonic here? it will just use account 0 of the hardhat node to deploy
         (you can put in a mnemonic here to set the deployer locally)
       */
-      accounts: [ fs.readFileSync("./allocate.deploy.pk").toString().trim() ]
+      //accounts: [ fs.readFileSync("./allocate.deploy.pk").toString().trim() ]
     },
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
