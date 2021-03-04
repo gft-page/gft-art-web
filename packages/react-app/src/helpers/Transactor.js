@@ -8,12 +8,21 @@ import Notify from "bnc-notify";
 // it is basically just a wrapper around BlockNative's wonderful Notify.js
 // https://docs.blocknative.com/notify
 
-export default function Transactor(provider, gasPrice, etherscan) {
+export default function Transactor(provider, gasPrice, etherscan, providerIsSigner=false) {
   if (typeof provider !== "undefined") {
     // eslint-disable-next-line consistent-return
     return async tx => {
-      const signer = provider.getSigner();
-      const network = await provider.getNetwork();
+
+      let signer
+      let network
+      if(providerIsSigner===true) {
+        signer = provider
+        network = await signer.provider.getNetwork()
+      } else {
+        signer = provider.getSigner();
+        network = await provider.getNetwork();
+      }
+
       console.log("network", network);
       const options = {
         dappId: "0b58206a-f3c0-4701-a62f-73c7243e8c77", // GET YOUR OWN KEY AT https://account.blocknative.com

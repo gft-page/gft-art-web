@@ -3,7 +3,7 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Alert, Space, Card, Radio, Input, List} from "antd";
+import { Row, Col, Button, Menu, Alert, Space, Card, Radio, Input, List, Form, InputNumber} from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
@@ -55,8 +55,8 @@ function App(props) {
   // For more hooks, check out 🔗eth-hooks at: https://www.npmjs.com/package/eth-hooks
 
   // The transactor wraps transactions and provides notificiations
-  const l1Tx = Transactor(l1User, gasPrice)
-  const l2Tx = Transactor(l2User, gasPrice)
+  const l1Tx = Transactor(l1User, gasPrice, '', true)
+  const l2Tx = Transactor(l2User, gasPrice, '', true)
 
 
   /*
@@ -137,6 +137,57 @@ function App(props) {
   }
   */
 
+
+const BridgeEth = ({action}) => {
+    const onFinish = (values: any) => {
+      console.log('Submitted:', values);
+      if(values.action==='deposit'){
+      l1Tx(L1ETHGatewayContract.deposit({
+        value: parseEther(values.amount.toString())
+      }));} else {
+        l2Tx(L2ETHGatewayContract.withdraw(
+          parseEther(values.amount.toString())
+        ))
+      }
+    };
+
+    const onFinishFailed = (errorInfo: any) => {
+      console.log('Failed:', errorInfo);
+    };
+
+    return (
+      <Form
+        name="basic"
+        layout="inline"
+        initialValues={{action: 'deposit', amount: 0.1}}
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+      >
+
+        <Form.Item name="action" rules={[{ required: true, message: 'Please select an action!' }]}>
+          <Radio.Group>
+            <Radio.Button value="deposit">Deposit</Radio.Button>
+            <Radio.Button value="withdraw">Withdraw</Radio.Button>
+          </Radio.Group>
+        </Form.Item>
+
+        <Form.Item
+          name="amount"
+          rules={[{ required: true, message: 'Please enter an amount!' }]}
+        >
+          <InputNumber />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Bridge
+          </Button>
+        </Form.Item>
+      </Form>
+    );
+  }
+
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
@@ -194,22 +245,29 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Account</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Bridge</Link>
           </Menu.Item>
           <Menu.Item key="/your-contract">
             <Link onClick={()=>{setRoute("/your-contract")}} to="/your-contract">YourContract</Link>
           </Menu.Item>
-          <Menu.Item key="/eth-gateway">
-            <Link onClick={()=>{setRoute("/eth-gateway")}} to="/eth-gateway">ETH Gateway</Link>
+          <Menu.Item key="/erc20-gateway">
+            <Link onClick={()=>{setRoute("/erc20-gateway")}} to="/erc20-gateway">erc20 Gateway</Link>
           </Menu.Item>
         </Menu>
 
         <Switch>
           <Route exact path="/">
-          <Card title={address ? <Address address={address} ensProvider={mainnetProvider} /> : "Connecting..."}>
-          <Balance address={address} provider={l1Provider} price={price} prefix={"L1"} />
-          <Balance address={address} provider={l2Provider} price={price} prefix={"L2"} />
-          </Card>
+          <Row justify="center" align="middle" gutter={16}>
+            <Card title={"Optimistic ETH Bridge"} style={{ width: 600}}>
+              <Space direction="vertical">
+                <Balance address={address} provider={l1Provider} prefix={"L1"} color={l1Network.color}/>
+                <Row justify="center">
+                  <BridgeEth action={'deposit'}/>
+                </Row>
+                <Balance address={address} provider={l2Provider} prefix={"L2"} color={l2Network.color}/>
+              </Space>
+            </Card>
+          </Row>
             {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
@@ -240,12 +298,14 @@ function App(props) {
                         ensProvider={mainnetProvider}
                         fontSize={16}
                       /> =>
-                    {humanDateFormat}
+                    {item[1]}
                   </List.Item>
                 )
               }}
             />
           </div>
+          </Route>
+          <Route path="/erc20-gateway">
             <Contract
               name="ERC20"
               signer={l1User}
@@ -261,45 +321,6 @@ function App(props) {
               signer={l2User}
               provider={l2Provider}
             />
-
-
-            { /* uncomment for a second contract:
-            <Contract
-              name="SecondContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-            */ }
-
-            { /* Uncomment to display and interact with an external contract (DAI on mainnet):
-            <Contract
-              name="DAI"
-              customContract={mainnetDAIContract}
-              signer={userProvider.getSigner()}
-              provider={mainnetProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
-            */ }
-          </Route>
-          <Route path="/eth-gateway">
-            <Space direction="vertical">
-            <Radio.Group
-                  options={["1","2"]}
-                  onChange={(e) => { setLayer(e.target.value)}}
-                  value={layer}
-                  optionType="button"
-                />
-              {/*<Contract
-                name={`Layer ${layer} ETH`}
-                customContract={ETHContract}
-                signer={layer === 1 ? l1User : l2User}
-                provider={layer === 2 ? l1Provider : l2Provider}
-                address={address}
-              />*/}
-            </Space>
           </Route>
         </Switch>
       </BrowserRouter>

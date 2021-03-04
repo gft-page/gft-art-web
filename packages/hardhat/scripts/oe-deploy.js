@@ -16,7 +16,7 @@ const main = async () => {
   const decimals = 18
   const name = "OldEnglish"
   const symbol = "OE"
-  const initialSupply = "100"
+  const initialSupply = "100000000000000000000"
 
   const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
   const deployWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
@@ -25,7 +25,7 @@ const main = async () => {
 
   const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: "http://localhost:9545", ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
 
-  const OVM_L2DepositedERC20 = await deploy({contractName: "L2DepositedERC20", rpcUrl: "http://localhost:8545", ovm: true, _args: [l2MessengerAddress, decimals, name, symbol]})
+  const OVM_L2DepositedERC20 = await deploy({contractName: "L2DepositedERC20", rpcUrl: "http://localhost:8545", ovm: true, _args: [l2MessengerAddress, name, symbol]})
 
   const OVM_L1ERC20Gateway = await deploy({contractName: "L1ERC20Gateway", rpcUrl: "http://localhost:9545", ovm: false, _args: [L1_ERC20.address, OVM_L2DepositedERC20.address, l1MessengerAddress]})
 

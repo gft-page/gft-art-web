@@ -16,11 +16,8 @@ import { OVM_L2DepositedERC20 } from "@eth-optimism/contracts/build/contracts/OV
  */
 contract L2DepositedERC20 is OVM_L2DepositedERC20 {
 
-    uint32 public constant MY_FINALIZE_WITHDRAWAL_L1_GAS = 100000;
-
     constructor(
         address _l2CrossDomainMessenger,
-        uint8 _decimals,
         string memory _name,
         string memory _symbol
     )
