@@ -53,7 +53,8 @@ yarn deploy-oe
 ```
 
 This deploys an amended `YourContract.sol` and a suite of L1<->L2 erc20 contracts
-__Kudos & thanks to the Optimistic Ethereum team whose erc20 example this benefited from!__
+
+__Kudos & thanks to the Optimistic Ethereum team whose [erc20 example](https://github.com/ethereum-optimism/optimism-tutorial/tree/deposit-withdrawal) this benefited from!__
 
 ### frontend
 There are three tabs:
