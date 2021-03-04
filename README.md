@@ -27,11 +27,16 @@ yarn start
 > in a second terminal window:
 
 __This requires Docker__
-
+Initiate the Optimism submodules...
+```bash
+cd scaffold-eth/docker/optimism-integration
+git submodule init
+git submodule update
+```
+Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
 cd scaffold-eth/docker/optimism-integration
 make up
-
 ```
 
 > in a third terminal window, generate a local account:
