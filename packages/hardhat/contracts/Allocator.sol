@@ -18,17 +18,16 @@ import "./IWETH9.sol";
   3) Anyone can call `distribute( tokenAddress )` to split funds within the
     contract by the allocation ratio and send them to each wallet.
 
+  4) Owner can set allocation ratios.
+
 
     //KNOWN 'GOTCHAS' SO FAR
 
     the allocation wallet could be crafted to "lock" transfers by failing
       (withdraw pattern might be better?)
 
-    limit is 256 allocation wallets
+    limit is 256 allocation recipients
       (easily adjusted)
-
-    allocations are locked and can't be adjusted
-      (could add owner but then you might want locked 'periods' too?)
 */
 
 contract Allocator is ReentrancyGuard, Ownable{
