@@ -30,18 +30,18 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "recipients",
+        "type": "address[]"
       },
       {
         "indexed": false,
-        "internalType": "uint8",
-        "name": "ratio",
-        "type": "uint8"
+        "internalType": "uint8[]",
+        "name": "ratios",
+        "type": "uint8[]"
       }
     ],
-    "name": "AllocationAdded",
+    "name": "AllocationSet",
     "type": "event"
   },
   {
@@ -102,30 +102,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "allocations",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "wallet",
-        "type": "address"
-      },
-      {
-        "internalType": "uint8",
-        "name": "ratio",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "allocationsLength",
     "outputs": [
@@ -178,6 +154,44 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "ratios",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "recipients",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -188,12 +202,12 @@
     "inputs": [
       {
         "internalType": "address[]",
-        "name": "wallets",
+        "name": "_wallets",
         "type": "address[]"
       },
       {
         "internalType": "uint8[]",
-        "name": "ratios",
+        "name": "_ratios",
         "type": "uint8[]"
       }
     ],

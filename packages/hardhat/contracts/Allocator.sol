@@ -34,12 +34,7 @@ import "./IWETH9.sol";
 contract Allocator is ReentrancyGuard, Ownable{
 
   event Distribute( address indexed token, address indexed wallet, uint256 amount );
-  event AllocationAdded( address wallet, uint8 ratio );
-
-  struct Allocation {
-    address wallet;
-    uint8 ratio;
-  }
+  event AllocationSet( address[] recipients, uint8[] ratios );
 
   constructor(address payable _WETH,address newOwner,address[] memory wallets,uint8[] memory ratios) public {
     setWETHAddress( _WETH );
@@ -47,9 +42,10 @@ contract Allocator is ReentrancyGuard, Ownable{
     transferOwnership( newOwner );
   }
 
-  Allocation[] public allocations;
   uint8 public denominator = 0;
   address payable public WETH;
+  address[] public recipients;
+  uint8[] public ratios;
 
   //accepts eth
   receive() external payable {
@@ -57,20 +53,17 @@ contract Allocator is ReentrancyGuard, Ownable{
     wethContract.deposit{value:msg.value}();
   }
 
-  function setAllocation( address[] memory wallets, uint8[] memory ratios ) public onlyOwner {
-    require( wallets.length > 0 ,"Not enough wallets");
-    require( wallets.length < 256 ,"Too many wallets");
-    require( wallets.length == ratios.length ,"Wallet and Ratio length not equal");
-    denominator=0;//<---- new line
-    delete allocations;
-    for(uint8 r=0;r<ratios.length;r++){
-      denominator += ratios[r];
-      emit AllocationAdded(wallets[r],ratios[r]);
-      allocations.push(Allocation({
-          wallet: wallets[r],
-          ratio: ratios[r]
-      }));
+  function setAllocation( address[] memory _wallets, uint8[] memory _ratios ) public onlyOwner {
+    require( _wallets.length > 0 ,"Not enough wallets");
+    require( _wallets.length < 256 ,"Too many wallets");
+    require( _wallets.length == _ratios.length ,"Wallet and Ratio length not equal");
+    recipients = _wallets;
+    ratios = _ratios;
+    denominator=0;
+    for(uint8 i = 0; i < recipients.length; i++){
+      denominator+=_ratios[i];
     }
+    emit AllocationSet(recipients,ratios);
   }
 
   function setWETHAddress(address payable _WETH) public onlyOwner {
@@ -80,14 +73,14 @@ contract Allocator is ReentrancyGuard, Ownable{
   function distribute(address tokenAddress) public nonReentrant {
     IERC20 tokenContract = IERC20(tokenAddress);
     uint256 balance = tokenContract.balanceOf(address(this));
-    for(uint8 a=0;a<allocations.length;a++){
-      uint256 amount = balance * allocations[a].ratio / denominator;
-      tokenContract.transfer( allocations[a].wallet, amount );
-      emit Distribute( tokenAddress, allocations[a].wallet, amount );
+    for(uint8 i = 0; i < recipients.length; i++){
+      uint256 amount = balance * ratios[i] / denominator;
+      tokenContract.transfer( recipients[i], amount );
+      emit Distribute( tokenAddress, recipients[i], amount );
     }
   }
 
   function allocationsLength() public view returns(uint8 count) {
-      return uint8(allocations.length);
+      return uint8(recipients.length);
   }
 }
