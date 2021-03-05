@@ -10,7 +10,22 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
-  const l1MessengerAddress = '0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736'
+  let deployConfig = {
+    local: {
+      l1RpcUrl: 'http://localhost:9545',
+      l2RpcUrl: 'http://localhost:8545',
+      l1MessengerAddress: '0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736'
+    },
+    kovan: {
+      l1RpcUrl: 'https://kovan.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad',
+      l2RpcUrl: 'https://kovan.optimism.io',
+      l1MessengerAddress: '0xb89065D5eB05Cac554FDB11fC764C679b4202322'
+    }
+  }
+
+  let selectedNetwork = deployConfig['local']
+
+  const l1MessengerAddress = selectedNetwork.l1MessengerAddress // kovan: 0xb89065D5eB05Cac554FDB11fC764C679b4202322 // local: 0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736
   const l2MessengerAddress = '0x4200000000000000000000000000000000000007'
 
   const decimals = 18
@@ -18,19 +33,16 @@ const main = async () => {
   const symbol = "OE"
   const initialSupply = "100000000000000000000"
 
-  const l1RpcUrl = 'http://localhost:9545'//'https://kovan.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad'//
-  const l2RpcUrl = 'http://localhost:8545'//'https://kovan.optimism.io'//
-
   const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
   const deployWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
 
-  const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: l2RpcUrl, ovm: true})
+  const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true})
 
-  const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
+  const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
 
-  const OVM_L2DepositedERC20 = await deploy({contractName: "L2DepositedERC20", rpcUrl: l2RpcUrl, ovm: true, _args: [l2MessengerAddress, name, symbol]})
+  const OVM_L2DepositedERC20 = await deploy({contractName: "L2DepositedERC20", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [l2MessengerAddress, name, symbol]})
 
-  const OVM_L1ERC20Gateway = await deploy({contractName: "L1ERC20Gateway", rpcUrl: l1RpcUrl, ovm: false, _args: [L1_ERC20.address, OVM_L2DepositedERC20.address, l1MessengerAddress]})
+  const OVM_L1ERC20Gateway = await deploy({contractName: "L1ERC20Gateway", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [L1_ERC20.address, OVM_L2DepositedERC20.address, l1MessengerAddress]})
 
   const init = await OVM_L2DepositedERC20.init(OVM_L1ERC20Gateway.address)
   console.log(' L2 initialised: ',init.hash)
@@ -39,8 +51,8 @@ const main = async () => {
 
     console.log('\n 👾Bridge demonstration')
 
-    const l1Provider = new JsonRpcProvider(l1RpcUrl)
-    const l2Provider = new JsonRpcProvider(l2RpcUrl)
+    const l1Provider = new JsonRpcProvider(selectedNetwork.l1RpcUrl)
+    const l2Provider = new JsonRpcProvider(selectedNetwork.l2RpcUrl)
 
     const watcher = new Watcher({
       l1: {

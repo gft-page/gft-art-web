@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 import { Balance } from "../components";
 
 
-function OptimisticETHBridge({ action, address, l1Provider, l2Provider, l1Network, l2Network, L1ETHGatewayContract, L2ETHGatewayContract, l1Tx, l2Tx }) {
+function OptimisticETHBridge({ address, l1Provider, l2Provider, l1Network, l2Network, L1ETHGatewayContract, L2ETHGatewayContract, l1Tx, l2Tx }) {
 
     const onFinish = (values: any) => {
       console.log('Submitted:', values);

@@ -16,10 +16,25 @@ import { OptimisticETHBridge } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS, L1ETHGATEWAY, L2DEPOSITEDERC20 } from "./constants";
 import { ethers } from "ethers";
 
+let config = {
+  local: {
+    l1Network: NETWORKS['localL1'],
+    l2Network: NETWORKS['localL2'],
+    l1ETHGatewayAddress: '0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1'
+  },
+  kovan: {
+    l1Network: NETWORKS['kovan'],
+    l2Network: NETWORKS['kovanL2'],
+    l1ETHGatewayAddress: '0x6647D5BD9EB9425838Bb89f76a166228b95671a3'
+  }
+}
+
+let selectedNetwork = 'local'
+
 /// 📡 What chain are your contracts deployed to?
 const mainnetNetwork = NETWORKS['mainnet'];
-const l1Network = NETWORKS['localL1'];
-const l2Network = NETWORKS['localL2'];
+const l1Network = config[selectedNetwork].l1Network;
+const l2Network = config[selectedNetwork].l2Network;
 
 // 😬 Sorry for all the console logging
 const DEBUG = false
@@ -62,7 +77,7 @@ function App(props) {
   const l1Contracts = useContractLoader(l1Provider)
   const l2Contracts = useContractLoader(l2Provider)
 
-  let L1ETHGatewayContract = new ethers.Contract("0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1", L1ETHGATEWAY, l1User)
+  let L1ETHGatewayContract = new ethers.Contract(config[selectedNetwork].l1ETHGatewayAddress, L1ETHGATEWAY, l1User) // local 0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1
   let L2ETHGatewayContract = new ethers.Contract("0x4200000000000000000000000000000000000006", L2DEPOSITEDERC20, l2User)
 
   //📟 Listen for broadcast events
