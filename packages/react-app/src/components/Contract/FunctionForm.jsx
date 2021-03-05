@@ -203,7 +203,7 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
                 if (txValue) {
                   overrides.value = txValue; // ethers.utils.parseEther()
                 }
-                overrides.gasLimit = hexlify(8000000);
+                //overrides.gasLimit = hexlify(8000000);
 
                 // console.log("Running with extras",extras)
                 const returned = await tx(contractFunction(...args, overrides));

@@ -112,6 +112,13 @@ export const NETWORKS = {
         blockExplorer: '',
         rpcUrl: "http://" + window.location.hostname + ":9545",
     },
+    kovanL2: {
+        name: "kovanOptimisn",
+        color: '#e0bfc3',
+        chainId: 69,
+        blockExplorer: '',
+        rpcUrl: "https://kovan.optimism.io",
+    },
 }
 
 export const L1ETHGATEWAY = [

@@ -25,6 +25,8 @@ async function deploy({rpcUrl, contractName, ovm = false, mnemonicFile="./mnemon
   }
 
   const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
+  await deployed.deployTransaction.wait()
+
   const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
 

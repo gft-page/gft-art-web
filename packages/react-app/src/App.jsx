@@ -12,7 +12,7 @@ import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance } f
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
-import { Hints, ExampleUI, Subgraph } from "./views"
+import { OptimisticETHBridge } from "./views"
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS, L1ETHGATEWAY, L2DEPOSITEDERC20 } from "./constants";
 import { ethers } from "ethers";
 
@@ -31,8 +31,9 @@ const l2Provider = new JsonRpcProvider(l2Network.rpcUrl);
 
 
 function App(props) {
+
   const [injectedProvider, setInjectedProvider] = useState();
-  /* 💵 This hook will get the price of ETH from 🦄 Uniswap: */
+
   const price = useExchangePrice(l1Network,mainnetProvider);
   const gasPrice = useGasPrice(l1Network,"fast");
 
@@ -58,40 +59,6 @@ function App(props) {
   const l1Tx = Transactor(l1User, gasPrice, '', true)
   const l2Tx = Transactor(l2User, gasPrice, '', true)
 
-
-  /*
-  // Faucet Tx can be used to send funds from the faucet
-  const faucetTx = Transactor(localProvider, gasPrice)
-
-  // 🏗 scaffold-eth is full of handy hooks like this one to get your balance:
-  const yourLocalBalance = useBalance(localProvider, address);
-  if(DEBUG) console.log("💵 yourLocalBalance",yourLocalBalance?formatEther(yourLocalBalance):"...")
-
-  // Just plug in different 🛰 providers to get your balance on different chains:
-  const yourMainnetBalance = useBalance(mainnetProvider, address);
-  if(DEBUG) console.log("💵 yourMainnetBalance",yourMainnetBalance?formatEther(yourMainnetBalance):"...")
-
-  // Load in your local 📝 contract and read a value from it:
-  const readContracts = useContractLoader(localProvider)
-  if(DEBUG) console.log("📝 readContracts",readContracts)
-
-  // If you want to make 🔐 write transactions to your contracts, use the userProvider:
-  const l1Contracts = useContractLoader(l1Provider)
-  if(DEBUG) console.log("🔐 writeContracts",writeContracts)
-  */
-  // EXTERNAL CONTRACT EXAMPLE:
-  //
-  // If you want to bring in the mainnet DAI contract it would look like:
-
-  const [layer, setLayer] = useState(1)
-
-
-  //const ETHContract = useExternalContractLoader(ethUser, ethAddress, ethAbi)
-  //
-  // Then read your DAI balance like:
-  //const myMainnetDAIBalance = useContractReader({DAI: mainnetDAIContract},"DAI", "balanceOf",["0x34aA3F359A9D614239015126635CE7732c18fDF3"])
-  //console.log("🥇 myMainnetDAIBalance:",myMainnetDAIBalance)
-
   const l1Contracts = useContractLoader(l1Provider)
   const l2Contracts = useContractLoader(l2Provider)
 
@@ -102,95 +69,37 @@ function App(props) {
   const setPurposeEvents = useEventListener(l2Contracts, "YourContract", "SetPurpose", l2Provider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
-
-
-  const getCode = async () => {
-    let _address = "0xa6EFAA50c89A304b881c6D170C1fC1B5a1B6C9Bf"
+  const checkCode = async (_address) => {
     let code = await l2Provider.getCode(_address)
     console.log(code)
   }
 
-
   let networkDisplay
-  /*
-  if(localChainId && selectedChainId && localChainId != selectedChainId ){
+
+  if(injectedChainId){
+    let injectedNetworkInfo = Object.values(NETWORKS).find(e => e.chainId === injectedChainId)
     networkDisplay = (
-      <div style={{zIndex:2, position:'absolute', right:0,top:60,padding:16}}>
-        <Alert
-          message={"⚠️ Wrong Network"}
-          description={(
-            <div>
-              You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
-            </div>
-          )}
-          type="error"
-          closable={false}
-        />
+      <div style={{zIndex:-1, position:'absolute', right:18,top:40,padding:16,color:injectedNetworkInfo.color}}>
+        {injectedNetworkInfo.name}
       </div>
     )
-  }else{
-    networkDisplay = (
-      <div style={{zIndex:-1, position:'absolute', right:154,top:28,padding:16,color:targetNetwork.color}}>
-        {targetNetwork.name}
-      </div>
-    )
-  }
-  */
-
-
-const BridgeEth = ({action}) => {
-    const onFinish = (values: any) => {
-      console.log('Submitted:', values);
-      if(values.action==='deposit'){
-      l1Tx(L1ETHGatewayContract.deposit({
-        value: parseEther(values.amount.toString())
-      }));} else {
-        l2Tx(L2ETHGatewayContract.withdraw(
-          parseEther(values.amount.toString())
-        ))
-      }
-    };
-
-    const onFinishFailed = (errorInfo: any) => {
-      console.log('Failed:', errorInfo);
-    };
-
-    return (
-      <Form
-        name="basic"
-        layout="inline"
-        initialValues={{action: 'deposit', amount: 0.1}}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-      >
-
-        <Form.Item name="action" rules={[{ required: true, message: 'Please select an action!' }]}>
-          <Radio.Group>
-            <Radio.Button value="deposit">Deposit</Radio.Button>
-            <Radio.Button value="withdraw">Withdraw</Radio.Button>
-          </Radio.Group>
-        </Form.Item>
-
-        <Form.Item
-          name="amount"
-          rules={[{ required: true, message: 'Please enter an amount!' }]}
-        >
-          <InputNumber />
-        </Form.Item>
-
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Bridge
-          </Button>
-        </Form.Item>
-      </Form>
-    );
   }
 
 
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new Web3Provider(provider));
+
+    provider.on("chainChanged", (chainId) => {
+      console.log(`chain changed to ${chainId}! updating providers`)
+      setInjectedProvider(new Web3Provider(provider));
+    });
+
+    provider.on("accountsChanged", (accounts) => {
+      console.log(`account changed!`)
+      setInjectedProvider(new Web3Provider(provider));
+    });
+
   }, [setInjectedProvider]);
 
   useEffect(() => {
@@ -225,7 +134,6 @@ const BridgeEth = ({action}) => {
           style={{ verticalAlign: "top", marginLeft: 8, marginTop: 4 }}
           shape="round"
           size="large"
-          /*type={minimized ? "default" : "primary"}     too many people just defaulting to MM and having a bad time*/
           onClick={loadWeb3Modal}
         >
           connect
@@ -257,22 +165,17 @@ const BridgeEth = ({action}) => {
 
         <Switch>
           <Route exact path="/">
-          <Row justify="center" align="middle" gutter={16}>
-            <Card title={"Optimistic ETH Bridge"} style={{ width: 600}}>
-              <Space direction="vertical">
-                <Balance address={address} provider={l1Provider} prefix={"L1"} color={l1Network.color}/>
-                <Row justify="center">
-                  <BridgeEth action={'deposit'}/>
-                </Row>
-                <Balance address={address} provider={l2Provider} prefix={"L2"} color={l2Network.color}/>
-              </Space>
-            </Card>
-          </Row>
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
+          <OptimisticETHBridge
+            address={address}
+            l1Provider={l1Provider}
+            l2Provider={l2Provider}
+            l1Network={l1Network}
+            l2Network={l2Network}
+            L1ETHGatewayContract={L1ETHGatewayContract}
+            L2ETHGatewayContract={L2ETHGatewayContract}
+            l1Tx={l1Tx}
+            l2Tx={l2Tx}
+            />
           </Route>
           <Route exact path="/your-contract">
             <Contract
@@ -286,10 +189,6 @@ const BridgeEth = ({action}) => {
               bordered
               dataSource={setPurposeEvents}
               renderItem={(item) => {
-
-                const milliseconds = parseInt(item[2].toString()) * 1000 // 1575909015000
-                const dateObject = new Date(milliseconds)
-                const humanDateFormat = dateObject.toLocaleString() //2019-12-9 10:30:15
 
                 return (
                   <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
@@ -393,15 +292,10 @@ const web3Modal = new Web3Modal({
 
 const logoutOfWeb3Modal = async () => {
   await web3Modal.clearCachedProvider();
+  window.localStorage.removeItem('walletconnect');
   setTimeout(() => {
     window.location.reload();
   }, 1);
 };
-
- window.ethereum && window.ethereum.on('chainChanged', chainId => {
-  setTimeout(() => {
-    window.location.reload();
-  }, 1);
-})
 
 export default App;
