@@ -8,10 +8,10 @@ const main = async () => {
 
   let demo = true
 
-  console.log("\n\n 📡 Deploying...\n");
+  console.log(`\n\n 📡 Deploying on ${process.env.HARDHAT_NETWORK || config.defaultNetwork}\n`);
 
   let deployConfig = {
-    local: {
+    localhost: {
       l1RpcUrl: 'http://localhost:9545',
       l2RpcUrl: 'http://localhost:8545',
       l1MessengerAddress: '0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736'
@@ -23,7 +23,7 @@ const main = async () => {
     }
   }
 
-  let selectedNetwork = deployConfig['local']
+  let selectedNetwork = deployConfig[process.env.HARDHAT_NETWORK || config.defaultNetwork]
 
   const l1MessengerAddress = selectedNetwork.l1MessengerAddress // kovan: 0xb89065D5eB05Cac554FDB11fC764C679b4202322 // local: 0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736
   const l2MessengerAddress = '0x4200000000000000000000000000000000000007'
@@ -37,6 +37,7 @@ const main = async () => {
   const deployWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
 
   const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true})
+  const optimiStickers = await deploy({contractName: "OptimiStickers", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: ["3"]})
 
   const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
 

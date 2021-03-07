@@ -50,6 +50,7 @@ export default function Transactor(provider, gasPrice, etherscan, providerIsSign
         if (tx instanceof Promise) {
           console.log("AWAITING TX", tx);
           result = await tx;
+          await result.wait()
         } else {
           if (!tx.gasPrice) {
             tx.gasPrice = gasPrice || parseUnits("4.1", "gwei");
@@ -59,6 +60,8 @@ export default function Transactor(provider, gasPrice, etherscan, providerIsSign
           }
           console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
+          await result.wait()
+          console.log(result.timestamp)
         }
         console.log("RESULT:", result);
         // console.log("Notify", notify);

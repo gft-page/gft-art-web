@@ -65,3 +65,14 @@ There are three tabs:
 ## Notes
 - Is OE eompatible with hardhat config accounts? I had to instantiate in my deploy script
 - Get a silent failure on L2 if I don't reset the nonces in Metamask
+- Using OpenZeppelin contracts that import their Address.sol break:
+```OVM Compiler Error (silence by adding: "// @unsupported: ovm" to the top of this file):
+ @openzeppelin/contracts/utils/Address.sol:115:17: ParserError: OVM: SELFBALANCE is not implemented in the OVM. (We have no native ETH -- use deposited WETH instead!)
+        require(address(this).balance >= value, "Address: insufficient balance for call");
+```
+- Get a failure on OZ Safemint (https://docs.openzeppelin.com/contracts/3.x/api/token/erc721#ERC721-_safeMint-address-uint256-bytes-)
+- Avoiding silent failures - the initial tx response doesn't give you an indication as to whether a transaction has succeeded or failed, you need to add:
+```
+await result.wait()
+```
+Which will then throw an error. This is different to the EVM, where the initial await transactionResponse will throw.
