@@ -8,7 +8,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -112,12 +112,12 @@ function App(props) {
 
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  const yourClicks = useContractReader(readContracts,"Clicker", "clicks", [ address ])
+  console.log("🤗 yourClicks:",yourClicks)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  const clickEvents = useEventListener(readContracts, "Clicker", "Click", localProvider, 1);
+  console.log("📟 clickEvents:",clickEvents)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -193,7 +193,7 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Clicker</Link>
           </Menu.Item>
           <Menu.Item key="/hints">
             <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
@@ -204,8 +204,8 @@ function App(props) {
           <Menu.Item key="/mainnetdai">
             <Link onClick={()=>{setRoute("/mainnetdai")}} to="/mainnetdai">Mainnet DAI</Link>
           </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">debug</Link>
           </Menu.Item>
         </Menu>
 
@@ -217,8 +217,36 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
 
+            <div style={{ width:500, margin: "auto", padding: 16 }}>
+
+              <Address
+                address={readContracts && readContracts.Clicker.address}
+              />
+
+              <h1 style={{marginTop:64}}>{yourClicks}</h1>
+
+            </div>
+            <div style={{ width:500, margin: "auto", padding: 16 }}>
+
+
+              <Button onClick={()=>{
+                tx( writeContracts.Clicker.increment() )
+              }}>
+                increment
+              </Button>
+            </div>
+            <div style={{ width:500, margin: "auto", padding: 16 }}>
+              <Button onClick={()=>{
+                tx( writeContracts.Clicker.decrement() )
+              }}>
+                decrement
+              </Button>
+            </div>
+
+          </Route>
+          <Route path="/debug">
             <Contract
-              name="YourContract"
+              name="Clicker"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
@@ -266,8 +294,8 @@ function App(props) {
               tx={tx}
               writeContracts={writeContracts}
               readContracts={readContracts}
-              purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
+              //purpose={purpose}
+              //setPurposeEvents={setPurposeEvents}
             />
           </Route>
           <Route path="/mainnetdai">
