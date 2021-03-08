@@ -8,7 +8,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useUserAddress } from "eth-hooks";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address } from "./components";
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance } from "./components";
 import { Transactor } from "./helpers";
 import { formatEther } from "@ethersproject/units";
 //import Hints from "./Hints";
@@ -105,10 +105,14 @@ function App(props) {
 
 
   //📟 Listen for broadcast events
-  const allocations = useEventListener(readContracts, "Allocator", "AllocationAdded", localProvider, 1);
-  console.log("📟 allocations:",allocations)
+  //const allocations = useEventListener(readContracts, "Allocator", "AllocationAdded", localProvider, 1);
+  //console.log("📟 allocations:",allocations)
+
   const distributions = useEventListener(readContracts, "Allocator", "Distribute", localProvider, 1);
   console.log("📟 distributions:",distributions)
+
+  const allocations = useEventListener(readContracts, "Allocator", "AllocationSet", localProvider, 1);
+  console.log("📟 allocations:",allocations)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -157,6 +161,12 @@ function App(props) {
             <div style={{padding:32}}>
               <Address
                 value={readContracts && readContracts.Allocator.address}
+                ensProvider={mainnetProvider}
+                fontSize={32}
+              />
+              <Balance
+                address={readContracts && readContracts.Allocator.address}
+                provider={localProvider}
                 ensProvider={mainnetProvider}
                 fontSize={32}
               />

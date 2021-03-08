@@ -9,6 +9,9 @@ const main = async () => {
 
   console.log("\n\n 📡 Deploying...\n");
 
+  if(false){
+
+
   const WETH = await deploy("WETH9")
   //deployer is 0x02f6e9f21a4aac2eae9865a90ea8f5ee741d9b58 <-- hit with faucet funds
 
@@ -31,6 +34,7 @@ const main = async () => {
       ]
     ])
 
+  console.log("Overriding current allocation with new one ")
   await allocator.setAllocation(
     [
       "0xFcC41c4614bD464bA28ad96f93aAdaA7bA6c8680",//clr fund
@@ -39,16 +43,39 @@ const main = async () => {
       "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1"
     ],
     [
-      1,
-      2,
-      3,
-      10
+      100,
+      200,
+      255,
+      1
     ]
   )
+
 
   console.log("ADDRESS IS",allocator.address)
   console.log("GAS LIMIT",allocator.deployTransaction.gasLimit.toNumber())
   console.log("GAS PRICE",allocator.deployTransaction.gasPrice.toNumber())
+
+}else{
+
+  //un comment to add a new allocation later... (comment out stuff above)
+
+  //const allocator = await ethers.getContractFactory("Allocator")
+  const allocator = await ethers.getContractAt('Allocator', "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F")
+
+    console.log("Overriding current allocation with new one ")
+    await allocator.setAllocation(
+      [
+        "0xD75b0609ed51307E13bae0F9394b5f63A7f8b6A1",//clr fund
+        "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",// gitcoin
+      ],
+      [
+        1,
+        1,
+      ]
+    )
+
+}
+
 
   //await allocator.setWETHAddress("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2")//WETH ADDRESS https://etherscan.io/token/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2#writeContract
 
@@ -157,6 +184,11 @@ const readArgsFile = (contractName) => {
   }
   return args;
 };
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 main()
   .then(() => process.exit(0))

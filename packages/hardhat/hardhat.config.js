@@ -56,7 +56,11 @@ module.exports = {
     },
     mainnet: {
       url: "https://mainnet.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)
-      accounts: [ fs.readFileSync("./allocate.deploy.pk").toString().trim() ],
+      // don't do this because it breaks for new folks: fs.readFileSync("./allocate.deploy.pk").toString().trim()
+      // use yarn generate and yarn account and then:
+      accounts: {
+        mnemonic: mnemonic(),
+      },
     },
     ropsten: {
       url: "https://ropsten.infura.io/v3/460f40a260564ac4a4f4b3fffb032dad", //<---- YOUR INFURA ID! (or it won't work)

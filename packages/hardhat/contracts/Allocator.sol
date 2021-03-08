@@ -23,9 +23,6 @@ import "./IWETH9.sol";
 
     //KNOWN 'GOTCHAS' SO FAR
 
-    the allocation wallet could be crafted to "lock" transfers by failing
-      (withdraw pattern might be better?)
-
     limit is 256 allocation recipients
       (easily adjusted)
 */
@@ -41,7 +38,7 @@ contract Allocator is ReentrancyGuard, Ownable{
     transferOwnership( newOwner );
   }
 
-  uint8 public denominator = 0;
+  uint256 public denominator;
   address payable public WETH;
   address[] public recipients;
   uint8[] public ratios;
@@ -60,6 +57,7 @@ contract Allocator is ReentrancyGuard, Ownable{
     ratios = _ratios;
     denominator=0;
     for(uint8 i = 0; i < recipients.length; i++){
+      require(_wallets[i]!=address(this),"Contract cant be recipient");
       denominator+=_ratios[i];
     }
     emit AllocationSet(recipients,ratios);
