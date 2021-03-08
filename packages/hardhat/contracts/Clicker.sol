@@ -8,7 +8,7 @@ contract Clicker {
 
   event Click(address sender);
 
-  uint8[] public clicks;
+  mapping(address => uint256) public clicks;
 
   function increment() public {
     clicks[msg.sender]++;
