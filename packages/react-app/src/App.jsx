@@ -223,7 +223,7 @@ function App(props) {
                 address={readContracts && readContracts.Clicker.address}
               />
 
-              <h1 style={{marginTop:64}}>{yourClicks}</h1>
+              <h1 style={{marginTop:64}}>{yourClicks && yourClicks.toNumber()}</h1>
 
             </div>
             <div style={{ width:500, margin: "auto", padding: 16 }}>
