@@ -16,6 +16,7 @@
     "react-app:test": "yarn workspace @scaffold-eth/react-app test",
     "build": "yarn workspace @scaffold-eth/react-app build --max-old-space-size=12288",
     "chain": "yarn workspace @scaffold-eth/hardhat chain",
+    "fork": "yarn workspace @scaffold-eth/hardhat fork",
     "node": "yarn workspace @scaffold-eth/hardhat chain",
     "test": "yarn workspace @scaffold-eth/hardhat test",
     "start": "yarn workspace @scaffold-eth/react-app start",
@@ -44,7 +45,9 @@
     "graph-remove-local": "yarn workspace @scaffold-eth/subgraph graph remove --node http://localhost:8020/ scaffold-eth/your-contract",
     "graph-deploy-local": "yarn workspace @scaffold-eth/subgraph graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 scaffold-eth/your-contract",
     "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-local",
-    "deploy-and-graph": "yarn deploy && yarn graph-ship-local"
+    "deploy-and-graph": "yarn deploy && yarn graph-ship-local",
+    "theme": "yarn workspace @scaffold-eth/react-app theme",
+    "watch-theme": "yarn workspace @scaffold-eth/react-app watch"
   },
   "workspaces": {
     "packages": [
@@ -52,7 +55,9 @@
     ],
     "nohoist": [
       "**/@graphprotocol/graph-ts",
-      "**/@graphprotocol/graph-ts/**"
+      "**/@graphprotocol/graph-ts/**",
+      "**/hardhat",
+      "**/hardhat/**"
     ]
   }
 }
