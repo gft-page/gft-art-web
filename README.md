@@ -11,11 +11,11 @@
 ## quickstart
 
 ```bash
-git clone https://github.com/austintgriffith/scaffold-eth.git token-allocator
+git clone https://github.com/austintgriffith/scaffold-eth.git new-allocator
 
-cd token-allocator
+cd new-allocator
 
-git checkout token-allocator
+git checkout new-allocator
 ```
 
 ```bash
