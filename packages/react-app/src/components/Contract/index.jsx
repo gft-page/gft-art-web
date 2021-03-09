@@ -44,6 +44,8 @@ export default function Contract({ customContract, account, gasPrice, signer, pr
     contract = customContract
   }
 
+  let contractInterface = contract.interface
+
   const address = contract ? contract.address : "";
   const contractIsDeployed = useContractExistsAtAddress(provider, address);
 
@@ -72,6 +74,7 @@ export default function Contract({ customContract, account, gasPrice, signer, pr
         provider={provider}
         gasPrice={gasPrice}
         triggerRefresh={triggerRefresh}
+        contractInterface={contractInterface}
       />
     );
   });

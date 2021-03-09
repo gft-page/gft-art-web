@@ -2,6 +2,8 @@
 
 > [optimism](https://optimism.io/) proof-of-concept
 
+# This branch is a work-in-progress!
+
 ---
 
 ## quickstart
@@ -76,3 +78,4 @@ There are three tabs:
 await result.wait()
 ```
 Which will then throw an error. This is different to the EVM, where the initial await transactionResponse will throw.
+- Including a {value: amount} field in ovm .sol doesn't seem to throw?

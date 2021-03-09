@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Row, Col, Input, Divider, Tooltip, Button } from "antd";
 import { Transactor } from "../../helpers";
@@ -11,10 +11,12 @@ import Blockies from "react-blockies";
 const { utils } = require("ethers");
 
 
-export default function FunctionForm({ contractFunction, functionInfo, provider, gasPrice, triggerRefresh }) {
+export default function FunctionForm({ contractFunction, functionInfo, provider, gasPrice, triggerRefresh, contractInterface }) {
   const [form, setForm] = useState({});
   const [txValue, setTxValue] = useState();
   const [returnValue, setReturnValue] = useState();
+
+  const [encodedArgs, setEncodedArgs] = useState()
 
   const tx = Transactor(provider, gasPrice);
 
@@ -164,6 +166,32 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
     inputs.push(txValueInput);
   }
 
+  const getArgs = () => {
+    let innerIndex = 0
+    return functionInfo.inputs.map((input) => {
+      const key = functionInfo.name + "_" + input.name + "_" + input.type + "_" + innerIndex++
+      let value = form[key]
+      if(input.baseType=="array"){
+        value = JSON.parse(value)
+      } else if(input.type === "bool"){
+        if(value==='true' || value==='1' || value ==="0x1"|| value ==="0x01"|| value ==="0x0001"){
+          value = 1;
+        }else{
+          value = 0;
+        }
+      }
+      return value
+    });
+  }
+
+  useEffect(()=> {
+    try {
+    setEncodedArgs(contractInterface.encodeFunctionData(functionInfo.name,getArgs()))
+  } catch (e) {
+    console.log(e.message)
+  }
+  },[form])
+
   const buttonIcon = functionInfo.type === "call" ? <Button style={{ marginLeft: -32 }}>Read📡</Button> : <Button style={{ marginLeft: -32 }}>Send💸</Button>;
   inputs.push(
     <div style={{ cursor: "pointer", margin: 2 }} key={"goButton"}>
@@ -172,27 +200,15 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
         defaultValue=""
         bordered={false}
         disabled={true}
-        value={returnValue}
+        value={returnValue || encodedArgs}
         suffix={
           <div
             style={{ width: 50, height: 30, margin: 0 }}
             type="default"
             onClick={async () => {
-              let innerIndex = 0
-              const args = functionInfo.inputs.map((input) => {
-                const key = functionInfo.name + "_" + input.name + "_" + input.type + "_" + innerIndex++
-                let value = form[key]
-                if(input.baseType=="array"){
-                  value = JSON.parse(value)
-                } else if(input.type === "bool"){
-                  if(value==='true' || value==='1' || value ==="0x1"|| value ==="0x01"|| value ==="0x0001"){
-                    value = 1;
-                  }else{
-                    value = 0;
-                  }
-                }
-                return value
-              });
+              const args = getArgs()
+
+              console.log(contractInterface.encodeFunctionData(functionInfo.name, args))
 
               let result
               if(functionInfo.stateMutability === "view"||functionInfo.stateMutability === "pure"){
