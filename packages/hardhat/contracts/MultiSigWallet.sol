@@ -20,7 +20,6 @@ contract MultiSigWallet {
     event Owner(address indexed owner, bool added);
 
     EnumerableSet.AddressSet owners;
-    mapping(address => bool) public isOwner;
     uint public numConfirmationsRequired;
 
     struct Transaction {
@@ -33,15 +32,15 @@ contract MultiSigWallet {
     // mapping from tx index => owner => bool
     mapping(uint => mapping(address => bool)) public isConfirmed;
 
-    Transaction[] public transactions;
+    Transaction[] transactions;
 
     modifier onlyOwner() {
-        require(isOwner[msg.sender], "not owner");
+        require(owners.contains(msg.sender), "not owner");
         _;
     }
 
-    modifier onlySelf() {
-        require(msg.sender == address(this), "not self");
+    modifier onlySelfOrSingleSigner() {
+        require(msg.sender == address(this) || (owners.contains(msg.sender) && numConfirmationsRequired == 1), "not self");
         _;
     }
 
@@ -71,32 +70,26 @@ contract MultiSigWallet {
             address owner = _owners[i];
 
             require(owner != address(0), "invalid owner");
-            require(!isOwner[owner], "owner not unique");
+            require(owners.add(owner), "owner not unique");
 
-            isOwner[owner] = true;
-            owners.add(owner);
         }
 
         numConfirmationsRequired = _numConfirmationsRequired;
     }
 
-    function addOwner(address newOwner) public onlySelf {
+    function addOwner(address newOwner) public onlySelfOrSingleSigner {
         require(newOwner!=address(0), "zero address");
-        require(!isOwner[newOwner], "already an owner");
-        isOwner[newOwner] = true;
-        owners.add(newOwner);
-        emit Owner(newOwner,isOwner[newOwner]);
+        require(owners.add(newOwner), "already an owner");
+        emit Owner(newOwner,true);
     }
 
-    function removeOwner(address oldOwner) public onlySelf {
-        require(isOwner[oldOwner], "removeSigner: not owner");
+    function removeOwner(address oldOwner) public onlySelfOrSingleSigner {
+        require(owners.remove(oldOwner), "removeSigner: not owner");
         require(owners.length() > numConfirmationsRequired, "owners must be greater than the number of confirmations");
-        isOwner[oldOwner] = false;
-        owners.remove(oldOwner);
-        emit Owner(oldOwner,isOwner[oldOwner]);
+        emit Owner(oldOwner,false);
     }
 
-    function updateConfirmationsRequired(uint256 newConfirmationsRequired) public onlySelf {
+    function updateConfirmationsRequired(uint256 newConfirmationsRequired) public onlySelfOrSingleSigner {
         require(newConfirmationsRequired > 0, "must be greater than zero");
         require(newConfirmationsRequired <= owners.length(), "must be less than or equal to the number of owners");
         numConfirmationsRequired = newConfirmationsRequired;

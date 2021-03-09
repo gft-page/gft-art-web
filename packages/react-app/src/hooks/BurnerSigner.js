@@ -4,26 +4,9 @@ const { ethers } = require("ethers");
 export default function useBurnerSigner(provider) {
 
   let key = 'metaPrivateKey'
-
-  useEffect(() => {
-    const storedKey = window.localStorage.getItem(key);
-    if(!storedKey) {
-      console.log('generating a new key')
-      let _newWallet = ethers.Wallet.createRandom()
-      let _newKey = _newWallet.privateKey
-      setValue(_newKey)
-      return _newKey
-    }
-  },[])
-
-  const [storedValue, setStoredValue] = useState(() => {
-    try {
-      // Get from local storage by key
-      return window.localStorage.getItem(key);
-    } catch (error) {
-      console.log(error);
-    }
-  });
+  let wallet
+  const [signer, setSigner] = useState()
+  const [storedValue, setStoredValue] = useState()
 
   const setValue = value => {
     try {
@@ -34,13 +17,27 @@ export default function useBurnerSigner(provider) {
     }
   };
 
-  let wallet
-  let signer
+  useEffect(() => {
+    const storedKey = window.localStorage.getItem(key);
+    if(!storedKey) {
+      console.log('generating a new key')
+      let _newWallet = ethers.Wallet.createRandom()
+      let _newKey = _newWallet.privateKey
+      setValue(_newKey)
+      console.log(_newKey)
+      return _newKey
+    } else {
+      setValue(storedKey)
+    }
+  },[])
 
-  if(storedValue) {
-    wallet = new ethers.Wallet(storedValue)
-    signer = wallet.connect(provider)
-  }
+  useEffect(() => {
+    if(storedValue) {
+      wallet = new ethers.Wallet(storedValue)
+      let _signer = wallet.connect(provider)
+      setSigner(_signer)
+    }
+  },[storedValue])
 
   return signer;
 }

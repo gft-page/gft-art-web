@@ -173,6 +173,9 @@ function App(props) {
           <Menu.Item key="/your-contract">
             <Link onClick={()=>{setRoute("/your-contract")}} to="/your-contract">YourContract</Link>
           </Menu.Item>
+          <Menu.Item key="/multi-sig">
+            <Link onClick={()=>{setRoute("/multi-sig")}} to="/multi-sig">MultiSig</Link>
+          </Menu.Item>
           <Menu.Item key="/erc20-gateway">
             <Link onClick={()=>{setRoute("/erc20-gateway")}} to="/erc20-gateway">erc20 Gateway</Link>
           </Menu.Item>
@@ -190,6 +193,7 @@ function App(props) {
             L2ETHGatewayContract={L2ETHGatewayContract}
             l1Tx={l1Tx}
             l2Tx={l2Tx}
+            chainIds={{ l1ChainId, l2ChainId, injectedChainId }}
             />
           </Route>
           <Route exact path="/your-contract">
@@ -218,6 +222,23 @@ function App(props) {
               }}
             />
           </div>
+          <Contract
+            name="OptimiStickers"
+            signer={l2User}
+            provider={l2Provider}
+          />
+          </Route>
+          <Route path="/multi-sig">
+          <Contract
+            name="CallMe"
+            signer={l2User}
+            provider={l2Provider}
+          />
+          <Contract
+            name="MultiSigWallet"
+            signer={l2User}
+            provider={l2Provider}
+          />
           </Route>
           <Route path="/erc20-gateway">
             <Contract

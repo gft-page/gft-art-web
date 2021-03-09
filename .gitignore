@@ -13,6 +13,7 @@ packages/hardhat/deployments
 docker/**/data
 
 packages/subgraph/config/config.json
+packages/subgraph/abis/
 
 # dependencies
 /node_modules

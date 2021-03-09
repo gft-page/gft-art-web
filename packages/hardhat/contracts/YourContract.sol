@@ -18,7 +18,7 @@ contract YourContract {
     emit SetPurpose(msg.sender, purpose, block.timestamp);
   }
 
-  function getOptimisticTime() public returns(uint256) {
+  function getOptimisticTime() public view returns(uint256) {
     return block.timestamp;
   }
 
