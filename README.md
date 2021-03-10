@@ -27,19 +27,20 @@ yarn start
 > in a second terminal window:
 
 __This requires Docker__
+
 Initiate the Optimism submodules...
 ```bash
-cd docker/optimism-integration
+cd scaffold-eth/docker/optimism-integration
 git submodule init
 git submodule update
 ```
 Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
-cd docker/optimism-integration
+cd scaffold-eth/docker/optimism-integration
 make up
 ```
 
-### Contracts!
+### Deploying contracts!
 This branch has several contracts
 
 `YourContract.sol` -> L2
@@ -56,7 +57,20 @@ The example Optimism L2 Deposited ERC20 contract
 
 __Kudos & thanks to the Optimistic Ethereum team whose [erc20 example](https://github.com/ethereum-optimism/optimism-tutorial/tree/deposit-withdrawal) this benefited from!__
 
-### Hardhat changes
+> in a third terminal window, generate a local account:
+
+```bash
+cd scaffold-eth
+yarn generate
+```
+Send that account some ETH using the faucet from http://localhost:3000/ to fund the deployments
+
+> when the local nodes are up and running, deploy local contracts & attempt to go from L1 -> L2 and back again!
+```
+yarn deploy-oe
+```
+
+### Changes to the hardhat setup on this branch...
 We import the following into our `hardhat.config.js`:
 ```
 require('@eth-optimism/plugins/hardhat/compiler');
@@ -69,19 +83,6 @@ We created a dedicated `oe-deploy.js`, and split out our `deploy()` function in 
 We use `const { Watcher } = require('@eth-optimism/watcher')` which monitors the relayed messages between L1 and L2.
 
 Note that we are not able to use hardhat's usual accounts, so we use scaffold-eth's account generation...
-
-> in a third terminal window, generate a local account:
-
-```bash
-yarn generate
-```
-Send that account some ETH using the faucet from http://localhost:3000/ to fund the deployments
-
-> when the local nodes are up and running, deploy local contracts & attempt to go from L1 -> L2 and back again!
-
-```bash
-yarn deploy-oe
-```
 
 ### frontend
 There are three tabs:
