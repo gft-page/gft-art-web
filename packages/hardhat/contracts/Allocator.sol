@@ -25,10 +25,15 @@ contract Allocator is ReentrancyGuard {
   function distribute(address tokenAddress) public nonReentrant {
     IERC20 tokenContract = IERC20(tokenAddress);
     uint256 balance = tokenContract.balanceOf(address(this));
+
+    uint256 denominator = governorContract.denominator();
+    address[] memory recipients = governorContract.getRecipients();
+    uint8[] memory ratios = governorContract.getRatios();
+
     for(uint8 i = 0; i < governorContract.recipientsLength(); i++){
-      uint256 amount = balance * governorContract.ratios(i) / governorContract.denominator();
-      tokenContract.transfer( governorContract.recipients(i), amount );
-      emit Distribute( tokenAddress, governorContract.recipients(i), amount );
+      uint256 amount = balance * ratios[i] / denominator;
+      tokenContract.transfer( recipients[i], amount );
+      emit Distribute( tokenAddress, recipients[i], amount );
     }
   }
 }

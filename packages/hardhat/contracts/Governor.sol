@@ -18,6 +18,14 @@ contract Governor is Ownable{
     transferOwnership( newOwner );
   }
 
+  function getRatios() public view returns(uint8[] memory) {
+    return ratios;
+  }
+
+  function getRecipients() public view returns(address[] memory) {
+    return recipients;
+  }
+
   function setAllocation( address[] memory _recipients, uint8[] memory _ratios ) public onlyOwner {
     require( _recipients.length > 0 ,"Not enough wallets");
     require( _recipients.length < 256 ,"Too many wallets");

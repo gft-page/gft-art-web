@@ -6,4 +6,6 @@ contract IGovernor {
   address[] public recipients;
   uint8[] public ratios;
   function recipientsLength() public view returns(uint8 count) {}
+  function getRatios() public view returns(uint8[] memory) {}
+  function getRecipients() public view returns(address[] memory) {}
 }
