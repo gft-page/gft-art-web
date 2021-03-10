@@ -2,16 +2,14 @@
 
 > [optimism](https://optimism.io/) proof-of-concept
 
-# This branch is a work-in-progress!
-
 ---
 
 ## quickstart
 
 ```bash
-git clone -b oo-ee https://github.com/austintgriffith/scaffold-eth.git optimistic-scaffold
+git clone -b local-optimism https://github.com/austintgriffith/scaffold-eth.git local-optimism
 
-cd optimistic-scaffold
+cd local-optimism
 ```
 
 ```bash
@@ -31,13 +29,13 @@ yarn start
 __This requires Docker__
 Initiate the Optimism submodules...
 ```bash
-cd scaffold-eth/docker/optimism-integration
+cd docker/optimism-integration
 git submodule init
 git submodule update
 ```
 Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
-cd scaffold-eth/docker/optimism-integration
+cd docker/optimism-integration
 make up
 ```
 
@@ -75,13 +73,13 @@ Note that we are not able to use hardhat's usual accounts, so we use scaffold-et
 > in a third terminal window, generate a local account:
 
 ```bash
-cd scaffold-eth
 yarn generate
 ```
 Send that account some ETH using the faucet from http://localhost:3000/ to fund the deployments
 
 > when the local nodes are up and running, deploy local contracts & attempt to go from L1 -> L2 and back again!
-```
+
+```bash
 yarn deploy-oe
 ```
 
