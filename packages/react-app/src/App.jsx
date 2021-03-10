@@ -3,17 +3,15 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, Alert, Space, Card, Radio, Input, List, Form, InputNumber} from "antd";
+import { Row, Col, Button, Menu, List } from "antd";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { useUserAddress } from "eth-hooks";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader, useBurnerSigner, useAddress, useDebounce } from "./hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, Address, Balance } from "./components";
+import { useExchangePrice, useGasPrice, useContractLoader, useEventListener, useBurnerSigner, useAddress } from "./hooks";
+import { Header, Faucet, Ramp, Contract, GasGauge, Address, Balance } from "./components";
 import { Transactor } from "./helpers";
-import { formatEther, parseEther } from "@ethersproject/units";
 //import Hints from "./Hints";
 import { OptimisticETHBridge } from "./views"
-import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS, L1ETHGATEWAY, L2DEPOSITEDERC20 } from "./constants";
+import { INFURA_ID, NETWORK, NETWORKS, L1ETHGATEWAY, L2DEPOSITEDERC20 } from "./constants";
 import { ethers } from "ethers";
 
 let config = {
@@ -54,7 +52,6 @@ function App(props) {
 
   const l2Burner = useBurnerSigner(l2Provider)
   const l1Burner = useBurnerSigner(l1Provider)
-  const mainnetBurner = useBurnerSigner(mainnetProvider)
 
   // Use your injected provider from 🦊 Metamask or if you don't have it then instantly generate a 🔥 burner wallet.
   const l1User = injectedProvider ? injectedProvider.getSigner() : l1Burner
@@ -173,9 +170,6 @@ function App(props) {
           <Menu.Item key="/your-contract">
             <Link onClick={()=>{setRoute("/your-contract")}} to="/your-contract">YourContract</Link>
           </Menu.Item>
-          <Menu.Item key="/multi-sig">
-            <Link onClick={()=>{setRoute("/multi-sig")}} to="/multi-sig">MultiSig</Link>
-          </Menu.Item>
           <Menu.Item key="/erc20-gateway">
             <Link onClick={()=>{setRoute("/erc20-gateway")}} to="/erc20-gateway">erc20 Gateway</Link>
           </Menu.Item>
@@ -222,23 +216,6 @@ function App(props) {
               }}
             />
           </div>
-          <Contract
-            name="OptimiStickers"
-            signer={l2User}
-            provider={l2Provider}
-          />
-          </Route>
-          <Route path="/multi-sig">
-          <Contract
-            name="CallMe"
-            signer={l2User}
-            provider={l2Provider}
-          />
-          <Contract
-            name="MultiSigWallet"
-            signer={l2User}
-            provider={l2Provider}
-          />
           </Route>
           <Route path="/erc20-gateway">
             <Contract

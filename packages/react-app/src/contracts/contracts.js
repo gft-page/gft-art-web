@@ -1,1 +1,1 @@
-module.exports = ["CallMe","ERC20","L1ERC20Gateway","L2DepositedERC20","MultiSigWallet","OptimiStickers","YourContract"];
+module.exports = ["ERC20","L1ERC20Gateway","L2DepositedERC20","YourContract"];

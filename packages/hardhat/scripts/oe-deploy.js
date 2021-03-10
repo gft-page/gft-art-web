@@ -36,11 +36,7 @@ const main = async () => {
   const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
   const deployWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
 
-  const callMe = await deploy({contractName: "CallMe", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true})
-  const multiSig = await deploy({contractName: "MultiSigWallet", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [["0x8C6655D20431AeefBC9391545D9865Fc384B486C"], "1"]})
-
   const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true})
-  const optimiStickers = await deploy({contractName: "OptimiStickers", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: ["3"]})
 
   const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
 

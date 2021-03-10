@@ -9,7 +9,7 @@ contract YourContract {
   uint256 public timestamp;
 
   constructor() {
-    // what should we do on deploy?
+    timestamp = block.timestamp;
   }
 
   function setPurpose(string memory newPurpose) public {
