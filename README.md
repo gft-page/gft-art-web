@@ -2,6 +2,7 @@
 
 > [optimism](https://optimism.io/) proof-of-concept
 
+> read the [Medium article here](https://azfuller20.medium.com/optimism-scaffold-eth-draft-b76d3e6849e8)
 ---
 
 ## quickstart
