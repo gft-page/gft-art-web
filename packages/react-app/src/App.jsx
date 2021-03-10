@@ -119,10 +119,6 @@ function App(props) {
   const allocatorTokenBalance = useContractReader(readContracts,"ExampleToken", "balanceOf", [ readContracts && readContracts.Allocator.address ])
   console.log("🤗 allocatorTokenBalance:",allocatorTokenBalance)
 
-  const denominator = useContractReader(readContracts,"Allocator", "denominator")
-  console.log("🤗 denominator:",denominator)
-
-
   //📟 Listen for broadcast events
   //const allocations = useEventListener(readContracts, "Allocator", "AllocationAdded", localProvider, 1);
   //console.log("📟 allocations:",allocations)
@@ -130,8 +126,11 @@ function App(props) {
   const distributions = useEventListener(readContracts, "Allocator", "Distribute", localProvider, 1);
   console.log("📟 distributions:",distributions)
 
-  const allocations = useEventListener(readContracts, "Allocator", "AllocationSet", localProvider, 1);
+  const allocations = useEventListener(readContracts, "Governor", "AllocationSet", localProvider, 1);
   console.log("📟 allocations:",allocations)
+
+  const denominator = useContractReader(readContracts,"Governor", "denominator")
+  console.log("🤗 denominator:",denominator)
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -178,7 +177,7 @@ function App(props) {
   }, [setRoute]);
 
   let faucetHint = ""
-  const faucetAvailable = localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf(window.location.hostname)>=0 && !process.env.REACT_APP_PROVIDER && price > 1;
+  const faucetAvailable = true || localProvider && localProvider.connection && localProvider.connection.url && localProvider.connection.url.indexOf(window.location.hostname)>=0 && !process.env.REACT_APP_PROVIDER && price > 1;
 
   const [ faucetClicked, setFaucetClicked ] = useState( false );
   if(!faucetClicked&&localProvider&&localProvider._network&&localProvider._network.chainId==31337&&yourLocalBalance&&formatEther(yourLocalBalance)<=0){
@@ -221,6 +220,7 @@ function App(props) {
           <Route exact path="/">
 
             <div style={{padding:32}}>
+              <div>burn ETH or tokens to:</div>
               <Address
                 value={readContracts && readContracts.Allocator.address}
                 ensProvider={mainnetProvider}
@@ -232,6 +232,15 @@ function App(props) {
                 ensProvider={mainnetProvider}
                 fontSize={32}
               />
+
+              <div style={{padding:32,border:"1 px solid #dddddd"}}>
+                <div>Governor:</div>
+                <Address
+                  value={readContracts && readContracts.Governor.address}
+                  ensProvider={mainnetProvider}
+                  fontSize={16}
+                />
+              </div>
             </div>
 
 
@@ -257,19 +266,21 @@ function App(props) {
             */}
 
             <Contract
+              name="Governor"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+            />
+
+            <Contract
               name="Allocator"
               signer={userProvider.getSigner()}
               provider={localProvider}
               address={address}
               blockExplorer={blockExplorer}
             />
-            <Contract
-              name="ExampleToken"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
+
             <Contract
               name="WETH9"
               signer={userProvider.getSigner()}
