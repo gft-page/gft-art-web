@@ -30,13 +30,13 @@ __This requires Docker__
 
 Initiate the Optimism submodules...
 ```bash
-cd scaffold-eth/docker/optimism-integration
+cd local-optimism/docker/optimism-integration
 git submodule init
 git submodule update
 ```
 Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
-cd scaffold-eth/docker/optimism-integration
+cd local-optimism/docker/optimism-integration
 make up
 ```
 
@@ -60,7 +60,7 @@ __Kudos & thanks to the Optimistic Ethereum team whose [erc20 example](https://g
 > in a third terminal window, generate a local account:
 
 ```bash
-cd scaffold-eth
+cd local-optimism
 yarn generate
 ```
 Send that account some ETH using the faucet from http://localhost:3000/ to fund the deployments
