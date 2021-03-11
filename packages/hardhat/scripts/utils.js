@@ -11,10 +11,10 @@ async function deploy({rpcUrl, contractName, ovm = false, mnemonicFile="./mnemon
 
   const contractArgs = _args || [];
 
-  const optimisticProvider = new JsonRpcProvider(rpcUrl)
+  const provider = new JsonRpcProvider(rpcUrl)
   const mnemonic = fs.readFileSync(mnemonicFile).toString().trim()
   const newWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
-  const signerProvider = newWallet.connect(optimisticProvider)
+  const signerProvider = newWallet.connect(provider)
 
   let contractArtifacts
 
@@ -26,6 +26,13 @@ async function deploy({rpcUrl, contractName, ovm = false, mnemonicFile="./mnemon
 
   const deployed = await contractArtifacts.deploy(...contractArgs, overrides);
   await deployed.deployTransaction.wait()
+
+  const checkCode = async (_address) => {
+    let code = await provider.getCode(_address)
+    console.log(code)
+  }
+
+  await checkCode(deployed.address)
 
   const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
