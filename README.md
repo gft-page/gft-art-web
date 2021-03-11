@@ -1,27 +1,23 @@
-# 🏗 scaffold-eth - 🔴 Optimism NFTs 🎟
+# 🏗 scaffold-eth - 🔴 Optimistic NFTs 🎟
 
-> A "buyer mints" NFT gallery running on Optimism
+> A "buyer mints" NFT gallery running on a local Optimism stack
 
 ---
 
-## quickstart
+## 📦 Install
 
 ```bash
-git clone -b local-optimism https://github.com/austintgriffith/scaffold-eth.git local-optimism
+git clone -b optimistic-nfts https://github.com/austintgriffith/scaffold-eth.git optimistic-nfts
 
-cd local-optimism
+cd optimistic-nfts
 ```
 
 ```bash
-
 yarn install
-
 ```
 
 ```bash
-
 yarn start
-
 ```
 
 > in a second terminal window:
@@ -30,81 +26,53 @@ __This requires Docker__
 
 Initiate the Optimism submodules...
 ```bash
-cd scaffold-eth/docker/optimism-integration
+cd optimistic-nfts/docker/optimism-integration
 git submodule init
 git submodule update
 ```
 Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
-cd scaffold-eth/docker/optimism-integration
+cd optimistic-nfts/docker/optimism-integration
 make up
 ```
 
-### Deploying contracts!
-This branch has several contracts
 
-`YourContract.sol` -> L2
-An amended version of the basic YourContract that comes with scaffold-eth
+## 🖼 Artwork
 
-`ERC20.sol` -> L1
-An ERC20 contract with a `mint(value)` function that allows any user to mint themselve some tokens
+> ✏️ edit the `artwork.json` file to customize your artwork (or build a script to generate the artwork.json file 😉)
 
-`L1ERC20Gateway.sol`
-The example Optimism L1 Gateway contracts
 
-`L2DepositedERC20.sol`
-The example Optimism L2 Deposited ERC20 contract
+## 🗃 Upload
 
-__Kudos & thanks to the Optimistic Ethereum team whose [erc20 example](https://github.com/ethereum-optimism/optimism-tutorial/tree/deposit-withdrawal) this benefited from!__
-
-> in a third terminal window, generate a local account:
+> Upload your artwork to IPFS and generate the list of "fingerprints" for each of your NFTs:
 
 ```bash
-cd scaffold-eth
+cd optimistic-nfts
+yarn upload
+```
+
+## 🛰 Deploy
+
+When you are ready to deploy `YourCollectible.sol`...
+
+> Create a deployment mnemonic:
+
+```bash
+cd optimistic-nfts
 yarn generate
 ```
-Send that account some ETH using the faucet from http://localhost:3000/ to fund the deployments
 
-> when the local nodes are up and running, deploy local contracts & attempt to go from L1 -> L2 and back again!
+> You can view/fund your deployer with `yarn account`
+
+> Deploy the stack:
+
 ```
 yarn deploy-oe
 ```
 
-### Changes to the hardhat setup on this branch...
-We import the following into our `hardhat.config.js`:
-```
-require('@eth-optimism/plugins/hardhat/compiler');
-require('@eth-optimism/plugins/hardhat/ethers');
-```
-We created a dedicated `oe-deploy.js`, and split out our `deploy()` function in `utils.js` such that it can deploy on the EVM or the OVM.
+## 📱 Frontend
 
-`oe-deploy.js` instantiates using the specified network (currently `localhost` or `kovan`), deploys the above contracts, tying the bridged ERC20s, initialises the `OVM_L2DepositedERC20`, and then if `demo == true`, it demonstrates the L1->L2->L1 ERC20 bridging.
+> Open [`http://localhost:3000`](http://localhost:3000) and try minting and sending around NFTs on your local Optimism stack:
 
-We use `const { Watcher } = require('@eth-optimism/watcher')` which monitors the relayed messages between L1 and L2.
 
-Note that we are not able to use hardhat's usual accounts, so we use scaffold-eth's account generation...
-
-### frontend
-There are three tabs:
-- ETH bridging to Optimistic Eth (send yourself some L1 ETH with the faucet!) & send ETH on L1 & L2
-- YourContract on L2
-- OldEnglish ERC20 & Bridge contracts (make sure you approve the Gateway to bridge!)
-
-------------------------
-
-### Working Notes
-- Is OE eompatible with hardhat config accounts? I had to instantiate in my deploy script
-- Get a silent failure on L2 if I don't reset the nonces in Metamask
-- Using OpenZeppelin contracts that import their Address.sol break:
-```OVM Compiler Error (silence by adding: "// @unsupported: ovm" to the top of this file):
- @openzeppelin/contracts/utils/Address.sol:115:17: ParserError: OVM: SELFBALANCE is not implemented in the OVM. (We have no native ETH -- use deposited WETH instead!)
-        require(address(this).balance >= value, "Address: insufficient balance for call");
-```
-- Get a failure on OZ Safemint (https://docs.openzeppelin.com/contracts/3.x/api/token/erc721#ERC721-_safeMint-address-uint256-bytes-)
-- Avoiding silent failures - the initial tx response doesn't give you an indication as to whether a transaction has succeeded or failed, you need to add:
-```
-await result.wait()
-```
-Which will then throw an error. This is different to the EVM, where the initial await transactionResponse will throw.
-- Including a {value: amount} field in ovm .sol doesn't seem to throw?
-- Time on L2 only updates when there is a transaction from L1 -> L2
+*(hint: use an incognito window for a second account.)*
