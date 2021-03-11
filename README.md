@@ -51,6 +51,12 @@ cd optimistic-nfts
 yarn upload
 ```
 
+
+## ⚠️ WARNING
+
+> You need to comment out line **54** and **115** of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
+
+
 ## 🛰 Deploy
 
 When you are ready to deploy `YourCollectible.sol`...
@@ -66,7 +72,9 @@ yarn generate
 
 > Deploy the stack:
 
-```
+
+```bash
+cd optimistic-nfts
 yarn deploy-oe
 ```
 
@@ -76,3 +84,5 @@ yarn deploy-oe
 
 
 *(hint: use an incognito window for a second account.)*
+
+![onftdemo mov](https://user-images.githubusercontent.com/2653167/110854598-6d813900-8272-11eb-984c-b9e3eff69b0c.gif)

@@ -41,11 +41,11 @@ const main = async () => {
   const l1MessengerAddress = selectedNetwork.l1MessengerAddress // kovan: 0xb89065D5eB05Cac554FDB11fC764C679b4202322 // local: 0x6418E5Da52A3d7543d393ADD3Fa98B0795d27736
   const l2MessengerAddress = '0x4200000000000000000000000000000000000007'
 
-  const decimals = 18
+/*  const decimals = 18
   const name = "OldEnglish"
   const symbol = "OE"
   const initialSupply = "100000000000000000000"
-
+*/
   const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
   const deployWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
 
@@ -60,7 +60,7 @@ const main = async () => {
   console.log(' L2 initialised: ',init.hash)
 */
 
-  console.log("input args:",bytes32Array)
+  //console.log("input args:",bytes32Array)
 
   const yourCollectibleL2 = await deploy({contractName: "YourCollectible", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true
     , _args: [[
@@ -73,7 +73,7 @@ const main = async () => {
   '0x54be0683eef72e8de0727aa39dc705dc3d79a17e33ddf7f1c5fbba2f51d9cf30',
   '0xf86b5e05c97bbdaf6dfa8d263d14a89a43dde6cacdce3dc1fde91d2a965c05e8',
   '0x996078a99a6cb246d022fc1431a4097d19eed7d35c3021eb0a6977f0f8ff9fb9'/*,
-  '0x49fb56becbe9b75b5c814c73b24069faa8f249f0ee3bffd7556a4ad098da292a',  // <-- this many bytes32s and it breaks 
+  '0x49fb56becbe9b75b5c814c73b24069faa8f249f0ee3bffd7556a4ad098da292a',  // <-- this many bytes32s and it breaks
   '0x68c31705f8079f8f452ae3330bf1d83ed511798387016c6150495a5dfbc7b428',
   '0x21a16f2de96aceaa51c3a08033cd6bca03049a97d0505c658cd4683b88dd36f1',
   '0x82a20069f9e152645a8f42ff7d3d1e836746e2b09a8ceebac45e97ad31721f5b',
@@ -84,10 +84,10 @@ const main = async () => {
 ]]
   })
 
-  console.log("AWAITING....")
-  console.log("DEPLOYED:",await yourCollectibleL2.deployTransaction.wait())
+  //console.log("AWAITING....")
+  //console.log("DEPLOYED:",await yourCollectibleL2.deployTransaction.wait())
 
-
+/*
   if(demo == true) {
 
     console.log('\n 👾Bridge demonstration')
@@ -154,7 +154,7 @@ const main = async () => {
     console.log(' completed Withdrawal! L1 tx hash:', l1Receipt.transactionHash)
     await logBalances()
   }
-
+*/
 };
 
 main()
