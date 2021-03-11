@@ -22,11 +22,12 @@ yarn start
 
 > in a second terminal window:
 
-__This requires Docker__
+*(this requires [Docker](https://www.docker.com/products/docker-desktop))*
 
 Initiate the Optimism submodules...
 ```bash
-cd optimistic-nfts/docker/optimism-integration
+cd optimistic-nfts
+cd docker/optimism-integration
 git submodule init
 git submodule update
 ```
