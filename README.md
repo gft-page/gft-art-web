@@ -38,6 +38,18 @@ cd docker/optimism-integration
 make up
 ```
 
+
+## ⚠️ WARNING
+
+> You need to comment out line **54** and **115** of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
+
+> Then try compiling your contracts: 
+
+```bash
+cd optimistic-nfts
+yarn compile
+```
+
 ## 🖼 Artwork
 
 > ✏️ edit the `artwork.json` file to customize your artwork (or build a script to generate the artwork.json file 😉)
@@ -51,12 +63,6 @@ make up
 cd optimistic-nfts
 yarn upload
 ```
-
-
-## ⚠️ WARNING
-
-> You need to comment out line **54** and **115** of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
-
 
 ## 🛰 Deploy
 
