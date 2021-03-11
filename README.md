@@ -77,6 +77,8 @@ yarn generate
 
 > You can view/fund your deployer with `yarn account`
 
+*(use the faucet in the bottom left of [`http://localhost:3000`](http://localhost:3000) to fund your deployer)*
+
 > Deploy the stack:
 
 
