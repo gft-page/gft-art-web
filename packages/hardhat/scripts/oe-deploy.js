@@ -2,11 +2,24 @@
 const { deploy } = require('./utils')
 const { Watcher } = require('@eth-optimism/watcher')
 const {  JsonRpcProvider } = require("@ethersproject/providers");
+const { utils } = require("ethers");
 const fs = require("fs");
 
 const main = async () => {
 
-  let demo = true
+  let demo = false
+
+  //load uploaded assets (generated from `yarn upload`)
+  let uploadedAssets = JSON.parse(fs.readFileSync("./uploaded.json"))
+  let bytes32Array = []
+  for(let a in uploadedAssets){
+    console.log(" 🏷 IPFS:",a)
+    let bytes32 = utils.id(a)
+    console.log(" #️⃣ hashed:",bytes32)
+    bytes32Array.push(bytes32)
+  }
+  console.log(" \n")
+
 
   console.log(`\n\n 📡 Deploying on ${process.env.HARDHAT_NETWORK || config.defaultNetwork}\n`);
 
@@ -36,8 +49,7 @@ const main = async () => {
   const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
   const deployWallet = new ethers.Wallet.fromMnemonic(mnemonic)//, optimisticProvider)
 
-  const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true})
-
+/*
   const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
 
   const OVM_L2DepositedERC20 = await deploy({contractName: "L2DepositedERC20", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [l2MessengerAddress, name, symbol]})
@@ -46,6 +58,13 @@ const main = async () => {
 
   const init = await OVM_L2DepositedERC20.init(OVM_L1ERC20Gateway.address)
   console.log(' L2 initialised: ',init.hash)
+*/
+
+  const yourCollectibleL2 = await deploy({contractName: "YourCollectible", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [ bytes32Array ]})
+
+  console.log("AWAITING....")
+  console.log("DEPLOYED:",await yourCollectibleL2.deployTransaction.wait())
+
 
   if(demo == true) {
 

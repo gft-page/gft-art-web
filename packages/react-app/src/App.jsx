@@ -3,16 +3,24 @@ import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 import "antd/dist/antd.css";
 import {  JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import "./App.css";
-import { Row, Col, Button, Menu, List } from "antd";
+import { Row, Col, Button, Menu, List, Card } from "antd";
+import {  LinkOutlined } from "@ant-design/icons"
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { useExchangePrice, useGasPrice, useContractLoader, useEventListener, useBurnerSigner, useAddress } from "./hooks";
+import { useContractReader, useExchangePrice, useGasPrice, useContractLoader, useEventListener, useBurnerSigner, useAddress } from "./hooks";
 import { Header, Faucet, Ramp, Contract, GasGauge, Address, Balance } from "./components";
 import { Transactor } from "./helpers";
 //import Hints from "./Hints";
 import { OptimisticETHBridge } from "./views"
 import { INFURA_ID, NETWORK, NETWORKS, L1ETHGATEWAY, L2DEPOSITEDERC20 } from "./constants";
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
+import StackGrid from "react-stack-grid";
+import assets from './assets.js' // <--- you need to run 'yarn upload' to generate this
+
+const { BufferList } = require('bl')
+// https://www.npmjs.com/package/ipfs-http-client
+const ipfsAPI = require('ipfs-http-client');
+const ipfs = ipfsAPI({host: 'ipfs.infura.io', port: '5001', protocol: 'https' })
 
 let config = {
   local: {
@@ -26,6 +34,8 @@ let config = {
     l1ETHGatewayAddress: '0x6647D5BD9EB9425838Bb89f76a166228b95671a3'
   }
 }
+
+const blockExplorer = "" //O explorer??
 
 let selectedNetwork = 'local'
 
@@ -42,6 +52,21 @@ const l1Provider = new JsonRpcProvider(l1Network.rpcUrl);
 const l2Provider = new JsonRpcProvider(l2Network.rpcUrl);
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID)
 
+
+//helper function to "Get" from IPFS
+// you usually go content.toString() after this...
+const getFromIPFS = async hashToGet => {
+  for await (const file of ipfs.get(hashToGet)) {
+    console.log(file.path)
+    if (!file.content) continue;
+    const content = new BufferList()
+    for await (const chunk of file.content) {
+      content.append(chunk)
+    }
+    console.log(content)
+    return content
+  }
+}
 
 function App(props) {
 
@@ -74,17 +99,66 @@ function App(props) {
   const l1Contracts = useContractLoader(l1Provider)
   const l2Contracts = useContractLoader(l2Provider)
 
+  console.log("l2Contracts",l2Contracts)
+
   let L1ETHGatewayContract = new ethers.Contract(config[selectedNetwork].l1ETHGatewayAddress, L1ETHGATEWAY, l1User) // local 0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1
   let L2ETHGatewayContract = new ethers.Contract("0x4200000000000000000000000000000000000006", L2DEPOSITEDERC20, l2User)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(l2Contracts, "YourContract", "SetPurpose", l2Provider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  //const setPurposeEvents = useEventListener(l2Contracts, "YourContract", "SetPurpose", l2Provider, 1);
+  //console.log("📟 SetPurpose events:",setPurposeEvents)
 
   const checkCode = async (_address) => {
     let code = await l2Provider.getCode(_address)
     console.log(code)
   }
+
+  const collectibleAddress = l2Contracts && l2Contracts.YourCollectible.address
+  console.log("collectibleAddress",collectibleAddress)
+
+
+  // keep track of a variable from the contract in the local React state:
+  const balance = useContractReader(l2Contracts,"YourCollectible", "balanceOf", [ address ])
+  console.log("🤗 balance:",balance)
+
+  //📟 Listen for broadcast events
+  const transferEvents = useEventListener(l2Contracts, "YourCollectible", "Transfer", l2Provider, 1);
+  console.log("📟 Transfer events:",transferEvents)
+
+
+  const yourBalance = balance && balance.toNumber && balance.toNumber()
+  const [ yourCollectibles, setYourCollectibles ] = useState()
+
+  useEffect(()=>{
+    const updateYourCollectibles = async () => {
+      let collectibleUpdate = []
+      for(let tokenIndex=0;tokenIndex<balance;tokenIndex++){
+        try{
+          console.log("GEtting token index",tokenIndex)
+          const tokenId = await l2Contracts.YourCollectible.tokenOfOwnerByIndex(address, tokenIndex)
+          console.log("tokenId",tokenId)
+          const tokenURI = await l2Contracts.YourCollectible.tokenURI(tokenId)
+          console.log("tokenURI",tokenURI)
+
+          const ipfsHash =  tokenURI.replace("https://ipfs.io/ipfs/","")
+          console.log("ipfsHash",ipfsHash)
+
+          const jsonManifestBuffer = await getFromIPFS(ipfsHash)
+
+          try{
+            const jsonManifest = JSON.parse(jsonManifestBuffer.toString())
+            console.log("jsonManifest",jsonManifest)
+            collectibleUpdate.push({ id:tokenId, uri:tokenURI, owner: address, ...jsonManifest })
+          }catch(e){console.log(e)}
+
+        }catch(e){console.log(e)}
+      }
+      setYourCollectibles(collectibleUpdate)
+    }
+    updateYourCollectibles()
+  },[ address, yourBalance ])
+
+
 
   let networkDisplay
 
@@ -155,6 +229,73 @@ function App(props) {
   }
 
 
+  const [ transferToAddresses, setTransferToAddresses ] = useState({})
+  const [ loadedAssets, setLoadedAssets ] = useState()
+  useEffect(()=>{
+    const updateYourCollectibles = async () => {
+      let assetUpdate = []
+      for(let a in assets){
+        try{
+          const forSale = await l2Contracts.YourCollectible.forSale(utils.id(a))
+          let owner
+          if(!forSale){
+            const tokenId = await l2Contracts.YourCollectible.uriToTokenId(utils.id(a))
+            owner = await l2Contracts.YourCollectible.ownerOf(tokenId)
+          }
+          assetUpdate.push({id:a,...assets[a],forSale:forSale,owner:owner})
+        }catch(e){console.log(e)}
+      }
+      setLoadedAssets(assetUpdate)
+    }
+    if(l2Contracts && l2Contracts.YourCollectible) updateYourCollectibles()
+  }, [ assets, l2Contracts, transferEvents ]);
+
+  let galleryList = []
+  for(let a in loadedAssets){
+    console.log("loadedAssets",a,loadedAssets[a])
+
+    let cardActions = []
+    if(loadedAssets[a].forSale){
+      cardActions.push(
+        <div>
+          <Button onClick={()=>{
+            console.log("gasPrice,",gasPrice)
+            l2Tx( l2Contracts.YourCollectible.mintItem(loadedAssets[a].id,{gasPrice:gasPrice}) )
+          }}>
+            Mint
+          </Button>
+        </div>
+      )
+    }else{
+      cardActions.push(
+        <div>
+          owned by: <Address
+            address={loadedAssets[a].owner}
+            ensProvider={mainnetProvider}
+            blockExplorer={blockExplorer}
+            minimized={true}
+          />
+        </div>
+      )
+    }
+
+    galleryList.push(
+      <Card style={{width:200}} key={loadedAssets[a].name}
+        actions={cardActions}
+        title={(
+          <div>
+            {loadedAssets[a].name} <a style={{cursor:"pointer",opacity:0.33}} href={loadedAssets[a].external_url} target="_blank"><LinkOutlined /></a>
+          </div>
+        )}
+      >
+        <img style={{maxWidth:130}} src={loadedAssets[a].image}/>
+        <div style={{opacity:0.77}}>
+          {loadedAssets[a].description}
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <div className="App">
 
@@ -163,12 +304,29 @@ function App(props) {
       {networkDisplay}
       <BrowserRouter>
 
+        <Button onClick={async ()=>{
+            console.log("///collectibleAddress",collectibleAddress)
+            const collectibleCode = await checkCode(collectibleAddress)
+            console.log("--->collectibleCode",collectibleCode)
+        }}>
+          check
+        </Button>
+
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">Bridge</Link>
+          <Link onClick={()=>{setRoute("/")}} to="/">Gallery</Link>
           </Menu.Item>
-          <Menu.Item key="/your-contract">
-            <Link onClick={()=>{setRoute("/your-contract")}} to="/your-contract">YourContract</Link>
+          <Menu.Item key="/yourcollectibles">
+            <Link onClick={()=>{setRoute("/yourcollectibles")}} to="/yourcollectibles">YourCollectibles</Link>
+          </Menu.Item>
+          <Menu.Item key="/transfers">
+            <Link onClick={()=>{setRoute("/transfers")}} to="/transfers">Transfers</Link>
+          </Menu.Item>
+          <Menu.Item key="/bridge">
+            <Link onClick={()=>{setRoute("/bridge")}} to="/bridge">Bridge</Link>
+          </Menu.Item>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug Contracts</Link>
           </Menu.Item>
           <Menu.Item key="/erc20-gateway">
             <Link onClick={()=>{setRoute("/erc20-gateway")}} to="/erc20-gateway">erc20 Gateway</Link>
@@ -177,45 +335,36 @@ function App(props) {
 
         <Switch>
           <Route exact path="/">
-          <OptimisticETHBridge
-            address={address}
-            l1Provider={l1Provider}
-            l2Provider={l2Provider}
-            l1Network={l1Network}
-            l2Network={l2Network}
-            L1ETHGatewayContract={L1ETHGatewayContract}
-            L2ETHGatewayContract={L2ETHGatewayContract}
-            l1Tx={l1Tx}
-            l2Tx={l2Tx}
-            chainIds={{ l1ChainId, l2ChainId, injectedChainId }}
+          <div style={{ maxWidth:820, margin: "auto", marginTop:32, paddingBottom:256 }}>
+              <StackGrid
+                columnWidth={200}
+                gutterWidth={16}
+                gutterHeight={16}
+              >
+                {galleryList}
+              </StackGrid>
+            </div>
+          </Route>
+          <Route exact path="/bridge">
+            <OptimisticETHBridge
+              address={address}
+              l1Provider={l1Provider}
+              l2Provider={l2Provider}
+              l1Network={l1Network}
+              l2Network={l2Network}
+              L1ETHGatewayContract={L1ETHGatewayContract}
+              L2ETHGatewayContract={L2ETHGatewayContract}
+              l1Tx={l1Tx}
+              l2Tx={l2Tx}
+              chainIds={{ l1ChainId, l2ChainId, injectedChainId }}
             />
           </Route>
-          <Route exact path="/your-contract">
+         <Route exact path="/debug">
             <Contract
-              name="YourContract"
+              name="YourCollectible"
               signer={l2User}
               provider={l2Provider}
             />
-            <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
-            <h2>Events:</h2>
-            <List
-              bordered
-              dataSource={setPurposeEvents}
-              renderItem={(item) => {
-
-                return (
-                  <List.Item key={item.blockNumber+"_"+item.sender+"_"+item.purpose}>
-                    <Address
-                        address={item[0]}
-                        ensProvider={mainnetProvider}
-                        fontSize={16}
-                      /> =>
-                    {item[1]}
-                  </List.Item>
-                )
-              }}
-            />
-          </div>
           </Route>
           <Route path="/erc20-gateway">
             <Contract
