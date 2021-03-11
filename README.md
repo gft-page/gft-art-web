@@ -33,10 +33,10 @@ git submodule update
 ```
 Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
-cd optimistic-nfts/docker/optimism-integration
+cd optimistic-nfts
+cd docker/optimism-integration
 make up
 ```
-
 
 ## 🖼 Artwork
 
