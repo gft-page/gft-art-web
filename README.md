@@ -39,9 +39,12 @@ make up
 ```
 
 
+---
+
+
 ## ⚠️ WARNING
 
-> You need to comment out line **54** and **115** of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
+> You need to comment out line [54](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol#L54) and [115](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol#L115) of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
 
 > Then try compiling your contracts: 
 
@@ -49,6 +52,10 @@ make up
 cd optimistic-nfts
 yarn compile
 ```
+
+---
+
+
 
 ## 🖼 Artwork
 
