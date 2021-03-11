@@ -33,8 +33,8 @@ contract YourCollectible is ERC721 {
       bytes32 uriHash = keccak256(abi.encodePacked(tokenURI));
 
       //make sure they are only minting something that is marked "forsale"
-      ////require(forSale[uriHash],"NOT FOR SALE");
-      ////forSale[uriHash]=false;
+      require(forSale[uriHash],"NOT FOR SALE");
+      forSale[uriHash]=false;
 
       _tokenIds.increment();
 

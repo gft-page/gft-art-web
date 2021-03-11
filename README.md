@@ -1,6 +1,6 @@
-# 🏗 scaffold-eth gets optimistic
+# 🏗 scaffold-eth - 🔴 Optimism NFTs 🎟
 
-> [optimism](https://optimism.io/) proof-of-concept
+> A "buyer mints" NFT gallery running on Optimism
 
 ---
 

@@ -8,7 +8,7 @@ import {  LinkOutlined } from "@ant-design/icons"
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useContractReader, useExchangePrice, useGasPrice, useContractLoader, useEventListener, useBurnerSigner, useAddress } from "./hooks";
-import { Header, Faucet, Ramp, Contract, GasGauge, Address, Balance } from "./components";
+import { Header, Faucet, Ramp, Contract, GasGauge, Address, Balance, AddressInput } from "./components";
 import { Transactor } from "./helpers";
 //import Hints from "./Hints";
 import { OptimisticETHBridge } from "./views"
@@ -99,7 +99,7 @@ function App(props) {
   const l1Contracts = useContractLoader(l1Provider)
   const l2Contracts = useContractLoader(l2Provider)
 
-  console.log("l2Contracts",l2Contracts)
+  const l2WriteContracts = useContractLoader(l2User)
 
   let L1ETHGatewayContract = new ethers.Contract(config[selectedNetwork].l1ETHGatewayAddress, L1ETHGATEWAY, l1User) // local 0x9934FC453d11334e6bFbE5D3856A2c0E917D26f1
   let L2ETHGatewayContract = new ethers.Contract("0x4200000000000000000000000000000000000006", L2DEPOSITEDERC20, l2User)
@@ -252,15 +252,14 @@ function App(props) {
 
   let galleryList = []
   for(let a in loadedAssets){
-    console.log("loadedAssets",a,loadedAssets[a])
+    //console.log("loadedAssets",a,loadedAssets[a])
 
     let cardActions = []
     if(loadedAssets[a].forSale){
       cardActions.push(
         <div>
           <Button onClick={()=>{
-            console.log("gasPrice,",gasPrice)
-            l2Tx( l2Contracts.YourCollectible.mintItem(loadedAssets[a].id,{gasPrice:gasPrice}) )
+            l2Tx( l2WriteContracts.YourCollectible.mintItem(loadedAssets[a].id) )
           }}>
             Mint
           </Button>
@@ -304,14 +303,6 @@ function App(props) {
       {networkDisplay}
       <BrowserRouter>
 
-        <Button onClick={async ()=>{
-            console.log("///collectibleAddress",collectibleAddress)
-            const collectibleCode = await checkCode(collectibleAddress)
-            console.log("--->collectibleCode",collectibleCode)
-        }}>
-          check
-        </Button>
-
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
           <Link onClick={()=>{setRoute("/")}} to="/">Gallery</Link>
@@ -328,14 +319,14 @@ function App(props) {
           <Menu.Item key="/debug">
             <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug Contracts</Link>
           </Menu.Item>
-          <Menu.Item key="/erc20-gateway">
+          { /*}<Menu.Item key="/erc20-gateway">
             <Link onClick={()=>{setRoute("/erc20-gateway")}} to="/erc20-gateway">erc20 Gateway</Link>
-          </Menu.Item>
+          </Menu.Item>*/ }
         </Menu>
 
         <Switch>
           <Route exact path="/">
-          <div style={{ maxWidth:820, margin: "auto", marginTop:32, paddingBottom:256 }}>
+            <div style={{ maxWidth:820, margin: "auto", marginTop:32, paddingBottom:256 }}>
               <StackGrid
                 columnWidth={200}
                 gutterWidth={16}
@@ -345,6 +336,83 @@ function App(props) {
               </StackGrid>
             </div>
           </Route>
+
+          <Route path="/yourcollectibles">
+            <div style={{ width:640, margin: "auto", marginTop:32, paddingBottom:32 }}>
+              <List
+                bordered
+                dataSource={yourCollectibles}
+                renderItem={(item) => {
+                  const id = item.id.toNumber()
+                  return (
+                    <List.Item key={id+"_"+item.uri+"_"+item.owner}>
+                      <Card title={(
+                        <div>
+                          <span style={{fontSize:16, marginRight:8}}>#{id}</span> {item.name}
+                        </div>
+                      )}>
+                        <div><img src={item.image} style={{maxWidth:150}} /></div>
+                        <div>{item.description}</div>
+                      </Card>
+
+                      <div>
+                        owner: <Address
+                            address={item.owner}
+                            ensProvider={mainnetProvider}
+                            blockExplorer={blockExplorer}
+                            fontSize={16}
+                        />
+                        <AddressInput
+                          ensProvider={mainnetProvider}
+                          placeholder="transfer to address"
+                          value={transferToAddresses[id]}
+                          onChange={(newValue)=>{
+                            let update = {}
+                            update[id] = newValue
+                            setTransferToAddresses({ ...transferToAddresses, ...update})
+                          }}
+                        />
+                        <Button onClick={()=>{
+                          console.log("l2WriteContracts",l2WriteContracts)
+                          l2Tx( l2WriteContracts.YourCollectible.transferFrom(address, transferToAddresses[id], id) )
+                        }}>
+                          Transfer
+                        </Button>
+                      </div>
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
+          </Route>
+
+
+          <Route path="/transfers">
+            <div style={{ width:600, margin: "auto", marginTop:32, paddingBottom:32 }}>
+              <List
+                bordered
+                dataSource={transferEvents}
+                renderItem={(item) => {
+                  return (
+                    <List.Item key={item[0]+"_"+item[1]+"_"+item.blockNumber+"_"+item[2].toNumber()}>
+                      <span style={{fontSize:16, marginRight:8}}>#{item[2].toNumber()}</span>
+                      <Address
+                          address={item[0]}
+                          ensProvider={mainnetProvider}
+                          fontSize={16}
+                      /> =>
+                      <Address
+                          address={item[1]}
+                          ensProvider={mainnetProvider}
+                          fontSize={16}
+                      />
+                    </List.Item>
+                  )
+                }}
+              />
+            </div>
+          </Route>
+
           <Route exact path="/bridge">
             <OptimisticETHBridge
               address={address}
@@ -360,6 +428,13 @@ function App(props) {
             />
           </Route>
          <Route exact path="/debug">
+           <Button style={{marginTop:16}} onClick={async ()=>{
+               console.log("///collectibleAddress",collectibleAddress)
+               const collectibleCode = await checkCode(collectibleAddress)
+               console.log("--->collectibleCode",collectibleCode)
+           }}>
+             check bytecode
+           </Button>
             <Contract
               name="YourCollectible"
               signer={l2User}

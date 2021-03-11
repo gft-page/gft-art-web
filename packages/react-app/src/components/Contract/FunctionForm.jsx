@@ -208,11 +208,12 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
             onClick={async () => {
               const args = getArgs()
 
-              console.log(contractInterface.encodeFunctionData(functionInfo.name, args))
+              console.log(functionInfo.name, args, contractInterface.encodeFunctionData(functionInfo.name, args))
 
               let result
               if(functionInfo.stateMutability === "view"||functionInfo.stateMutability === "pure"){
                 const returned = await contractFunction(...args)
+                console.log("returned",returned)
                 result = tryToDisplay(returned);
               }else{
                 const overrides = {};
