@@ -32,8 +32,6 @@ async function deploy({rpcUrl, contractName, ovm = false, mnemonicFile="./mnemon
     console.log(code)
   }
 
-  await checkCode(deployed.address)
-
   const encoded = abiEncodeArgs(deployed, contractArgs);
   fs.writeFileSync(`artifacts/${contractName}.address`, deployed.address);
 
