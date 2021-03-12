@@ -22,19 +22,39 @@ yarn start
 
 > in a second terminal window:
 
-__This requires Docker__
+*(this requires [Docker](https://www.docker.com/products/docker-desktop))*
 
 Initiate the Optimism submodules...
 ```bash
-cd optimistic-nfts/docker/optimism-integration
+cd optimistic-nfts
+cd docker/optimism-integration
 git submodule init
 git submodule update
 ```
 Kick off the local chain, l2 & relay infrastructure (it kind of feels like a space-ship taking off)
 ```bash
-cd optimistic-nfts/docker/optimism-integration
+cd optimistic-nfts
+cd docker/optimism-integration
 make up
 ```
+
+
+---
+
+
+## ⚠️ WARNING
+
+> You need to comment out line [54](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol#L54) and [115](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol#L115) of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
+
+> Then try compiling your contracts: 
+
+```bash
+cd optimistic-nfts
+yarn compile
+```
+
+---
+
 
 
 ## 🖼 Artwork
@@ -51,12 +71,6 @@ cd optimistic-nfts
 yarn upload
 ```
 
-
-## ⚠️ WARNING
-
-> You need to comment out line **54** and **115** of `packages/hardhat/node_modules/@openzeppelin/contracts/utils/Address.sol`
-
-
 ## 🛰 Deploy
 
 When you are ready to deploy `YourCollectible.sol`...
@@ -69,6 +83,8 @@ yarn generate
 ```
 
 > You can view/fund your deployer with `yarn account`
+
+*(use the faucet in the bottom left of [`http://localhost:3000`](http://localhost:3000) to fund your deployer)*
 
 > Deploy the stack:
 
