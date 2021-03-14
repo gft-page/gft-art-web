@@ -2,6 +2,7 @@
 const { deploy } = require('./utils')
 const { Watcher } = require('@eth-optimism/watcher')
 const {  JsonRpcProvider } = require("@ethersproject/providers");
+const { utils } = require("ethers");
 const fs = require("fs");
 
 const main = async () => {
@@ -29,8 +30,8 @@ const main = async () => {
   const l2MessengerAddress = '0x4200000000000000000000000000000000000007'
 
   const decimals = 18
-  const name = "OldEnglish"
-  const symbol = "OE"
+  let name = "OldEnglish"
+  let symbol = "OE"
   const initialSupply = "100000000000000000000"
 
   const mnemonic = fs.readFileSync("./mnemonic.txt").toString().trim()
@@ -38,8 +39,7 @@ const main = async () => {
 
   const yourContractL2 = await deploy({contractName: "YourContract", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true})
 
-  const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]}) // <-- add in constructor args like line 19 vvvv
-
+  const L1_ERC20 = await deploy({contractName: "ERC20", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [initialSupply, symbol, decimals]})
   const OVM_L2DepositedERC20 = await deploy({contractName: "L2DepositedERC20", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [l2MessengerAddress, name, symbol]})
 
   const OVM_L1ERC20Gateway = await deploy({contractName: "L1ERC20Gateway", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [L1_ERC20.address, OVM_L2DepositedERC20.address, l1MessengerAddress]})
@@ -47,7 +47,34 @@ const main = async () => {
   const init = await OVM_L2DepositedERC20.init(OVM_L1ERC20Gateway.address)
   console.log(' L2 initialised: ',init.hash)
 
+  name = "Optimistico Punks"
+  symbol = "OP"
+
+
+// L1 ERC721
+  const ERC721 = await deploy({contractName: "TestERC721", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [name, symbol]})
+  const OVM_DepositedERC721 = await deploy({contractName: "DepositedERC721", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [l2MessengerAddress, name, symbol]})
+  const OVM_ERC721Gateway = await deploy({contractName: "ERC721Gateway", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [ERC721.address, OVM_DepositedERC721.address, l1MessengerAddress]})
+  const initERC721 = await OVM_DepositedERC721.init(OVM_ERC721Gateway.address)
+  console.log(initERC721)
+
+/*
+// L2 ERC721
+  const ERC721 = await deploy({contractName: "TestERC721", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [name, symbol]})
+  const OVM_DepositedERC721 = await deploy({contractName: "DepositedERC721", rpcUrl: selectedNetwork.l1RpcUrl, ovm: false, _args: [l1MessengerAddress, name, symbol]})
+  const OVM_ERC721Gateway = await deploy({contractName: "ERC721Gateway", rpcUrl: selectedNetwork.l2RpcUrl, ovm: true, _args: [ERC721.address, OVM_DepositedERC721.address, l2MessengerAddress]})
+  const initERC721 = await OVM_DepositedERC721.init(OVM_ERC721Gateway.address)
+  console.log(initERC721)
+*/
   if(demo == true) {
+
+    console.log('\n 👾Purpose demonstration')
+
+    let newPurposeTx = await yourContractL2.setPurpose("Demonstration")
+    await newPurposeTx.wait()
+
+    let newPurpose = await yourContractL2.purpose()
+    console.log(` New Purpose: ${newPurpose}`)
 
     console.log('\n 👾Bridge demonstration')
 
@@ -65,6 +92,20 @@ const main = async () => {
       }
     })
 
+    const trackMessageTransmission = async (startingLayer, hash) => {
+      if(startingLayer === 1) {
+        const [msgHash] = await watcher.getMessageHashesFromL1Tx(hash)
+        console.log(' got L1->L2 message hash', msgHash)
+        const receipt = await watcher.getL2TransactionReceipt(msgHash)
+        console.log(' completed! tx hash:', receipt.transactionHash)
+      } else if (startingLayer === 2) {
+        const [msgHash] = await watcher.getMessageHashesFromL2Tx(hash)
+        console.log(' got L2->L1 message hash', msgHash)
+        const receipt = await watcher.getL1TransactionReceipt(msgHash)
+        console.log(' completed! L1 tx hash:', receipt.transactionHash)
+      }
+    }
+
     const logBalances = async (description = '') => {
       console.log('\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ' + description + ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
       if(L1_ERC20) {
@@ -80,7 +121,7 @@ const main = async () => {
 
     // Approve
     console.log(' Approving L1 deposit contract...')
-    const approveTx = await L1_ERC20.approve(OVM_L1ERC20Gateway.address, 10)
+    let approveTx = await L1_ERC20.approve(OVM_L1ERC20Gateway.address, 100)
     console.log(' Approved: ' + approveTx.hash)
     await approveTx.wait()
 
@@ -88,30 +129,78 @@ const main = async () => {
 
     // Deposit
     console.log(' Depositing into L1 deposit contract...')
-    const depositTx = await OVM_L1ERC20Gateway.deposit(10, {gasLimit: 1000000})
+    let depositTx = await OVM_L1ERC20Gateway.deposit(100)
     console.log(' Deposited: ' + depositTx.hash)
     await depositTx.wait()
 
-    const [l1ToL2msgHash] = await watcher.getMessageHashesFromL1Tx(depositTx.hash)
-    console.log(' got L1->L2 message hash', l1ToL2msgHash)
-    const l2Receipt = await watcher.getL2TransactionReceipt(l1ToL2msgHash)
-    console.log(' completed Deposit! L2 tx hash:', l2Receipt.transactionHash)
+    await trackMessageTransmission(1, depositTx.hash)
 
     await logBalances()
 
     // Withdraw
     console.log(' Withdrawing from L1 deposit contract...')
-    const withdrawalTx = await OVM_L2DepositedERC20.withdraw(10, {gasLimit: 5000000})
+
+    let withdrawalTx = await OVM_L2DepositedERC20.withdraw(100)
     await withdrawalTx.wait()
     console.log(' Withdrawal tx hash:' + withdrawalTx.hash)
 
     await logBalances()
 
-    const [l2ToL1msgHash] = await watcher.getMessageHashesFromL2Tx(withdrawalTx.hash)
-    console.log(' got L2->L1 message hash', l2ToL1msgHash)
-    const l1Receipt = await watcher.getL1TransactionReceipt(l2ToL1msgHash)
-    console.log(' completed Withdrawal! L1 tx hash:', l1Receipt.transactionHash)
+    await trackMessageTransmission(2, withdrawalTx.hash)
+
     await logBalances()
+
+
+    const logERC721Balances = async (description = '') => {
+      console.log('\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ' + description + ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+      if(ERC721) {
+        const l1Balance = await ERC721.balanceOf(deployWallet.address)
+        console.log(' L1 balance of', deployWallet.address, 'is', l1Balance.toString())
+      } else { console.log(' no ERC721 configured') }
+      if(OVM_DepositedERC721) {
+        const l2Balance = await OVM_DepositedERC721.balanceOf(deployWallet.address)
+        console.log(' L2 balance of', deployWallet.address, 'is', l2Balance.toString())
+      } else { console.log(' no OVM_DepositedERC721 configured') }
+      console.log(' ~'.repeat(description.length) + '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n')
+    }
+
+    // mint
+    console.log(' Minting an ERC721...')
+    const mintTx = await ERC721.mint(deployWallet.address, 1, 'dummy-token-uri')
+    console.log(' Minted: ' + mintTx.hash)
+    await mintTx.wait()
+
+    // Approve
+    console.log(' Approving deposit contract...')
+    approveTx = await ERC721.approve(OVM_ERC721Gateway.address, 1)
+    console.log(' Approved: ' + approveTx.hash)
+    approveTx.wait()
+
+    await logERC721Balances()
+
+    // Deposit
+    console.log(' Depositing into deposit contract...')
+    depositTx = await OVM_ERC721Gateway.deposit(1)
+    console.log(' Deposited: ' + depositTx.hash)
+    await depositTx.wait()
+
+    await trackMessageTransmission(1, depositTx.hash)
+
+    await logERC721Balances()
+
+    // Withdraw
+    console.log(' Withdrawing from deposit contract...')
+
+    withdrawalTx = await OVM_DepositedERC721.withdraw(1)
+    await withdrawalTx.wait()
+    console.log(' Withdrawal tx hash:' + withdrawalTx.hash)
+
+    await logERC721Balances()
+
+    await trackMessageTransmission(2, withdrawalTx.hash)
+
+    await logERC721Balances()
+
   }
 
 };

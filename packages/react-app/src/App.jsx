@@ -81,6 +81,9 @@ function App(props) {
   const setPurposeEvents = useEventListener(l2Contracts, "YourContract", "SetPurpose", l2Provider, 1);
   console.log("📟 SetPurpose events:",setPurposeEvents)
 
+  const finaliseWithdrawalEvents = useEventListener(l2Contracts, "ERC721Gateway", "WithdrawalFinalized", l2Provider, 1);
+  console.log("📟 finaliseWithdrawalEvents:",finaliseWithdrawalEvents)
+
   const checkCode = async (_address) => {
     let code = await l2Provider.getCode(_address)
     console.log(code)
@@ -232,6 +235,23 @@ function App(props) {
               name="L2DepositedERC20"
               signer={l2User}
               provider={l2Provider}
+            />
+          </Route>
+          <Route path="/erc721-gateway">
+            <Contract
+              name="TestERC721"
+              signer={l2User}
+              provider={l2Provider}
+            />
+            <Contract
+              name="ERC721Gateway"
+              signer={l2User}
+              provider={l2Provider}
+            />
+            <Contract
+              name="DepositedERC721"
+              signer={l1User}
+              provider={l1Provider}
             />
           </Route>
         </Switch>

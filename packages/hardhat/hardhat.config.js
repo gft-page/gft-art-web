@@ -1,5 +1,7 @@
 require('@eth-optimism/plugins/hardhat/compiler');
 require('@eth-optimism/plugins/hardhat/ethers');   // Now just add this one!
+//require('../../../plugins/hardhat/ethers');
+//require('../../../plugins/hardhat/compiler');
 const { utils } = require("ethers");
 const fs = require("fs");
 const chalk = require("chalk");
