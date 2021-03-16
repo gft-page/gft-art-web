@@ -49,7 +49,7 @@ console.log("📦 Assets: ",assets)
 
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS['rinkeby']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = true
@@ -194,6 +194,8 @@ function App(props) {
           const tokenURI = await readContracts.YourCollectible.tokenURI(tokenId)
           console.log("tokenURI",tokenURI)
 
+          const strength = await readContracts.YourCollectible.tokenStrength(utils.id(tokenURI.replace("https://ipfs.io/ipfs/","")))
+
           const ipfsHash =  tokenURI.replace("https://ipfs.io/ipfs/","")
           console.log("ipfsHash",ipfsHash)
 
@@ -202,7 +204,7 @@ function App(props) {
           try{
             const jsonManifest = JSON.parse(jsonManifestBuffer.toString())
             console.log("jsonManifest",jsonManifest)
-            collectibleUpdate.push({ id:tokenId, uri:tokenURI, owner: address, ...jsonManifest })
+            collectibleUpdate.push({ id:tokenId, uri:tokenURI, owner: address, ...jsonManifest, strength:strength })
           }catch(e){console.log(e)}
 
         }catch(e){console.log(e)}
@@ -297,11 +299,13 @@ function App(props) {
         try{
           const forSale = await readContracts.YourCollectible.forSale(utils.id(a))
           let owner
+          let strength = 0
           if(!forSale){
+            strength = await readContracts.YourCollectible.tokenStrength(utils.id(a))
             const tokenId = await readContracts.YourCollectible.uriToTokenId(utils.id(a))
             owner = await readContracts.YourCollectible.ownerOf(tokenId)
           }
-          assetUpdate.push({id:a,...assets[a],forSale:forSale,owner:owner})
+          assetUpdate.push({id:a,...assets[a],forSale:forSale,owner:owner,strength})
         }catch(e){console.log(e)}
       }
       setLoadedAssets(assetUpdate)
@@ -334,6 +338,9 @@ function App(props) {
             blockExplorer={blockExplorer}
             minimized={true}
           />
+          <div>
+          str:{loadedAssets[a].strength}
+          </div>
         </div>
       )
     }
@@ -411,6 +418,7 @@ function App(props) {
                 bordered
                 dataSource={yourCollectibles}
                 renderItem={(item) => {
+                  console.log("ITEM",item)
                   const id = item.id.toNumber()
                   return (
                     <List.Item key={id+"_"+item.uri+"_"+item.owner}>
@@ -421,6 +429,9 @@ function App(props) {
                       )}>
                         <div><img src={item.image} style={{maxWidth:150}} /></div>
                         <div>{item.description}</div>
+                        <div>
+                        strength: {item.strength}
+                        </div>
                       </Card>
 
                       <div>
@@ -447,6 +458,7 @@ function App(props) {
                           Transfer
                         </Button>
                       </div>
+
                     </List.Item>
                   )
                 }}
