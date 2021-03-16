@@ -66,6 +66,29 @@ Your artwork from `artwork.json` (if uploaded and deployed correctly) should sho
 
 💦 Use the faucet wallet icon in the bottom left of the frontend to give your address **$1000** in testnet ETH.
 
+---
+
+
+
+🎲 This repo uses Chainlink's VRF on Rinkby.
+
+> First call `getRandomNumber()` from the `debug contracts` tab:
+
+![image](https://user-images.githubusercontent.com/2653167/111365232-d93f1980-8657-11eb-933f-e4e408e2c3ab.png)
+
+> Wait for the `randomResult` to get set:
+
+![image](https://user-images.githubusercontent.com/2653167/111365297-f247ca80-8657-11eb-9aed-d3867e489996.png)
+
+
+> Finally, mint from the `gallery` tab and your NFT will have a `tokenStrength`:
+
+![image](https://user-images.githubusercontent.com/2653167/111365450-1e634b80-8658-11eb-938c-a2523586dfd4.png)
+
+
+---
+
+
 🎫 Try to "Mint" an NFT:
 
 ![image](https://user-images.githubusercontent.com/2653167/110538992-ec933780-80e1-11eb-9d15-aaa7efea698d.png)
@@ -78,6 +101,8 @@ Your artwork from `artwork.json` (if uploaded and deployed correctly) should sho
 ![image](https://user-images.githubusercontent.com/2653167/109543971-35b10f00-7a84-11eb-832e-36d6b66afbe7.png)
 
 🎟 Send an NFT to the *incognito* window just to make sure it works.
+
+
 
 ---
 
@@ -197,6 +222,6 @@ yarn ipfs
 
 ![image](https://user-images.githubusercontent.com/2653167/109540985-7575f780-7a80-11eb-9ebd-39079cc2eb55.png)
 
-> 👩‍❤️‍👨 Share your public url with a friend and ask them to buy a collectible 
+> 👩‍❤️‍👨 Share your public url with a friend and ask them to buy a collectible
 
 ![buyerpaysgastomint mov](https://user-images.githubusercontent.com/2653167/110540616-f322ae80-80e3-11eb-9009-41e445fdd0ff.gif)
