@@ -1,8 +1,10 @@
 # 🏗 scaffold-eth - 🎲 VRF NFT 🎫
 
-> (Counterfactual NFT minting example...)
+> Use VRF to get a 🎲 random "⚔️ strength" for each NFT as it is minted...
 
-Deployer pays around (0.283719 ETH ~$500 at todays gas and price) for the initial contract but then NFTs are only minted once a buyer wants them. (The buyer of the NFT pays the gas to mint. ~$55)
+---
+
+[![playmore](https://user-images.githubusercontent.com/2653167/111368021-f9240c80-865a-11eb-95aa-f88e9b06aad0.png)](https://youtu.be/63sXEPIEh-k?t=1773)
 
 ---
 
