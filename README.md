@@ -1,4 +1,4 @@
-# 🏗 scaffold-eth - 🎫 Buyer Mints NFT
+# 🏗 scaffold-eth - 🎫 Buyer Mints (random strength) NFT 🎲
 
 > (Counterfactual NFT minting example...)
 
