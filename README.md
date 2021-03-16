@@ -91,7 +91,7 @@ Use the **Debug** tab to check the ExampleToken balance of the Allocator address
 Use the from in the **Distributions** tab to distribute the token:
 ![image](https://user-images.githubusercontent.com/2653167/102408265-957e3a80-3faa-11eb-91f7-a88b61644130.png)
 
-Distrobutions can be called by anyone and they will happen at the defined ratio:
+Distributions can be called by anyone and they will happen at the defined ratio:
 ![image](https://user-images.githubusercontent.com/2653167/102408368-b2b30900-3faa-11eb-81f4-b13bae578caa.png)
 
 Use address(0) to distribute ETH:
