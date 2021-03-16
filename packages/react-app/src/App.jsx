@@ -112,12 +112,61 @@ function App(props) {
 
 
   // keep track of a variable from the contract in the local React state:
-  const purpose = useContractReader(readContracts,"YourContract", "purpose")
-  console.log("🤗 purpose:",purpose)
+  //
+  //console.log("🤗 purpose:",purpose)
 
   //📟 Listen for broadcast events
-  const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
-  console.log("📟 SetPurpose events:",setPurposeEvents)
+  //const setPurposeEvents = useEventListener(readContracts, "YourContract", "SetPurpose", localProvider, 1);
+  //console.log("📟 SetPurpose events:",setPurposeEvents)
+
+  const size = useContractReader(readContracts,"YourContract", "SIZE")
+  console.log("Ⱅ Grid Size", size)
+
+  const updateEvents = useEventListener(readContracts, "YourContract", "Update", localProvider, 1);
+  console.log("📟 updateEvents:",updateEvents)
+
+
+  const DEBOUNCER = 1500
+  const [ to, setTo ] = useState()
+  const [ grid, setGrid ] = useState()
+
+  const gridCallback = useCallback(
+    ()=>{
+      let newGrid = new Array(size);
+      console.log("⚙️⚙️⚙️ PROCESSING GRID")
+      for(let x=0; x<size; x++){
+        newGrid[x] = new Array(size);
+        for(let y=0; y<size; y++){
+          newGrid[x][y] = 0
+        }
+      }
+      for(let e in updateEvents){
+        console.log("Event:",e,updateEvents[e])
+        let x = updateEvents[e].x.toNumber()
+        let y = updateEvents[e].y.toNumber()
+        newGrid[x][y] = updateEvents[e].square
+      }
+      setGrid(newGrid)
+    }
+  ,[size, updateEvents])
+
+  useEffect(()=>{
+    clearTimeout(to)
+    setTo(setTimeout(gridCallback,DEBOUNCER))
+  },[updateEvents])
+
+
+  let gridDisplay = []
+  console.log("final gird ",grid)
+  for(let x=0; x<size; x++){
+    for(let y=0; y<size; y++){
+      gridDisplay.push(
+        <div key={"grid_"+x+"_"+y} style={{position:"absolute"}}>
+          g
+        </div>
+      )
+    }
+  }
 
   /*
   const addressFromENS = useResolveName(mainnetProvider, "austingriffith.eth");
@@ -193,19 +242,10 @@ function App(props) {
 
         <Menu style={{ textAlign:"center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
-            <Link onClick={()=>{setRoute("/")}} to="/">YourContract</Link>
+            <Link onClick={()=>{setRoute("/")}} to="/">Grid</Link>
           </Menu.Item>
-          <Menu.Item key="/hints">
-            <Link onClick={()=>{setRoute("/hints")}} to="/hints">Hints</Link>
-          </Menu.Item>
-          <Menu.Item key="/exampleui">
-            <Link onClick={()=>{setRoute("/exampleui")}} to="/exampleui">ExampleUI</Link>
-          </Menu.Item>
-          <Menu.Item key="/mainnetdai">
-            <Link onClick={()=>{setRoute("/mainnetdai")}} to="/mainnetdai">Mainnet DAI</Link>
-          </Menu.Item>
-          <Menu.Item key="/subgraph">
-            <Link onClick={()=>{setRoute("/subgraph")}} to="/subgraph">Subgraph</Link>
+          <Menu.Item key="/debug">
+            <Link onClick={()=>{setRoute("/debug")}} to="/debug">Debug</Link>
           </Menu.Item>
         </Menu>
 
@@ -217,13 +257,7 @@ function App(props) {
                 and give you a form to interact with it locally
             */}
 
-            <Contract
-              name="YourContract"
-              signer={userProvider.getSigner()}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-            />
+
 
 
             { /* uncomment for a second contract:
@@ -255,19 +289,13 @@ function App(props) {
               price={price}
             />
           </Route>
-          <Route path="/exampleui">
-            <ExampleUI
+          <Route path="/debug">
+            <Contract
+              name="YourContract"
+              signer={userProvider.getSigner()}
+              provider={localProvider}
               address={address}
-              userProvider={userProvider}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-              purpose={purpose}
-              setPurposeEvents={setPurposeEvents}
+              blockExplorer={blockExplorer}
             />
           </Route>
           <Route path="/mainnetdai">

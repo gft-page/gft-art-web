@@ -6,18 +6,17 @@ import "hardhat/console.sol";
 
 contract YourContract {
 
-  event SetPurpose(address sender, string purpose);
+  event Update(address clicker, uint256 x, uint256 y, uint8 square);
 
-  string public purpose = "🛠 Programming Unstoppable Money";
+  uint256 public constant SIZE = 16;
+  uint8[SIZE][SIZE] public squares;
 
-  constructor() public {
-    // what should we do on deploy?
-  }
+  function click(uint256 x,uint256 y,bytes32 randomness) public {
 
-  function setPurpose(string memory newPurpose) public {
-    purpose = newPurpose;
-    console.log(msg.sender,"set purpose to",purpose);
-    emit SetPurpose(msg.sender, purpose);
+    uint8 newSquare = uint8(randomness[0]);
+    squares[x][y] = newSquare;
+
+    emit Update(msg.sender, x, y, newSquare);
   }
 
 }
