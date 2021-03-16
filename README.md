@@ -1,4 +1,4 @@
-# 🏗 scaffold-eth - 🎫 Buyer Mints (random strength) NFT 🎲
+# 🏗 scaffold-eth - 🎲 VRF NFT 🎫
 
 > (Counterfactual NFT minting example...)
 
