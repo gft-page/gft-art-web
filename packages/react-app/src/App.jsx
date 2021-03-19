@@ -15,7 +15,7 @@ class App extends React.Component {
     render () {
       return (
             <div className="App">
-                <Container className="col-md-7">
+                <Container className="col-md-6">
                     <Router>
                         <Link to="/sender">Sender</Link>
                         <Link to="/receiver">Receiver</Link>
