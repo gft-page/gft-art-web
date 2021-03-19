@@ -15,17 +15,17 @@ class App extends React.Component {
     render () {
       return (
             <div className="App">
-                <Container className="p-5">
-                    <Jumbotron fluid>
-                        <Container>
-                            <Router>
-                                <Link to="/sender">Sender</Link>
-                                <Link to="/receiver">Receiver</Link>
+                <Container className="col-md-7">
+                    <Router>
+                        <Link to="/sender">Sender</Link>
+                        <Link to="/receiver">Receiver</Link>
+                        <Jumbotron>
+                            <Container>
                                 <Route path="/sender" component={SendersContainer} />  
-                                <Route path="/receiver" component={ReceiversContainer} />
-                            </Router>  
-                        </Container>  
-                    </Jumbotron>              
+                                <Route path="/receiver" component={ReceiversContainer} /> 
+                            </Container>  
+                        </Jumbotron>  
+                    </Router>             
                 </Container>
             </div>           
       );
