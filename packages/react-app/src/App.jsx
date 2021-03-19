@@ -19,7 +19,7 @@ class App extends React.Component {
                     <Router>
                         <Link to="/sender">Sender</Link>
                         <Link to="/receiver">Receiver</Link>
-                        <Jumbotron>
+                        <Jumbotron className="bg-light shadow-sm">
                             <Container>
                                 <Route path="/sender" component={SendersContainer} />  
                                 <Route path="/receiver" component={ReceiversContainer} /> 
