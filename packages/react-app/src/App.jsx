@@ -21,49 +21,34 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 
 
-const targetNetwork = NETWORKS['localhost']; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
-const DEBUG = true
 
-const localProviderUrl = targetNetwork.rpcUrl;
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
-const localProvider = new JsonRpcProvider(localProviderUrlFromEnv);
-
-const scaffoldEthProvider = new JsonRpcProvider("https://rpc.scaffoldeth.io:48544")
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
 
-const blockExplorer = targetNetwork.blockExplorer;
+
 
 
 function App() {
-    const mainnetProvider = (scaffoldEthProvider && scaffoldEthProvider._network) ? scaffoldEthProvider : mainnetInfura
-
+    const mainnetProvider = mainnetInfura
 
     const [injectedProvider, setInjectedProvider] = useState();
-    const userProvider = useUserProvider(injectedProvider, localProvider);
-    const address = useUserAddress(userProvider);
+    const address = useUserAddress(injectedProvider);
+    const userProvider = useUserProvider(injectedProvider);
 
-    let localChainId = localProvider && localProvider._network && localProvider._network.chainId
-    if (DEBUG) console.log("🏠 localChainId", localChainId)
-
-    let selectedChainId = userProvider && userProvider._network && userProvider._network.chainId
-    if (DEBUG) console.log("🕵🏻‍♂️ selectedChainId:", selectedChainId)
+    const [network, setNetwork] = useState("");
 
 
-    let networkDisplay = ""
-    if (localChainId && selectedChainId && localChainId != selectedChainId) {
-        networkDisplay = (
-            <div style={{ zIndex: 2, position: 'absolute', right: 0, top: 60, padding: 16 }}>
-                <h2>Wrong Network</h2>
-                    You have <b>{NETWORK(selectedChainId).name}</b> selected and you need to be on <b>{NETWORK(localChainId).name}</b>.
-            </div>
-        )
-    } else {
-        networkDisplay = (
-            <div style={{ zIndex: -1, position: 'absolute', right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
-                {targetNetwork.name}
-            </div>
-        )
-    }
+    (async function () {
+        if (userProvider) {
+            const network = await userProvider.getNetwork()
+            setNetwork(
+                network.chainId === 1 ? "mainnet" :
+                    network.chainId === 4 ? "rinkeby" :
+                        "unsupported network"
+            )
+        }
+    })()
+
+    const blockExplorer = network == 'rinkeby' ? 'https://rinkeby.etherscan.io/' : 'https://etherscan.io/'
 
     const loadWeb3Modal = useCallback(async () => {
         const provider = await web3Modal.connect();
@@ -79,12 +64,11 @@ function App() {
 
     return (
         <div className="App">
-            {networkDisplay}
-
-            <div style={{ textAlign: "right", right: 0, top: 0, padding: 10 }}>
+            <div style={{ textAlign: "right", right: 0, top: 0, padding: 10, position: 'abosolute' }}>
                 <Account
                     address={address}
-                    localProvider={localProvider}
+                    network={network}
+                    // localProvider={localProvider}
                     userProvider={userProvider}
                     mainnetProvider={mainnetProvider}
                     // price={price}
@@ -100,10 +84,12 @@ function App() {
                     <Link to="/">Sender</Link>
                     <br />
                     <Link to="/receiver">Receiver</Link>
-                    <Container>
-                        <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} />} />
-                        <Route path="/receiver" component={ReceiversContainer} />
-                    </Container>
+                    <Jumbotron className="bg-light shadow-sm">
+                        <Container>
+                            <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
+                            <Route path="/receiver" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
+                        </Container>
+                    </Jumbotron>
                 </Router>
             </Container>
         </div>

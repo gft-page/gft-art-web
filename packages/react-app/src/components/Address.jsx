@@ -48,7 +48,7 @@ export default function Address(props) {
 
   let displayAddress = address.substr(0, 6);
 
-  if (ens && ens.indexOf("0x")<0) {
+  if (ens && ens.indexOf("0x") < 0) {
     displayAddress = ens;
   } else if (props.size === "short") {
     displayAddress += "..." + address.substr(-4);
@@ -78,7 +78,7 @@ export default function Address(props) {
     );
   } else {
     text = (
-      <Text copyable={{ text: address }}>
+      <Text /*copyable={{ text: address }}*/>
         <a /*style={{ color: "#222222" }}*/ target={"_blank"} href={etherscanLink} rel="noopener noreferrer">
           {displayAddress}
         </a>
@@ -89,9 +89,9 @@ export default function Address(props) {
   return (
     <span>
       <span style={{ verticalAlign: "middle" }}>
-        <Blockies seed={address.toLowerCase()} size={8} scale={props.fontSize?props.fontSize/7:4} />
+        <Blockies seed={address.toLowerCase()} size={6} scale={props.fontSize ? props.fontSize / 7 : 4} />
       </span>
-      <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: props.fontSize?props.fontSize:28 }}>{text}</span>
+      <span style={{ verticalAlign: "middle", paddingLeft: 5, fontSize: props.fontSize ? props.fontSize : 24 }}>{text}</span>
     </span>
   );
 }
