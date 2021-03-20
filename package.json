@@ -61,6 +61,7 @@
     ]
   },
   "dependencies": {
+    "needle": "^2.6.0",
     "react-bootstrap": "^1.5.2",
     "react-grid-layout": "^1.2.4",
     "react-redux": "^7.2.2",

@@ -1,10 +1,12 @@
 import React, { Component, useEffect, useState } from 'react'
+import { connect } from 'react-redux'
+
 import Form from 'react-bootstrap/Form'
 import FormControl from 'react-bootstrap/FormControl'
 import Button from 'react-bootstrap/Button'
-import { connect } from 'react-redux'
 
 import { ethers, providers } from "ethers";
+
 
 const APPROVAL_ABI = [
   { "constant": false, "inputs": [{ "internalType": "address", "name": "to", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" }], "name": "setApprovalForAll", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" },
@@ -35,6 +37,7 @@ class Senders extends React.Component {
   constructor() {
     super()
     this.state = {
+      tweetURL: '',
       contract: 'ZORA',
       contractCustom: '',
       contractApproved: false,
@@ -64,6 +67,11 @@ class Senders extends React.Component {
       [event.target.name]: event.target.value
     })
     console.log({ [event.target.name]: event.target.value })
+  }
+
+  handleTweetSubmit = async (event) => {
+    console.log(this.tweetURL)
+    event.preventDefault()
   }
 
   handleSubmit = async (event) => {
@@ -119,7 +127,18 @@ class Senders extends React.Component {
     return (
       <div>
         <h1><small>Senders Title</small></h1>
-
+        <div>
+          <Form onSubmit={event => this.handleTweetSubmit(event)}> 
+          <Form.Group controlId="formTweetURL">
+              <Form.Label>Tweet URL</Form.Label>
+              <Form.Control name="tweetURL" type="text" onChange={this.handleChange} value={this.state.tweetURL} placeholder="Address for tweet to import replies from" />
+            </Form.Group>          
+            <Button variant="primary" type="submit">
+                Submit
+            </Button>
+          </Form>                            
+        </div>
+        <p></p>
         <div>
           <Form onSubmit={event => this.handleSubmit(event)}>
             <Form.Group controlId="formContractAddress">
