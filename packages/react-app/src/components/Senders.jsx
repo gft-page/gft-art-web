@@ -1,9 +1,10 @@
 import React, { Component, useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { needle } from 'needle'
 
 import "antd/dist/antd.css";
-import { Form, Input, Button, Checkbox, Row, Col, Divider, Card } from "antd";
+import { Form, Input, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
 
 import { ethers, providers } from "ethers";
 
@@ -33,8 +34,10 @@ const CONTRACT_PRESETS = MAINNET ? {
   "CUSTOM": "CUSTOM"
 }
 
+const endpointURL = "https://api.twitter.com/2/tweets?ids=";
+
 function getTweet(ID) {
-  console.log(ID)
+  return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"
 }
 
 class Senders extends React.Component {
@@ -43,6 +46,7 @@ class Senders extends React.Component {
     super()
     this.state = {
       tweetURL: '',
+      tweetContent: '',
       contract: 'ZORA',
       contractCustom: '',
       contractApproved: false,
@@ -75,10 +79,11 @@ class Senders extends React.Component {
       // This is a tweet
       const urlComponents = event.target.value.split('/')
       if (urlComponents.length === 6) {
-        getTweet(urlComponents[5])
+        let tweetContent = getTweet(urlComponents[5])
+        tweetContent = tweetContent.substring(0,50) + "..."
+        this.state.tweetContent = tweetContent
       }
     }
-    //console.log({ [event.target.name]: event.target.value })
   }
 
   handleSubmit = async (event) => {
@@ -143,21 +148,65 @@ class Senders extends React.Component {
                   <p>
                     <strong>Send to people from a tweet</strong>
                   </p>
-                  <p>To send an NFT with someone’s @twitter-handle, paste the tweet link, and we’ll create an address book of @twitter-handles you can choose from.</p>
-                  <br></br>                 
+                  <p>To send an NFT with someone’s @twitter-handle, paste the tweet link, and we’ll create an address book of @twitter-handles you can choose from.</p>               
                   <strong>Paste tweet link</strong>
-                        <Form
-                          name="urlFORM"
-                        >  
-                        <Form.Item
-                          onChange={this.handleChange} value={this.state.tweetURL}
-                          label=""
-                          name="tweetURL"
-                          value="tweetURL"
-                        >
-                          <Input />
-                        </Form.Item>                        
-                        </Form>                
+                    <Form
+                      name="urlFORM"
+                    >  
+                    <Form.Item
+                      onChange={this.handleChange} value={this.state.tweetURL}
+                      label=""
+                      name="tweetURL"
+                      value="tweetURL"
+                    >
+                      <Input />
+                    </Form.Item>                        
+                    </Form>  
+                    <p>{this.state.tweetContent}</p>     
+                  <p><strong>@Twitter-handle Address Book</strong></p>
+                  <p>We found <b>200 twitter handles</b></p>
+                  <p>Auto-populate @twitter-handles to send to</p>      
+                  <Form
+                      name="twitterAddresses"
+                    >  
+                       <Row gutter={8}>
+                        <Col className="gutter-row">
+                          <Form.Item name="radio-group" label="">
+                            <Radio.Group>
+                              <Row>
+                                <Col>
+                                  <Radio value="a">First</Radio>
+                                </Col>
+                              </Row>
+                              <Row>
+                                <Col>
+                                  <Radio value="b">Random</Radio>
+                                </Col>
+                              </Row>
+                            </Radio.Group>
+                          </Form.Item>
+                        </Col>
+                        <Col className="gutter-row">
+                          <Form.Item
+                            onChange={this.handleChange} value={this.state.addressNumber}
+                            label=""
+                            name="addressNumber"
+                            value="addressNumber"
+                          >
+                            <Input style={{ width: '50%' }}/>
+                          </Form.Item>
+                        </Col>
+                        <Col className="gutter-row">
+                          <Button type="primary">Add</Button> 
+                        </Col>                        
+                       </Row>
+                       <p>Or select from</p> 
+                       <Card size="small" title="Username" extra={<a href="#">More</a>}>
+                        <p>Card content</p>
+                        <p>Card content</p>
+                        <p>Card content</p>
+                      </Card>                                             
+                    </Form>                                              
                 </Card>
               </div>
             </Col>
