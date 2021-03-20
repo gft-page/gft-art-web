@@ -1,10 +1,10 @@
 import React from 'react'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 //import {fetchAccounts} from '../actions/fetchAccounts'
 import Senders from '../components/Senders'
 
 class SendersContainer extends React.Component {
-  
+
     //componentDidMount() {
     //    this.props.fetchAccounts()
     //}
@@ -12,11 +12,11 @@ class SendersContainer extends React.Component {
     render() {
         return (
             <div>
-                <Senders />
+                <Senders {...this.props} />
             </div>
         )
     }
-} 
+}
 
 const mapStateToProps = state => {
     return {
