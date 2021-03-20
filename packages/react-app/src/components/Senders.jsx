@@ -1,10 +1,14 @@
 import React, { Component, useEffect, useState } from 'react'
-import Form from 'react-bootstrap/Form'
-import FormControl from 'react-bootstrap/FormControl'
-import Button from 'react-bootstrap/Button'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
+import { needle } from 'needle'
+
+import "antd/dist/antd.css";
+import { Form, Input, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
 
 import { ethers, providers } from "ethers";
+
+const style = { padding: '8px 0' };
 
 const APPROVAL_ABI = [
   { "constant": false, "inputs": [{ "internalType": "address", "name": "to", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" }], "name": "setApprovalForAll", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" },
@@ -30,11 +34,41 @@ const CONTRACT_PRESETS = MAINNET ? {
   "CUSTOM": "CUSTOM"
 }
 
+const endpointURL = "https://api.twitter.com/2/tweets?ids=";
+
+function getTweet(ID) {
+  
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conversationId: ID, length: 50 })
+    };
+  fetch('http://localhost:4000/api/v1/twitter/replies', requestOptions)
+    .then(resp => resp.json())
+    .then(json => processReplies(json))
+        
+  return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"
+}
+
+function processReplies(json) {
+  console.log(json.tweets)
+  //this.state.replies = []
+  //json.tweets.forEach((tweet, index) => {
+  //    let newHash = {
+  //      author_id: tweet.author_id
+  //    }
+  //    this.state.replies.push(newHash)
+  //})
+}
+
 class Senders extends React.Component {
 
   constructor() {
     super()
     this.state = {
+      tweetURL: '',
+      tweetContent: '',
+      replies: [],
       contract: 'ZORA',
       contractCustom: '',
       contractApproved: false,
@@ -46,6 +80,33 @@ class Senders extends React.Component {
 
     // console.log("===", this.props, this.provider)
   }
+
+  getTweets(ID) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId: ID, length: 50 })
+      };
+    fetch('http://localhost:4000/api/v1/twitter/replies', requestOptions)
+      .then(resp => resp.json())
+      .then(json => this.processReplies(json))
+          
+    return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
+  }
+
+  processReplies(json) {
+    let newReplies = []
+    json.tweets.forEach((tweet, index) => {
+        let newHash = {
+          author_id: tweet.author_id
+        }
+        newReplies.push(newHash)
+    })
+    this.setState({
+      replies: [...newReplies]
+    })    
+    //this.state.replies = [...newReplies]
+  }  
 
   getNFTContract() {
     return this.state.contract == ''
@@ -63,7 +124,15 @@ class Senders extends React.Component {
     this.setState({
       [event.target.name]: event.target.value
     })
-    console.log({ [event.target.name]: event.target.value })
+    if (event.target.value.includes("https://twitter.com")) {
+      // This is a tweet
+      const urlComponents = event.target.value.split('/')
+      if (urlComponents.length === 6) {
+        let tweetContent = this.getTweets(urlComponents[5])
+        tweetContent = tweetContent.substring(0,50) + "..."
+        this.state.tweetContent = tweetContent
+      }
+    }
   }
 
   handleSubmit = async (event) => {
@@ -71,8 +140,6 @@ class Senders extends React.Component {
 
 
     event.preventDefault()
-
-
 
     const provider = await getProvider(this.props.web3Modal, console.error)
     if (!provider) return
@@ -118,96 +185,94 @@ class Senders extends React.Component {
   render() {
     return (
       <div>
-        <h1><small>Senders Title</small></h1>
-
-        <div>
-          <Form onSubmit={event => this.handleSubmit(event)}>
-            <Form.Group controlId="formContractAddress">
-              <Form.Label>NFT Contract</Form.Label>
-              {/* <Form.Control name="email" type="email" placeholder="Enter email" onChange={this.handleChange} value={this.state.email} /> */}
-              <Form.Control name="contract" as="select" onChange={this.handleChange} value={this.state.contract} custom>
-                <option value="ZORA">Zora</option>
-                <option value="RARIBLE_721">Rarible 721</option>
-                <option value="RARIBLE_1155">Rarible 1155</option>
-                <option value="CUSTOM">Custom Address</option>
-              </Form.Control>
-            </Form.Group>
-
-            {this.state.contract === "CUSTOM" ?
-              <Form.Group controlId="formContractAddressCustom">
-                <Form.Control name="contractCustom" type="text" placeholder="Enter custom NFT contract address" onChange={this.handleChange} value={this.state.contractCustom} />
-              </Form.Group>
-              : null}
-
-            <Approval
-              web3Modal={this.props.web3Modal}
-              contract={this.getNFTContract()}
-            />
-            <br />
-            <Form.Group controlId="formSendType">
-              <Form.Label>Send Type</Form.Label>
-              {/* <Form.Control name="email" type="email" placeholder="Enter email" onChange={this.handleChange} value={this.state.email} /> */}
-
-
-              <Form.Control name="sendType" as="select" onChange={this.handleChange} value={this.state.sendType} custom>
-                <option value="ERC721">ERC721</option>
-                <option value="SAME_ERC1155">Same ERC1155</option>
-                <option value="DIFFERENT_ERC1155S">Different ERC1155s</option>
-              </Form.Control>
-            </Form.Group>
-
-            {this.state.sendType === 'SAME_ERC1155' ?
-              <Form.Group controlId="formSameErc1155TokenId">
-                <Form.Label>ERC1155 Token ID</Form.Label>
-                <Form.Control name="same1155TokenId" type="number" placeholder="Enter token ID for ERC1155" onChange={this.handleChange} value={this.state.same1155TokenId} />
-              </Form.Group>
-              :
-              null}
-
-
-
-
-
-            {/* <Form.Group controlId="formBasicCheckbox">
-              <Form.Check
-                type="switch"
-                id="custom-switch"
-                label="Check this switch"
-              />
-            </Form.Group> */}
-
-
-            <Form.Group controlId="exampleForm.ControlTextarea1">
-              <Form.Label>Recipients</Form.Label>
-
-              {this.state.sendType && <div>{
-                this.state.sendType === 'SAME_ERC1155'
-                  ?
-                  <>(format: <tt>recipient, amount</tt>)</>
-                  :
-                  this.state.sendType === 'DIFFERENT_ERC1155S' ?
-                    <>(format: <tt>recipient, token_id, amount</tt>)</>
-                    :
-                    this.state.sendType === 'ERC721' ?
-                      <>(format: <tt>recipient, token_id</tt>)</>
-                      :
-                      "invalid send type"
-              }
-              </div>}
-
-              <Form.Control as="textarea" rows={3} name="recipients" onChange={this.handleChange} value={this.state.recipients} />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              Submit
-                </Button>
-          </Form>
-        </div>
+          <h5 className="header"><strong>Gift multiple NFTs to many, all at once ✨</strong></h5>
+          Send an NFT to people from a tweet with @twitter-handles, an address, or both
+          <br></br>
+          <br></br>
+          <h6><strong>Send 1 or more NFTs to people</strong></h6>
+          <Row gutter={16}>
+            <Col className="gutter-row" span={11}>
+              <div style={style}>
+                <Card>
+                  <p>
+                    <strong>Send to people from a tweet</strong>
+                  </p>
+                  <p>To send an NFT with someone’s @twitter-handle, paste the tweet link, and we’ll create an address book of @twitter-handles you can choose from.</p>               
+                  <strong>Paste tweet link</strong>
+                    <Form
+                      name="urlFORM"
+                    >  
+                    <Form.Item
+                      onChange={this.handleChange} value={this.state.tweetURL}
+                      label=""
+                      name="tweetURL"
+                      value="tweetURL"
+                    >
+                      <Input />
+                    </Form.Item>                        
+                    </Form>  
+                    <p>{this.state.tweetContent}</p>     
+                  <p><strong>@Twitter-handle Address Book</strong></p>
+                  <p>We found <b>{this.state.replies.length} twitter handles</b></p>
+                  <p>Auto-populate @twitter-handles to send to</p>      
+                  <Form
+                      name="twitterAddresses"
+                    >  
+                       <Row gutter={8}>
+                        <Col className="gutter-row">
+                          <Form.Item name="radio-group" label="">
+                            <Radio.Group>
+                              <Row>
+                                <Col>
+                                  <Radio value="a">First</Radio>
+                                </Col>
+                              </Row>
+                              <Row>
+                                <Col>
+                                  <Radio value="b">Random</Radio>
+                                </Col>
+                              </Row>
+                            </Radio.Group>
+                          </Form.Item>
+                        </Col>
+                        <Col className="gutter-row">
+                          <Form.Item
+                            onChange={this.handleChange} value={this.state.addressNumber}
+                            label=""
+                            name="addressNumber"
+                            value="addressNumber"
+                          >
+                            <Input style={{ width: '50%' }}/>
+                          </Form.Item>
+                        </Col>
+                        <Col className="gutter-row">
+                          <Button type="primary">Add</Button> 
+                        </Col>                        
+                       </Row>
+                       <p>Or select from</p> 
+                       <Card size="small" title="Username" extra={<a href="#">More</a>}>
+                        <p>Card content</p>
+                        <p>Card content</p>
+                        <p>Card content</p>
+                      </Card>                                             
+                    </Form>                                              
+                </Card>
+              </div>
+            </Col>
+            <Col className="gutter-row" span={13}>
+              <div style={style}>
+                <strong>Select the protocol or marketplace your NFT is listed on</strong>
+              </div>
+            </Col>
+          </Row>     
       </div>
     )
   }
 }
 
 
+/*
+//Uncomment once Ant is in
 function Approval(props) {
   const [approved, setApproved] = useState(false)
   const [error, setError] = useState("")
@@ -293,6 +358,7 @@ function Approval(props) {
   </div>
 
 }
+*/
 
 
 async function getProvider(web3Modal, setError) {
