@@ -98,12 +98,16 @@ class Senders extends React.Component {
   processReplies(json) {
     let newReplies = []
     let newTwitterCard = ''
+    let idSet = new Set()
     json.tweets.forEach((tweet, index) => {
-        let newHash = {
-          author_id: tweet.author_id
+        if (!idSet.has(tweet.author_id)) {
+          idSet.add(tweet.author_id)
+          let newHash = {
+            author_id: tweet.author_id
+          }
+          newReplies.push(newHash)
+          newTwitterCard += `<p>${tweet.author_id}</p>\n`
         }
-        newReplies.push(newHash)
-        newTwitterCard += `<p>${tweet.author_id}</p>\n`
     })
     this.setState({
       replies: [...newReplies]
@@ -256,19 +260,17 @@ class Senders extends React.Component {
                           <Button type="primary">Add</Button> 
                         </Col>                        
                   </Row>*/}
-                       <p>Or select from</p>                      
-                          <Card size="small" title="Username" extra={<a href="#">More</a>}>
-                          <Form.Item name="checkbox-group" label="Checkbox.Group">
+                       <p>Or select from</p>   
+                          <p>Usernames</p>                   
+                          <Form.Item name="checkbox-group" label="">
                               <Checkbox.Group>                            
                                   {
                                       this.state.replies.map((item) => {
-                                          return <p>{item.author_id}<Checkbox value="F"></Checkbox></p>
+                                          return <Row><Col><Checkbox value={item.author_id}></Checkbox></Col><Col>{item.author_id}</Col></Row>
                                       })
                                   }
-                            {/*<p>Card content</p>*/}
                               </Checkbox.Group>
-                            </Form.Item>
-                          </Card>                                                                      
+                            </Form.Item>                                                                     
                     </Form>                                              
                 </Card>
               </div>
