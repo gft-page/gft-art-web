@@ -81,9 +81,32 @@ class Senders extends React.Component {
     // console.log("===", this.props, this.provider)
   }
 
-  getTest() {
-    console.log("hello!")
+  getTweets(ID) {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId: ID, length: 50 })
+      };
+    fetch('http://localhost:4000/api/v1/twitter/replies', requestOptions)
+      .then(resp => resp.json())
+      .then(json => this.processReplies(json))
+          
+    return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
   }
+
+  processReplies(json) {
+    let newReplies = []
+    json.tweets.forEach((tweet, index) => {
+        let newHash = {
+          author_id: tweet.author_id
+        }
+        newReplies.push(newHash)
+    })
+    this.setState({
+      replies: [...newReplies]
+    })    
+    //this.state.replies = [...newReplies]
+  }  
 
   getNFTContract() {
     return this.state.contract == ''
@@ -105,7 +128,7 @@ class Senders extends React.Component {
       // This is a tweet
       const urlComponents = event.target.value.split('/')
       if (urlComponents.length === 6) {
-        let tweetContent = getTweet(urlComponents[5])
+        let tweetContent = this.getTweets(urlComponents[5])
         tweetContent = tweetContent.substring(0,50) + "..."
         this.state.tweetContent = tweetContent
       }
@@ -168,7 +191,7 @@ class Senders extends React.Component {
           <br></br>
           <h6><strong>Send 1 or more NFTs to people</strong></h6>
           <Row gutter={16}>
-            <Col className="gutter-row" span={10}>
+            <Col className="gutter-row" span={11}>
               <div style={style}>
                 <Card>
                   <p>
@@ -236,7 +259,7 @@ class Senders extends React.Component {
                 </Card>
               </div>
             </Col>
-            <Col className="gutter-row" span={14}>
+            <Col className="gutter-row" span={13}>
               <div style={style}>
                 <strong>Select the protocol or marketplace your NFT is listed on</strong>
               </div>
