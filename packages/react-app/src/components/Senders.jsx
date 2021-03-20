@@ -37,7 +37,28 @@ const CONTRACT_PRESETS = MAINNET ? {
 const endpointURL = "https://api.twitter.com/2/tweets?ids=";
 
 function getTweet(ID) {
+  
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conversationId: ID, length: 50 })
+    };
+  fetch('http://localhost:4000/api/v1/twitter/replies', requestOptions)
+    .then(resp => resp.json())
+    .then(json => processReplies(json))
+        
   return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"
+}
+
+function processReplies(json) {
+  console.log(json.tweets)
+  //this.state.replies = []
+  //json.tweets.forEach((tweet, index) => {
+  //    let newHash = {
+  //      author_id: tweet.author_id
+  //    }
+  //    this.state.replies.push(newHash)
+  //})
 }
 
 class Senders extends React.Component {
@@ -47,6 +68,7 @@ class Senders extends React.Component {
     this.state = {
       tweetURL: '',
       tweetContent: '',
+      replies: [],
       contract: 'ZORA',
       contractCustom: '',
       contractApproved: false,
@@ -57,6 +79,10 @@ class Senders extends React.Component {
 
 
     // console.log("===", this.props, this.provider)
+  }
+
+  getTest() {
+    console.log("hello!")
   }
 
   getNFTContract() {
@@ -164,7 +190,7 @@ class Senders extends React.Component {
                     </Form>  
                     <p>{this.state.tweetContent}</p>     
                   <p><strong>@Twitter-handle Address Book</strong></p>
-                  <p>We found <b>200 twitter handles</b></p>
+                  <p>We found <b>{this.state.replies.length} twitter handles</b></p>
                   <p>Auto-populate @twitter-handles to send to</p>      
                   <Form
                       name="twitterAddresses"
