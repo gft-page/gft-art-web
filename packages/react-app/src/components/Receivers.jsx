@@ -43,7 +43,9 @@ class Receivers extends React.Component {
 
     getNftList = () => {
       receiveGFT(this.state.user?.profile.username, this.state.user?.token, this.state.user?.tokenSecret).then((resp) => {
-        this.setState({ nftList: resp.data.gfts });
+        if (resp.data) {
+          this.setState({ nftList: resp.data.gfts });
+        }
       });
     };
 
