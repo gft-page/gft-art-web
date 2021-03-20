@@ -104,7 +104,7 @@ function App() {
                     <Jumbotron className="bg-light shadow-sm">
                         <Container>
                             <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} />} />
-                            <Route path="/receive" component={ReceiversContainer} />
+                            <Route path="/receiver" component={ReceiversContainer} />
                         </Container>
                     </Jumbotron>
                 </Router>
