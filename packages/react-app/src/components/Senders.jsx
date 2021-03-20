@@ -256,15 +256,19 @@ class Senders extends React.Component {
                           <Button type="primary">Add</Button> 
                         </Col>                        
                   </Row>*/}
-                       <p>Or select from</p>                       
-                       <Card size="small" title="Username" extra={<a href="#">More</a>}>
-                              {
-                                  this.state.replies.map((item) => {
-                                      return <p>{item.author_id}</p>
-                                  })
-                              }
-                        {/*<p>Card content</p>*/}
-                      </Card>                                             
+                       <p>Or select from</p>                      
+                          <Card size="small" title="Username" extra={<a href="#">More</a>}>
+                          <Form.Item name="checkbox-group" label="Checkbox.Group">
+                              <Checkbox.Group>                            
+                                  {
+                                      this.state.replies.map((item) => {
+                                          return <p>{item.author_id}<Checkbox value="F"></Checkbox></p>
+                                      })
+                                  }
+                            {/*<p>Card content</p>*/}
+                              </Checkbox.Group>
+                            </Form.Item>
+                          </Card>                                                                      
                     </Form>                                              
                 </Card>
               </div>
