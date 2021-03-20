@@ -36,7 +36,7 @@ const CONTRACT_PRESETS = MAINNET ? {
 
 const endpointURL = "https://api.twitter.com/2/tweets?ids=";
 
-function getTweet(ID) {
+/*function getTweet(ID) {
   
   const requestOptions = {
     method: 'POST',
@@ -59,7 +59,7 @@ function processReplies(json) {
   //    }
   //    this.state.replies.push(newHash)
   //})
-}
+}*/
 
 class Senders extends React.Component {
 
@@ -68,6 +68,7 @@ class Senders extends React.Component {
     this.state = {
       tweetURL: '',
       tweetContent: '',
+      twitterUsers: '',
       replies: [],
       contract: 'ZORA',
       contractCustom: '',
@@ -96,15 +97,21 @@ class Senders extends React.Component {
 
   processReplies(json) {
     let newReplies = []
+    let newTwitterCard = ''
     json.tweets.forEach((tweet, index) => {
         let newHash = {
           author_id: tweet.author_id
         }
         newReplies.push(newHash)
+        newTwitterCard += `<p>${tweet.author_id}</p>\n`
     })
     this.setState({
       replies: [...newReplies]
-    })    
+    })   
+    this.setState({
+      twitterUsers: newTwitterCard
+    })       
+    console.log(newTwitterCard)
     //this.state.replies = [...newReplies]
   }  
 
@@ -211,14 +218,14 @@ class Senders extends React.Component {
                       <Input />
                     </Form.Item>                        
                     </Form>  
-                    <p>{this.state.tweetContent}</p>     
+                    {/*<p>{this.state.tweetContent}</p>*/}     
                   <p><strong>@Twitter-handle Address Book</strong></p>
                   <p>We found <b>{this.state.replies.length} twitter handles</b></p>
                   <p>Auto-populate @twitter-handles to send to</p>      
                   <Form
                       name="twitterAddresses"
                     >  
-                       <Row gutter={8}>
+                       {/*<Row gutter={8}>
                         <Col className="gutter-row">
                           <Form.Item name="radio-group" label="">
                             <Radio.Group>
@@ -248,12 +255,15 @@ class Senders extends React.Component {
                         <Col className="gutter-row">
                           <Button type="primary">Add</Button> 
                         </Col>                        
-                       </Row>
-                       <p>Or select from</p> 
+                  </Row>*/}
+                       <p>Or select from</p>                       
                        <Card size="small" title="Username" extra={<a href="#">More</a>}>
-                        <p>Card content</p>
-                        <p>Card content</p>
-                        <p>Card content</p>
+                              {
+                                  this.state.replies.map((item) => {
+                                      return <p>{item.author_id}</p>
+                                  })
+                              }
+                        {/*<p>Card content</p>*/}
                       </Card>                                             
                     </Form>                                              
                 </Card>
