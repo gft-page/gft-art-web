@@ -7,7 +7,7 @@ export default function NFT(props) {
       <nft-card
         tokenAddress={props.address}
         tokenId={props.id}
-        network="mainnet"
+        network={props.network}
         orientationMode="auto"
         width="200"
       >
