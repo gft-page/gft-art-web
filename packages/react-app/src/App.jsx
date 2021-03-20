@@ -95,18 +95,15 @@ function App() {
                 />
             </div>
 
-            <Container className="col-md-6">
+            <Container className="col-md-10">
                 <Router>
                     <Link to="/">Sender</Link>
                     <br />
                     <Link to="/receiver">Receiver</Link>
-
-                    <Jumbotron className="bg-light shadow-sm">
-                        <Container>
-                            <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} />} />
-                            <Route path="/receiver" component={ReceiversContainer} />
-                        </Container>
-                    </Jumbotron>
+                    <Container>
+                        <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} />} />
+                        <Route path="/receiver" component={ReceiversContainer} />
+                    </Container>
                 </Router>
             </Container>
         </div>
