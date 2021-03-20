@@ -12,7 +12,7 @@ class Receivers extends React.Component {
       super()
       this.state = {
         isAuthenticated: false, 
-        user: null, 
+        user: null, // user data
         token: ''
       }
     }  
