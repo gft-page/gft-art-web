@@ -69,6 +69,7 @@ class Senders extends React.Component {
       tweetURL: '',
       tweetContent: '',
       twitterUsers: '',
+      checkedSet: new Set(),
       replies: [],
       contract: 'ZORA',
       contractCustom: '',
@@ -144,6 +145,21 @@ class Senders extends React.Component {
         this.state.tweetContent = tweetContent
       }
     }
+  }
+
+  handleCheckChange = event => {
+    console.log(event.target.value)
+    console.log(event.target.checked)
+    let newSet = new Set()
+    for (let item of this.state.checkedSet) newSet.add(item)
+    if (newSet.has(event.target.value)) {
+      newSet.delete(event.target.value)
+    } else {
+      newSet.add(event.target.value)
+    }
+    this.setState({
+      checkedSet: newSet
+    }) 
   }
 
   handleSubmit = async (event) => {
@@ -266,7 +282,7 @@ class Senders extends React.Component {
                               <Checkbox.Group>                            
                                   {
                                       this.state.replies.map((item) => {
-                                          return <Row><Col><Checkbox value={item.author_id}></Checkbox></Col><Col>{item.author_id}</Col></Row>
+                                          return <Row><Col><Checkbox onChange={this.handleCheckChange} value={item.author_id}></Checkbox></Col><Col>{item.author_id}</Col></Row>
                                       })
                                   }
                               </Checkbox.Group>
