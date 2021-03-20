@@ -12,9 +12,9 @@ class Receivers extends React.Component {
 
     constructor() {
       super()
-      const user = window.localStorage.getItem('gft-art:user')
+      const user = window.localStorage.getItem('gft-art:user');
       this.state = {
-        isAuthenticated: window.localStorage.getItem('gft-art:authenticated') || false, 
+        isAuthenticated: window.localStorage.getItem('gft-art:authenticated') || false,
         user: user && JSON.parse(user) || null, // user data
         token: window.localStorage.getItem('gft-art:token') || '',
         nftList: []
