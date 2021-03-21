@@ -86,7 +86,8 @@ class Senders extends React.Component {
       addressesTextarea: '',
       addresses: [],
       twitterUsersTextarea: '',
-      twitterUsers: []
+      twitterUsers: [],
+      customMarketplace: ''
     }
 
 
@@ -393,8 +394,7 @@ class Senders extends React.Component {
                         <Col className="gutter-row">
                           <Button type="primary">Add</Button> 
                         </Col>                        
-                  </Row>*/}
-                       <p>Or select from</p>   
+                  </Row>*/}   
                           <p>Usernames</p>                   
                           <Form.Item name="checkbox-group" label="">
                               <Checkbox.Group>                            
@@ -416,8 +416,6 @@ class Senders extends React.Component {
                       onSubmit={ event => this.handleMarketplaceSubmit(event) }
                       name="marketplace"
                     > 
-                    <Row>
-                      <Col>
                       <Form.Item
                         name="select"
                         label=""
@@ -429,12 +427,18 @@ class Senders extends React.Component {
                           <option value="CUSTOM">Custom Address</option>
                         </Select>
                       </Form.Item> 
-                    </Col>
-                    <Col>
-                    <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button> 
-                    </Col>                      
-                  </Row>                                 
+                      {this.state.marketplace === "CUSTOM" ?                      
+                      <Form.Item
+                      onChange={this.handleChange} value={this.state.customMarketplace}
+                      label=""
+                      name="customMarketplace"
+                      >               
+                        <Input name="customMarketplace" placeholder="Enter custom NFT contract address" style={{ width: '50%' }}/>                           
+                      </Form.Item>  
+                    : null}                                    
+                    <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button>                                                   
                 </Form>
+                <br></br><br></br>
                 <Form
                       onSubmit={ event => this.handleGiftSubmit(event) }
                       name="gift"
@@ -445,23 +449,22 @@ class Senders extends React.Component {
                           label=""
                           name="tokenID"
                         >
-                          <Input placeholder="For ex. 123456" style={{ width: '50%' }}/>
+                          <Input name="tokenID" placeholder="For ex. 123456" style={{ width: '50%' }}/>
                         </Form.Item>                          
                         Enter # of tokens you want to send                    
                         <Form.Item
                           onChange={this.handleChange} value={this.state.numTokens}
                           label=""
                           name="numTokens"
-                          value="numTokens"
                         >
-                          <Input placeholder="1" style={{ width: '50%' }}/>
+                          <Input name="numTokens" placeholder="1" style={{ width: '50%' }}/>
                         </Form.Item> 
                         <strong>Send to recipients</strong>    
                         <p>In each line, enter an address, # of tokens</p>
                         <Form.Item name={['user', 'introduction']} label="">
                           <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
                         </Form.Item>
-                        <p>In each line, enter # of tokens</p>   
+                        <p>In each line, enters # of tokens</p>   
                         {
                             this.state.checkedArray.map((item, idx) => {
                                 return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }}/></Form.Item></Col><Col>{item.username}</Col></Row>
@@ -477,8 +480,6 @@ class Senders extends React.Component {
   }
 }
 
-
-/*
 //Uncomment once Ant is in
 function Approval(props) {
   const [approved, setApproved] = useState(false)
@@ -565,7 +566,7 @@ function Approval(props) {
   </div>
 
 }
-*/
+
 
 
 async function getProvider(web3Modal, setError) {
