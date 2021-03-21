@@ -181,7 +181,7 @@ export async function checkApproved(provider, nftContract) {
     const gftContract = CONTRACT_ADDRESS[network]
 
 
-    if (!nftContract || !nftContract || String(nftContract).slice(0, 2) != '0x' || nftContract.length < 42) {
+    if (!nftContract || !nftContract || String(nftContract).slice(0, 2) != '0x' || nftContract.length != 42) {
         return { error: "invalid contract address", approved: false }
     }
 
@@ -189,7 +189,7 @@ export async function checkApproved(provider, nftContract) {
     const account = (await provider.listAccounts())[0]
 
     let approved = false
-    
+
     try {
         approved = await nft.isApprovedForAll(account, gftContract)
     } catch (error) {
@@ -207,7 +207,7 @@ export async function approve(provider, nftContract) {
     const gftContract = CONTRACT_ADDRESS[network]
 
 
-    if (!nftContract || !nftContract || String(nftContract).slice(0, 2) != '0x' || nftContract.length < 42) {
+    if (!nftContract || !nftContract || String(nftContract).slice(0, 2) != '0x' || nftContract.length != 42) {
         return { error: "invalid contract address" }
     }
 
