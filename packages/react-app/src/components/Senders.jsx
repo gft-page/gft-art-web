@@ -386,6 +386,7 @@ class Senders extends React.Component {
     }
     nftHash['twitter'] = twitterArray       
     data.push(nftHash)
+    console.log(data)
     gft1155NFTs(provider, nftContract, data, this.state.numTokens) 
   }  
 
