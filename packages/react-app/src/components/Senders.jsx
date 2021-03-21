@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { needle } from 'needle'
 
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "../helpers/index";
+
 import "antd/dist/antd.css";
 import { Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
 
@@ -288,6 +290,7 @@ class Senders extends React.Component {
   handleMarketplaceSubmit = async (event) => {
     event.preventDefault()
     console.log("In marketplace submit")
+    //Approval()
   }
 
   handleGiftSubmit = async (event) => {
@@ -344,11 +347,10 @@ class Senders extends React.Component {
   render() {
     return (
       <div>
-          <h5 className="header"><strong>Gift multiple NFTs to many, all at once ✨</strong></h5>
+          <h5 className="header"><strong>Gift an NFT to many, all at once ✨</strong></h5>
           Send an NFT to people from a tweet with @twitter-handles, an address, or both
           <br></br>
           <br></br>
-          <h6><strong>Send 1 or more NFTs to people</strong></h6>
           <Row gutter={16}>
             <Col className="gutter-row" span={11}>
               <div style={style}>
@@ -448,7 +450,11 @@ class Senders extends React.Component {
                         <Input name="customMarketplace" placeholder="Enter custom NFT contract address" style={{ width: '50%' }}/>                           
                       </Form.Item>  
                     : null}                                    
-                    <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button>                                                   
+                    <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button> 
+                    {/*<Approval
+                      web3Modal={this.props.web3Modal}
+                      contract={this.getNFTContract()}
+                    />*/}                                                  
                 </Form>
                 <br></br><br></br>
                 <Form
