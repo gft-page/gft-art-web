@@ -31,8 +31,6 @@ class Senders extends React.Component {
       numTokens: '',
       addressesTextarea: '',
       addresses: [],
-      usernamesTextarea: '',
-      usernames: [],
       twitterUsersTextarea: '',
       twitterUsers: [],
       twitterMap: {},
@@ -113,13 +111,7 @@ class Senders extends React.Component {
       this.setState({addresses: addresses})
   }
 
-  handleUsernamesChange = event => {
-    const usernames = event.target.value.trim().split("\n").map(l =>
-      l.trim().replace(/,/g, " ").replace(/\s\s+/g, ' ').split(" ")
-    ).filter(l => l && l.length > 0)
 
-      this.setState({usernames: usernames})
-  }
 
 
   handleSelectChange = event => {
@@ -226,44 +218,11 @@ class Senders extends React.Component {
    let data;
 
     if (this.using721()) {
-            let twitterList = Object.keys(this.state.twitterMap).map(user => ({recipient: user, tokenId: this.state.twitterMap[user] }))
-            this.state.usernames.forEach(username => {
-              let newHash = {
-                recipient: username[0],
-                tokenId: username[1]
-              }
-              twitterList.push(newHash)
-            })           
-            data = {
-              eth: this.state.addresses.map(a => ({recipient:a[0], tokenId: a[1]  })),
-              twitter: twitterList
-            }            
-            /*
             data = {
               eth: this.state.addresses.map(a => ({recipient:a[0], tokenId: a[1]  })),
               twitter: Object.keys(this.state.twitterMap).map(user => ({recipient: user, tokenId: this.state.twitterMap[user] }))
             }
-            */
     }else {
-      const num = this.state.numTokens
-      const defNum = num && num == parseInt(num) ? parseInt(num) : 1
-      let twitterList = Object.keys(this.state.twitterMap).map(user => {
-        const amt = this.state.twitterMap[user]
-        return {recipient:user, amount: amt && amt == parseInt(amt) ? parseInt(amt) : (defNum || 1)  }
-      })
-      this.state.usernames.forEach(username => {
-        let newHash = {
-          recipient: username[0],
-          amount: Number(username[1])
-        }
-        twitterList.push(newHash)
-      })
-      data = [{
-        tokenId: this.state.tokenID,
-        eth: this.state.addresses.map(a => ({recipient:a[0], amount: a[1] && a[1] == parseInt(a[1]) ? parseInt(a[1]) : defNum || 1 })),
-        twitter: twitterList
-      }]     
-      /*
       const num = this.state.numTokens
       const defNum = num && num == parseInt(num) ? parseInt(num) : 1
             data = [{
@@ -274,10 +233,8 @@ class Senders extends React.Component {
                 return {recipient:user, amount: amt && amt == parseInt(amt) ? parseInt(amt) : (defNum || 1)  }
               })
             }]
-        */
     }
 
-    console.log(data) 
 
     console.log("][][][][][][][][][][")
     console.log("using721", this.using721())
@@ -302,7 +259,6 @@ class Senders extends React.Component {
         <Row gutter={16}>
           <Col className="gutter-row" span={11}>
             <div style={style}>
-              <Card>
                 <p>
                   <strong>Send to people from a tweet</strong>
                 </p>
@@ -337,7 +293,6 @@ class Senders extends React.Component {
                     </Checkbox.Group>
                   </Form.Item>
                 </Form>
-              </Card>
             </div>
           </Col>
           <Col className="gutter-row" span={13}>
@@ -422,17 +377,6 @@ class Senders extends React.Component {
                   <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder={`0xb44f91949174fb47A7059A476A882447Fc6A08dD, 1
 0xE2A5db9E741Cdf93e9C2eEA6e4247cA58Bf62024, 1`} />
                 </Form.Item>
-
-                {!this.using721() ?
-                  <p>On each line, enter: <tt>twitter username, # of tokens to send</tt></p>
-                  :
-                  <p>On each line, enter: <tt>twitter username, token ID</tt></p>}
-
-
-                <Form.Item name={['twitter_user', 'twitter_introduction']} label="">
-                  <Input.TextArea value={this.state.usernamesTextarea} onChange={this.handleUsernamesChange} placeholder={`artnome, 1
-wasthatawolf, 1`} />
-                </Form.Item>                
 
 
                 {this.state.twitterMap && Object.keys(this.state.twitterMap).length ?
