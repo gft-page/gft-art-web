@@ -6,3 +6,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.ant-steps-item-description {
+  max-width: 300px !important;
+}

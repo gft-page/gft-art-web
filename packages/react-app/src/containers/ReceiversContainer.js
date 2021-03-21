@@ -2,9 +2,10 @@ import React from 'react'
 import {connect} from 'react-redux'
 //import {fetchAccounts} from '../actions/fetchAccounts'
 import Receivers from '../components/Receivers'
+import RedeemGuide from '../components/RedeemGuide'
 
 class ReceiversContainer extends React.Component {
-  
+
     //componentDidMount() {
     //    this.props.fetchAccounts()
     //}
@@ -12,15 +13,16 @@ class ReceiversContainer extends React.Component {
     render() {
         return (
             <div>
+                <RedeemGuide />
                 <Receivers />
             </div>
         )
     }
-} 
+}
 
 const mapStateToProps = state => {
     return {
-        //loading: state.loading,         
+        //loading: state.loading,
         //accounts: state.accounts
     }
 }
