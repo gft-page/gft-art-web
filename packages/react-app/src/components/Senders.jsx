@@ -182,11 +182,13 @@ class Senders extends React.Component {
     console.log(isApproved)
     this.setState({ isApproved: isApproved.approved })
 
-    if (!isApproved.approved) {
-      this.setState({
-        marketplaceAlert: String(isApproved.error) || 'Please make sure your wallet is connected and has a balance'
-      })
-    }
+    if (!isApproved.approved && isApproved.error) 
+      this.setState({    marketplaceAlert: String(isApproved.error)   })
+      else 
+       this.setState({marketplaceAlert: ''})
+
+      
+    
   }
 
   handleMarketplaceSubmit = async (event) => {
@@ -216,7 +218,10 @@ class Senders extends React.Component {
    let data;
 
     if (this.using721()) {
-            data = {}
+            data = {
+              eth: this.state.addresses.map(a => ({recipient:a[0], tokenId: a[1]  })),
+              twitter: Object.keys(this.state.twitterMap).map(user => ({recipient: user, tokenId: this.state.twitterMap[user] }))
+            }
     }else {
       const num = this.state.numTokens
       const defNum = num && num == parseInt(num) ? parseInt(num) : 1
@@ -236,6 +241,7 @@ class Senders extends React.Component {
     console.log(data)
 
     if (this.using721()) {
+      gft721NFTs(provider, nftContract, data)
     }else{
       gft1155NFTs(provider, nftContract, data)
     }
@@ -316,7 +322,7 @@ class Senders extends React.Component {
                     label=""
                     name="customMarketplace"
                   >
-                    <Input name="customMarketplace" placeholder="Enter custom NFT contract address" style={{ width: '50%' }} onChange={this.handleCustomMarketplaceChange} />
+                    <Input name="customMarketplace" placeholder="Enter custom NFT contract address" style={{ width: '50%' }} onChange={this.handleCustomMarketplaceChange} onKeyPress={this.handleCustomMarketplaceChange} onClick={this.handleCustomMarketplaceChange} onBlur={this.handleCustomMarketplaceChange}/>
                   </Form.Item>
                   : null}
                 {!this.state.isApproved ?
@@ -384,15 +390,6 @@ class Senders extends React.Component {
                         <p>For each twitter user, enter ID of token</p>
                     }
                     {
-                      // this.state.checkedArray.map((item, idx) => {
-                      //   return <Row>
-                      //     <Col>
-                      //   <Form.Item onChange={this.handleTwitterUsersValueChange} value={this.state.checkedArray[idx].value} label="" name={idx} style={{marginBottom: 2}}>
-                      //     <Input placeholder="1" style={{ width: '75%' }} />
-                      //     </Form.Item></Col>
-                      //     <Col>@{item.username}</Col>
-                      //     </Row>
-                      // })
 
                       Object.keys(this.state.twitterMap).map((username) => {
                         const val = this.state.twitterMap[username.toLowerCase()]
