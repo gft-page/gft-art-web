@@ -277,6 +277,10 @@ class Senders extends React.Component {
     console.log("In marketplace submit")
   }
 
+  handleGiftSubmit = async (event) => {
+    console.log("In gift submit")
+  }  
+
   handleSubmit = async (event) => {
     console.log("SUBMIT")
 
@@ -355,8 +359,7 @@ class Senders extends React.Component {
                     </Form>  
                     {/*<p>{this.state.tweetContent}</p>*/}     
                   <p><strong>@Twitter-handle Address Book</strong></p>
-                  <p>We found <b>{this.state.replies.length} twitter handles</b></p>
-                  <p>Auto-populate @twitter-handles to send to</p>      
+                  <p>We found <b>{this.state.replies.length} twitter handles</b></p>    
                   <Form
                       name="twitterAddresses"
                     >  
@@ -418,7 +421,6 @@ class Senders extends React.Component {
                       <Form.Item
                         name="select"
                         label=""
-                        hasFeedback
                       >
                         <Select value={this.state.marketplace} onChange={this.handleSelectChange}  placeholder="Please select a marketplace">
                           <option value="ZORA">Zora</option>
@@ -429,7 +431,7 @@ class Senders extends React.Component {
                       </Form.Item> 
                     </Col>
                     <Col>
-                      <Button type="primary" htmlType="submit">Approve NFT Transfer</Button> 
+                    <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button> 
                     </Col>                      
                   </Row>                                 
                 </Form>
@@ -459,12 +461,13 @@ class Senders extends React.Component {
                         <Form.Item name={['user', 'introduction']} label="">
                           <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
                         </Form.Item>
-                        <p>In each line, enter @twitter-handle, # of tokens</p>   
+                        <p>In each line, enter # of tokens</p>   
                         {
                             this.state.checkedArray.map((item, idx) => {
                                 return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }}/></Form.Item></Col><Col>{item.username}</Col></Row>
                             })
-                        }                                                         
+                        } 
+                        <Button type="primary" onClick={ event => this.handleGiftSubmit(event) }>Send NFTs</Button>                                                        
                 </Form>             
               </div>
             </Col>
