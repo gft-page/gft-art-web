@@ -1,5 +1,5 @@
 import React from 'react'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 //import {fetchAccounts} from '../actions/fetchAccounts'
 import Receivers from '../components/Receivers'
 import RedeemGuide from '../components/RedeemGuide'
@@ -14,7 +14,7 @@ class ReceiversContainer extends React.Component {
         return (
             <div>
                 <RedeemGuide />
-                <Receivers />
+                <Receivers web3Modal={this.props.web3Modal} />
             </div>
         )
     }
