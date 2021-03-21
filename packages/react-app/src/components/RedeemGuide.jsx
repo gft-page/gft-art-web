@@ -12,8 +12,10 @@ export default function RedeemGuide() {
   }
   return (
     <div>
-      <h5 className="header"><strong>How to redeem your NFTs</strong></h5>
-      <i>"Not your keys, not your crypto!"</i>
+      <h1><small>How to redeem your NFTs</small></h1>
+      <h5 className="header"><strong>
+        <i>"Not your keys, not your crypto!"</i>
+      </strong></h5>
       <br></br>
         We've generated custodial wallets for your NFTs called "burners". Burner wallets
         are used for temporary storage but are not safe to keep your valuable assets in

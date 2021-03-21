@@ -2,23 +2,27 @@ import React from 'react'
 import LoginHeader from "./LoginHeader";
 import Form from 'react-bootstrap/Form'
 import FormControl from 'react-bootstrap/FormControl'
-import Button from 'react-bootstrap/Button'
 import TwitterLogin from 'react-twitter-auth/lib/react-twitter-auth-component.js';
 import { connect } from 'react-redux'
 import { receiveGFT } from '../backend/gft';
 import NFTList from './NFTList';
+import { Avatar, Space, Button } from "antd";
+import { TwitterOutlined } from '@ant-design/icons';
 
 import { ethers, providers } from "ethers";
 
 import { allNFTs } from '../helpers'
 import NFTTabs from './NFTTabs';
+import * as colors from '../themes/dark';
+
+const API_HOST = (process.env.NODE_ENV == 'production') ? 'https://api.gft.art' : 'http://localhost:4000';
 
 class Receivers extends React.Component {
   constructor() {
     super()
     const user = window.localStorage.getItem('gft-art:user');
     this.state = {
-      isAuthenticated: window.localStorage.getItem('gft-art:authenticated') || false,
+      isAuthenticated: window.localStorage.getItem('gft-art:authenticated') == "true",
       user: user && JSON.parse(user) || null, // user data
       token: window.localStorage.getItem('gft-art:token') || '',
       nftList: [],
@@ -77,30 +81,36 @@ class Receivers extends React.Component {
   };
 
   render() {
-    let content = !!this.state.isAuthenticated ?
+    let content = this.state.isAuthenticated == true ?
       (
         <div>
-          <p>Logged in as:</p>
+          <Space align="center">
+              <Avatar size="large" icon={<TwitterOutlined />} style={{ background: "transparent"}} />
+              <div>
+                @{this.state.user?.profile.username}
+              </div>
+              <Button style={{ verticalAlign: 'middle' }} onClick={this.logout}>
+                Log out
+                </Button>
+          </Space>
           <div>
-            {this.state.user?.profile.username}
+            <NFTTabs list={this.state.nftList} network="rinkeby" provider={this.state.provider} />
           </div>
-          <div>
-            <button onClick={this.logout} className="button" >
-              Log out
-            </button>
-          </div>
-          <NFTTabs list={this.state.nftList} network="rinkeby" provider={this.state.provider} />
         </div>
       ) :
       (
-        <TwitterLogin loginUrl="http://localhost:4000/api/v1/auth/twitter"
+        <TwitterLogin
+          text="Log in with Twitter"
+          tag="button"
+          style={{ color: '#381D2A', background: colors.YELLOW, borderRadius: 2, border: 'none' }}
+          showIcon={true}
+          loginUrl={`${API_HOST}/api/v1/auth/twitter`}
           onFailure={this.onFailed} onSuccess={this.onSuccess}
-          requestTokenUrl="http://localhost:4000/api/v1/auth/twitter/reverse" />
+          requestTokenUrl={`${API_HOST}/api/v1/auth/twitter/reverse`} />
       );
 
     return (
       <div>
-        <h1><small>Receivers Title</small></h1>
         <div>
           {content}
         </div>
