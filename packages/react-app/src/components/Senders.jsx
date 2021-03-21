@@ -94,6 +94,7 @@ class Senders extends React.Component {
     // console.log("===", this.props, this.provider)
   }
 
+  /*
   getTweets(ID) {
     const requestOptions = {
       method: 'POST',
@@ -106,19 +107,30 @@ class Senders extends React.Component {
           
     return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
   }
+  */
+
+  // api/v1/twitter/1373438495465730048/replies?limit=10
+  getTweets(ID) {
+    fetch(`http://localhost:4000/api/v1/twitter/${ID}/replies?limit=50`)
+      .then(resp => resp.json())
+      .then(json => this.processReplies(json))
+          
+    return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
+  }  
 
   processReplies(json) {
+    console.log(json.usernames)
     let newReplies = []
     let newTwitterCard = ''
     let idSet = new Set()
-    json.tweets.forEach((tweet, index) => {
-        if (!idSet.has(tweet.author_id)) {
-          idSet.add(tweet.author_id)
+    json.usernames.forEach((username, index) => {
+        if (!idSet.has(username)) {
+          idSet.add(username)
           let newHash = {
-            author_id: tweet.author_id
+            author_id: username
           }
           newReplies.push(newHash)
-          newTwitterCard += `<p>${tweet.author_id}</p>\n`
+          newTwitterCard += `<p>${username}</p>\n`
         }
     })
     this.setState({
