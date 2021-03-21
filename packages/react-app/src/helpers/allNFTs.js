@@ -1,5 +1,8 @@
 export default async function allNFTs(account, network) {
-    const url = `https://${network && network.toUpperCase() == "RINKEBY" ? 'rinkeby-' : ''}api.opensea.io/api/v1/assets?order_direction=desc&owner=${account}&offset=0&limit=20`
+    console.log("==================================================================")
+
+    const url = `https://${network && network.toUpperCase() == "RINKEBY" ? 'rinkeby-' : ''}api.opensea.io/api/v1/assets?order_direction=desc&owner=${account}&offset=0&limit=20&cache_clearer=${Math.round(Date.now() / 5000)}`
+    await timeout(300)
 
     try {
         const fetchResponse = await fetch(url, { headers: { Accept: 'application/json', 'Content-Type': 'application/json' } });
@@ -16,4 +19,9 @@ export default async function allNFTs(account, network) {
         return { error };
     }
 
+}
+
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

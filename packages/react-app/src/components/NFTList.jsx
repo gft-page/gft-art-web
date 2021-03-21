@@ -3,16 +3,25 @@ import NFT from './NFT';
 
 
 export default function NFTList(props) {
-  const nftList = props.list?.map((nft) => {
+  const nftList = props.list?.map((nft, i) => {
     return (
-      <div key={nft.createdDate} style={{ marginBottom: 10 }}>
-        <NFT address={nft.tokenAddress} id={nft.tokenId} network={props.network} />
+      <div key={nft.createdDate} style={{ marginBottom: 20 }}>
+        <NFT address={nft.tokenAddress} id={nft.tokenId} network={props.network} key={i} showTransfer={props.showTransfer} provider={props.provider} />
         {
           props.burner
-            ? <>
-              <div>Burner address: {nft.burnerAddress}</div>
-              <div>Burner private key: {nft.burnerKey}</div>
-            </>
+            ? <div >
+              <table>
+                <tr>
+                  <td>Burner address</td>
+                  <td>{nft.burnerAddress}</td>
+                </tr>
+
+                <tr>
+                  <td>Burner private key</td>
+                  <td>{nft.burnerKey}</td>
+                </tr>
+              </table>
+            </div>
             : null
         }
       </div >
