@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { needle } from 'needle'
 
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "../helpers/index";
+
 import "antd/dist/antd.css";
 import { Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
 
@@ -86,13 +88,15 @@ class Senders extends React.Component {
       addressesTextarea: '',
       addresses: [],
       twitterUsersTextarea: '',
-      twitterUsers: []
+      twitterUsers: [],
+      customMarketplace: ''
     }
 
 
     // console.log("===", this.props, this.provider)
   }
 
+  /*
   getTweets(ID) {
     const requestOptions = {
       method: 'POST',
@@ -105,19 +109,30 @@ class Senders extends React.Component {
           
     return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
   }
+  */
+
+  // api/v1/twitter/1373438495465730048/replies?limit=10
+  getTweets(ID) {
+    fetch(`http://localhost:4000/api/v1/twitter/${ID}/replies?limit=50`)
+      .then(resp => resp.json())
+      .then(json => this.processReplies(json))
+          
+    return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
+  }  
 
   processReplies(json) {
+    console.log(json.usernames)
     let newReplies = []
     let newTwitterCard = ''
     let idSet = new Set()
-    json.tweets.forEach((tweet, index) => {
-        if (!idSet.has(tweet.author_id)) {
-          idSet.add(tweet.author_id)
+    json.usernames.forEach((username, index) => {
+        if (!idSet.has(username)) {
+          idSet.add(username)
           let newHash = {
-            author_id: tweet.author_id
+            author_id: username
           }
           newReplies.push(newHash)
-          newTwitterCard += `<p>${tweet.author_id}</p>\n`
+          newTwitterCard += `<p>${username}</p>\n`
         }
     })
     this.setState({
@@ -275,6 +290,7 @@ class Senders extends React.Component {
   handleMarketplaceSubmit = async (event) => {
     event.preventDefault()
     console.log("In marketplace submit")
+    //Approval()
   }
 
   handleGiftSubmit = async (event) => {
@@ -331,11 +347,10 @@ class Senders extends React.Component {
   render() {
     return (
       <div>
-          <h5 className="header"><strong>Gift multiple NFTs to many, all at once ✨</strong></h5>
+          <h5 className="header"><strong>Gift an NFT to many, all at once ✨</strong></h5>
           Send an NFT to people from a tweet with @twitter-handles, an address, or both
           <br></br>
           <br></br>
-          <h6><strong>Send 1 or more NFTs to people</strong></h6>
           <Row gutter={16}>
             <Col className="gutter-row" span={11}>
               <div style={style}>
@@ -393,8 +408,7 @@ class Senders extends React.Component {
                         <Col className="gutter-row">
                           <Button type="primary">Add</Button> 
                         </Col>                        
-                  </Row>*/}
-                       <p>Or select from</p>   
+                  </Row>*/}   
                           <p>Usernames</p>                   
                           <Form.Item name="checkbox-group" label="">
                               <Checkbox.Group>                            
@@ -416,8 +430,6 @@ class Senders extends React.Component {
                       onSubmit={ event => this.handleMarketplaceSubmit(event) }
                       name="marketplace"
                     > 
-                    <Row>
-                      <Col>
                       <Form.Item
                         name="select"
                         label=""
@@ -429,12 +441,22 @@ class Senders extends React.Component {
                           <option value="CUSTOM">Custom Address</option>
                         </Select>
                       </Form.Item> 
-                    </Col>
-                    <Col>
+                      {this.state.marketplace === "CUSTOM" ?                      
+                      <Form.Item
+                      onChange={this.handleChange} value={this.state.customMarketplace}
+                      label=""
+                      name="customMarketplace"
+                      >               
+                        <Input name="customMarketplace" placeholder="Enter custom NFT contract address" style={{ width: '50%' }}/>                           
+                      </Form.Item>  
+                    : null}                                    
                     <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button> 
-                    </Col>                      
-                  </Row>                                 
+                    {/*<Approval
+                      web3Modal={this.props.web3Modal}
+                      contract={this.getNFTContract()}
+                    />*/}                                                  
                 </Form>
+                <br></br><br></br>
                 <Form
                       onSubmit={ event => this.handleGiftSubmit(event) }
                       name="gift"
@@ -445,23 +467,22 @@ class Senders extends React.Component {
                           label=""
                           name="tokenID"
                         >
-                          <Input placeholder="For ex. 123456" style={{ width: '50%' }}/>
+                          <Input name="tokenID" placeholder="For ex. 123456" style={{ width: '50%' }}/>
                         </Form.Item>                          
                         Enter # of tokens you want to send                    
                         <Form.Item
                           onChange={this.handleChange} value={this.state.numTokens}
                           label=""
                           name="numTokens"
-                          value="numTokens"
                         >
-                          <Input placeholder="1" style={{ width: '50%' }}/>
+                          <Input name="numTokens" placeholder="1" style={{ width: '50%' }}/>
                         </Form.Item> 
                         <strong>Send to recipients</strong>    
                         <p>In each line, enter an address, # of tokens</p>
                         <Form.Item name={['user', 'introduction']} label="">
                           <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
                         </Form.Item>
-                        <p>In each line, enter # of tokens</p>   
+                        <p>In each line, enters # of tokens</p>   
                         {
                             this.state.checkedArray.map((item, idx) => {
                                 return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }}/></Form.Item></Col><Col>{item.username}</Col></Row>
@@ -477,8 +498,6 @@ class Senders extends React.Component {
   }
 }
 
-
-/*
 //Uncomment once Ant is in
 function Approval(props) {
   const [approved, setApproved] = useState(false)
@@ -565,7 +584,7 @@ function Approval(props) {
   </div>
 
 }
-*/
+
 
 
 async function getProvider(web3Modal, setError) {
