@@ -81,7 +81,11 @@ class Senders extends React.Component {
       recipients: '',
       marketplace: '',
       tokenID: '',
-      numTokens: ''
+      numTokens: '',
+      addressesTextarea: '',
+      addresses: [],
+      twitterUsersTextarea: '',
+      twitterUsers: []
     }
 
 
@@ -151,6 +155,29 @@ class Senders extends React.Component {
       }
     }
   }
+
+  handleTwitterUsersChange = event => {
+    console.log(event.target.value)
+  }
+
+  handleAddressesChange = event => {
+    //addressesTextarea: '',
+    //addresses: [],  
+    let addressArray = event.target.value.split('\n')  
+    let newAddresses = []
+    addressArray.forEach((address, index) => {
+      let addressData = address.split(',')
+      let newHash = {
+        address: addressData[0],
+        tokenNumber: addressData[1]
+      }
+      newAddresses.push(newHash)
+    })
+    this.setState({
+      addresses: [...newAddresses]
+    })     
+    console.log(this.state.addresses)
+  }  
 
   handleSelectChange = event => {
     this.setState({
@@ -359,11 +386,11 @@ class Senders extends React.Component {
                         <strong>Send to recipients</strong>    
                         <p>In each line, enter an address, # of tokens</p>
                         <Form.Item name={['user', 'introduction']} label="">
-                          <Input.TextArea placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
+                          <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
                         </Form.Item>
                         <p>In each line, enter @twitter-handle, # of tokens</p>   
-                        <Form.Item name={['user', 'introduction']} label="">
-                          <Input.TextArea />
+                        <Form.Item name="twitterUsers" label="">
+                          <Input.TextArea value={this.state.twitterUsersTextarea} onChange={this.handleTwitterUsersChange} />
                         </Form.Item>                                                         
                 </Form>             
               </div>
