@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { BrowserRouter as Router } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { Route } from 'react-router-dom'
 import { Switch } from 'react-router-dom'
 import SendersContainer from './containers/SendersContainer'
@@ -84,16 +84,16 @@ function App() {
                 <Router>
                     <Row gutter={16}>
                         <Col>                   
-                            <Link to="/">Sender</Link>
+                        <NavLink exact to="/" activeClassName="selected">Send</NavLink>
                         </Col>
                         <Col>
-                            <Link to="/receiver">Receiver</Link>
+                        <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
                         </Col>
                     </Row>
                     <Jumbotron className="bg-light shadow-sm">
                         <Container>
                             <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
-                            <Route path="/receiver" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
+                            <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
                         </Container>
                     </Jumbotron>
                 </Router>
