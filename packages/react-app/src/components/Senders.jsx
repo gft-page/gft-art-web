@@ -226,11 +226,44 @@ class Senders extends React.Component {
    let data;
 
     if (this.using721()) {
+            let twitterList = Object.keys(this.state.twitterMap).map(user => ({recipient: user, tokenId: this.state.twitterMap[user] }))
+            this.state.usernames.forEach(username => {
+              let newHash = {
+                recipient: username[0],
+                tokenId: username[1]
+              }
+              twitterList.push(newHash)
+            })           
+            data = {
+              eth: this.state.addresses.map(a => ({recipient:a[0], tokenId: a[1]  })),
+              twitter: twitterList
+            }            
+            /*
             data = {
               eth: this.state.addresses.map(a => ({recipient:a[0], tokenId: a[1]  })),
               twitter: Object.keys(this.state.twitterMap).map(user => ({recipient: user, tokenId: this.state.twitterMap[user] }))
             }
+            */
     }else {
+      const num = this.state.numTokens
+      const defNum = num && num == parseInt(num) ? parseInt(num) : 1
+      let twitterList = Object.keys(this.state.twitterMap).map(user => {
+        const amt = this.state.twitterMap[user]
+        return {recipient:user, amount: amt && amt == parseInt(amt) ? parseInt(amt) : (defNum || 1)  }
+      })
+      this.state.usernames.forEach(username => {
+        let newHash = {
+          recipient: username[0],
+          amount: Number(username[1])
+        }
+        twitterList.push(newHash)
+      })
+      data = [{
+        tokenId: this.state.tokenID,
+        eth: this.state.addresses.map(a => ({recipient:a[0], amount: a[1] && a[1] == parseInt(a[1]) ? parseInt(a[1]) : defNum || 1 })),
+        twitter: twitterList
+      }]     
+      /*
       const num = this.state.numTokens
       const defNum = num && num == parseInt(num) ? parseInt(num) : 1
             data = [{
@@ -241,8 +274,10 @@ class Senders extends React.Component {
                 return {recipient:user, amount: amt && amt == parseInt(amt) ? parseInt(amt) : (defNum || 1)  }
               })
             }]
+        */
     }
 
+    console.log(data) 
 
     console.log("][][][][][][][][][][")
     console.log("using721", this.using721())
