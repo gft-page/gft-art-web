@@ -31,6 +31,8 @@ class Senders extends React.Component {
       numTokens: '',
       addressesTextarea: '',
       addresses: [],
+      usernamesTextarea: '',
+      usernames: [],
       twitterUsersTextarea: '',
       twitterUsers: [],
       twitterMap: {},
@@ -111,7 +113,13 @@ class Senders extends React.Component {
       this.setState({addresses: addresses})
   }
 
+  handleUsernamesChange = event => {
+    const usernames = event.target.value.trim().split("\n").map(l =>
+      l.trim().replace(/,/g, " ").replace(/\s\s+/g, ' ').split(" ")
+    ).filter(l => l && l.length > 0)
 
+      this.setState({usernames: usernames})
+  }
 
 
   handleSelectChange = event => {
@@ -379,6 +387,17 @@ class Senders extends React.Component {
                   <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder={`0xb44f91949174fb47A7059A476A882447Fc6A08dD, 1
 0xE2A5db9E741Cdf93e9C2eEA6e4247cA58Bf62024, 1`} />
                 </Form.Item>
+
+                {!this.using721() ?
+                  <p>On each line, enter: <tt>twitter username, # of tokens to send</tt></p>
+                  :
+                  <p>On each line, enter: <tt>twitter username, token ID</tt></p>}
+
+
+                <Form.Item name={['twitter_user', 'twitter_introduction']} label="">
+                  <Input.TextArea value={this.state.usernamesTextarea} onChange={this.handleUsernamesChange} placeholder={`artnome, 1
+wasthatawolf, 1`} />
+                </Form.Item>                
 
 
                 {this.state.twitterMap && Object.keys(this.state.twitterMap).length ?
