@@ -160,9 +160,7 @@ class Senders extends React.Component {
     console.log(event.target.value)
   }
 
-  handleAddressesChange = event => {
-    //addressesTextarea: '',
-    //addresses: [],  
+  handleAddressesChange = event => { 
     let addressArray = event.target.value.split('\n')  
     let newAddresses = []
     addressArray.forEach((address, index) => {
@@ -178,6 +176,25 @@ class Senders extends React.Component {
     })     
     console.log(this.state.addresses)
   }  
+
+  handleTwitterUsersChange = event => { 
+    //twitterUsersTextarea: '',
+    //twitterUsers: []
+    let twitterUsersArray = event.target.value.split('\n')  
+    let newTwitterUsers = []
+    twitterUsersArray.forEach((twitterUser, index) => {
+      let addressData = twitterUser.split(',')
+      let newHash = {
+        username: addressData[0],
+        tokenNumber: addressData[1]
+      }
+      newTwitterUsers.push(newHash)
+    })
+    this.setState({
+      twitterUsers: [...newTwitterUsers]
+    })     
+    console.log(this.state.twitterUsers)
+  }   
 
   handleSelectChange = event => {
     this.setState({
