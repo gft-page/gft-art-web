@@ -237,7 +237,7 @@ class Senders extends React.Component {
     this.setState({
       marketplace: event
     })
-    if (this.state.marketplace != 'CUSTOM') {
+    if (!this.state.marketplace.includes('CUSTOM')) {
       this.handleMarketplaceCheck(event) 
     }
   }
@@ -470,38 +470,7 @@ class Senders extends React.Component {
                   <p>We found <b>{this.state.replies.length} twitter handles</b></p>    
                   <Form
                       name="twitterAddresses"
-                    >  
-                       {/*<Row gutter={8}>
-                        <Col className="gutter-row">
-                          <Form.Item name="radio-group" label="">
-                            <Radio.Group>
-                              <Row>
-                                <Col>
-                                  <Radio value="a">First</Radio>
-                                </Col>
-                              </Row>
-                              <Row>
-                                <Col>
-                                  <Radio value="b">Random</Radio>
-                                </Col>
-                              </Row>
-                            </Radio.Group>
-                          </Form.Item>
-                        </Col>
-                        <Col className="gutter-row">
-                          <Form.Item
-                            onChange={this.handleChange} value={this.state.addressNumber}
-                            label=""
-                            name="addressNumber"
-                            value="addressNumber"
-                          >
-                            <Input style={{ width: '50%' }}/>
-                          </Form.Item>
-                        </Col>
-                        <Col className="gutter-row">
-                          <Button type="primary">Add</Button> 
-                        </Col>                        
-                  </Row>*/}   
+                    >    
                           <p>Usernames</p>                   
                           <Form.Item name="checkbox-group" label="">
                               <Checkbox.Group>                            
@@ -531,10 +500,11 @@ class Senders extends React.Component {
                           <option value="ZORA">Zora</option>
                           <option value="RARIBLE_721">Rarible 721</option>
                           <option value="RARIBLE_1155">Rarible 1155</option>
-                          <option value="CUSTOM">Custom Address</option>
+                          <option value="CUSTOM_721">Custom 721 Address</option>
+                          <option value="CUSTOM_1155">Custom 1155 Address</option>
                         </Select>
                       </Form.Item> 
-                      {this.state.marketplace === "CUSTOM" ?                      
+                      {this.state.marketplace.includes("CUSTOM") ?                      
                       <Form.Item
                       onChange={this.handleChange} value={this.state.customMarketplace}
                       label=""
@@ -556,28 +526,42 @@ class Senders extends React.Component {
                       onSubmit={ event => this.handleGiftSubmit(event) }
                       name="gift"
                     >   
-                        Enter NFT token ID
-                        <Form.Item
-                          onChange={this.handleChange} value={this.state.tokenID}
-                          label=""
-                          name="tokenID"
-                        >
-                          <Input name="tokenID" placeholder="For ex. 123456" style={{ width: '50%' }}/>
-                        </Form.Item>                          
-                        Enter # of tokens you want to send                    
-                        <Form.Item
+                        {this.state.marketplace.includes("1155") ?
+                          "Enter NFT token ID"
+                        : null}
+                        {this.state.marketplace.includes("1155") ?
+                          <Form.Item
+                            onChange={this.handleChange} value={this.state.tokenID}
+                            label=""
+                            name="tokenID"
+                          >
+                            <Input name="tokenID" placeholder="For ex. 123456" style={{ width: '50%' }}/>
+                          </Form.Item>
+                        : null}
+                        {this.state.marketplace.includes("1155") ?
+                          "Enter # of tokens you want to send"                    
+                        : null}  
+                        {this.state.marketplace.includes("1155") ?
+                          <Form.Item
                           onChange={this.handleChange} value={this.state.numTokens}
                           label=""
                           name="numTokens"
                         >
                           <Input name="numTokens" placeholder="1" style={{ width: '50%' }}/>
                         </Form.Item> 
+                        : null}      
                         <strong>Send to recipients</strong>    
+                        {this.state.marketplace.includes("1155") ?
                         <p>In each line, enter an address, # of tokens</p>
+                        :
+                        <p>In each line, enter an address, ID of token</p>}
                         <Form.Item name={['user', 'introduction']} label="">
                           <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
                         </Form.Item>
-                        <p>In each line, enters # of tokens</p>   
+                        {this.state.marketplace.includes("1155") ?
+                        <p>In each line, enter # of tokens</p>   
+                        : 
+                        <p>In each line, enter ID of token</p> }
                         {
                             this.state.checkedArray.map((item, idx) => {
                                 return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }}/></Form.Item></Col><Col>{item.username}</Col></Row>
