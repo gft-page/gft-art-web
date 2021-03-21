@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import Receivers from '../components/Receivers'
 import RedeemGuide from '../components/RedeemGuide'
 import Jumbotron from 'react-bootstrap/Jumbotron';
+import Container from 'react-bootstrap/Container';
+import * as colors from '../themes/dark';
 
 class ReceiversContainer extends React.Component {
 
@@ -14,10 +16,15 @@ class ReceiversContainer extends React.Component {
     render() {
         return (
             <div>
-                <RedeemGuide />
-                    <Jumbotron className="bg-light shadow-sm">
-                <Receivers web3Modal={this.props.web3Modal} />
-                </Jumbotron>
+                <Container>
+                    <RedeemGuide />
+                </Container>
+                <Container fluid style={{ background: colors.LIGHT_PURPLE, paddingTop: 40, paddingBottom: 40 }}>
+                    <Container>
+                        <h1><small>Your GFT list ✨</small></h1>
+                        <Receivers web3Modal={this.props.web3Modal} />
+                    </Container>
+                </Container>
             </div>
         )
     }
