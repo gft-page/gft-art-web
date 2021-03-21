@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { needle } from 'needle'
 
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "../helpers/index";
+import { gft1155NFTs, gft721NFTs, approve, checkApproved } from "../helpers/index";
 
 import "antd/dist/antd.css";
 import { Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
@@ -89,7 +89,8 @@ class Senders extends React.Component {
       addresses: [],
       twitterUsersTextarea: '',
       twitterUsers: [],
-      customMarketplace: ''
+      customMarketplace: '',
+      marketplaceAlert: ''
     }
 
 
@@ -113,11 +114,31 @@ class Senders extends React.Component {
 
   // api/v1/twitter/1373438495465730048/replies?limit=10
   getTweets(ID) {
+
     fetch(`http://localhost:4000/api/v1/twitter/${ID}/replies?limit=50`)
       .then(resp => resp.json())
       .then(json => this.processReplies(json))
           
     return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"  
+  }  
+
+  getNFTContract() {
+    if ( this.state.customMarketplace === '') {
+      return this.state.marketplace
+    } else {
+      return this.state.customMarketplace
+    }
+    /*
+    return this.state.contract == ''
+      ?
+      null
+      :
+      this.state.contract === "CUSTOM"
+        ?
+        this.state.contractCustom
+        :
+        CONTRACT_PRESETS[this.state.contract]
+        */
   }  
 
   processReplies(json) {
@@ -144,18 +165,6 @@ class Senders extends React.Component {
     //console.log(newTwitterCard)
     //this.state.replies = [...newReplies]
   }  
-
-  getNFTContract() {
-    return this.state.contract == ''
-      ?
-      null
-      :
-      this.state.contract === "CUSTOM"
-        ?
-        this.state.contractCustom
-        :
-        CONTRACT_PRESETS[this.state.contract]
-  }
 
   handleChange = event => {
     this.setState({
@@ -227,7 +236,10 @@ class Senders extends React.Component {
   handleSelectChange = event => {
     this.setState({
       marketplace: event
-    }) 
+    })
+    if (this.state.marketplace != 'CUSTOM') {
+      this.handleMarketplaceCheck(event) 
+    }
   }
 
   handleCheckChange = event => {
@@ -287,11 +299,40 @@ class Senders extends React.Component {
     //})       
   }
 
-  handleMarketplaceSubmit = async (event) => {
-    event.preventDefault()
-    console.log("In marketplace submit")
-    //Approval()
+  handleMarketplaceCheck = async (event) => {
+    const provider = await getProvider(this.props.web3Modal, console.error)
+    let nftContract = ''
+
+    if (this.state.customMarketplace === '') {
+      nftContract = this.state.marketplace
+    } else {
+      nftContract = this.state.customMarketplace
+    }
+    
+    //console.log(`provider: ${provider} nftContract: ${nftContract}`)
+    let isApproved = await checkApproved(provider, nftContract) 
+    //console.log(isApproved.approved) 
+    if (!isApproved.approved) {
+      this.setState({
+        marketplaceAlert: 'Please make sure your wallet is connected and has a balance'
+      })       
+    } 
   }
+
+  handleMarketplaceSubmit = async (event) => {
+    const provider = await getProvider(this.props.web3Modal, console.error)
+    let nftContract = ''
+
+    if (this.state.customMarketplace === '') {
+      nftContract = this.state.marketplace
+    } else {
+      nftContract = this.state.customMarketplace
+    }
+    
+    //console.log(`provider: ${provider} nftContract: ${nftContract}`)
+    let isApproved = await approve(provider, nftContract) 
+    console.log(isApproved) 
+  }  
 
   handleGiftSubmit = async (event) => {
     console.log("In gift submit")
@@ -449,8 +490,10 @@ class Senders extends React.Component {
                       >               
                         <Input name="customMarketplace" placeholder="Enter custom NFT contract address" style={{ width: '50%' }}/>                           
                       </Form.Item>  
-                    : null}                                    
+                    : null}                                   
                     <Button type="primary" onClick={ event => this.handleMarketplaceSubmit(event) }>Approve NFT Transfer</Button> 
+                    <br></br>
+                    {this.state.marketplaceAlert} 
                     {/*<Approval
                       web3Modal={this.props.web3Modal}
                       contract={this.getNFTContract()}
