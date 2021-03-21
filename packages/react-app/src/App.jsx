@@ -67,7 +67,6 @@ function App() {
 
     return (
         <div className="App">
-            <ThemeSwitch />
                 <Router>
                     <Container>
                         <PageHeader
