@@ -23,7 +23,8 @@ export default function NFT(props) {
           tokenAddress={props.address}
           tokenId={props.id}
           network={props.network}
-          width="600"
+          width="600px"
+          height="600px"
         >
         </nft-card>
         {
