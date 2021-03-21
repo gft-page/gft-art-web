@@ -14,8 +14,8 @@ class ReceiversContainer extends React.Component {
     render() {
         return (
             <div>
-                    <Jumbotron className="bg-light shadow-sm">
                 <RedeemGuide />
+                    <Jumbotron className="bg-light shadow-sm">
                 <Receivers web3Modal={this.props.web3Modal} />
                 </Jumbotron>
             </div>
