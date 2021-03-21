@@ -14,6 +14,8 @@ const style = { padding: '8px 0' };
 
 const { Option } = Select;
 
+
+
 class Senders extends React.Component {
 
   constructor() {
@@ -34,9 +36,15 @@ class Senders extends React.Component {
       twitterUsers: [],
       customMarketplace: '',
       marketplaceAlert: '',
-      isApproved: true
+      isApproved: true,
+      data: undefined
     }
 
+  }
+
+
+  using721() {
+    return this.state.marketplace && this.state.marketplace.includes('721') || this.state.marketplace == "ZORA"
   }
 
 
@@ -95,19 +103,36 @@ class Senders extends React.Component {
   }
 
   handleAddressesChange = event => {
-    let addressArray = event.target.value.split('\n')
-    let newAddresses = []
-    addressArray.forEach((address, index) => {
-      let addressData = address.split(',')
-      let newHash = {
-        address: addressData[0],
-        tokenNumber: addressData[1]
-      }
-      newAddresses.push(newHash)
-    })
-    this.setState({
-      addresses: [...newAddresses]
-    })
+    /////////////////////////////////////////////
+
+    const addresses = event.target.value.trim().split("\n").map(l =>
+      l.trim().replace(/,/g, " ").replace(/\s\s+/g, ' ').split(" ")
+    ).filter(l => l && l.length > 0)
+
+
+    if (this.using721()) {
+
+    } else {
+      this.setState({
+        addresses: addresses.map(a => ({ address: a[0], amount: a[1] }))
+      })
+    }
+
+    // let addressArray = event.target.value.split('\n')
+    // let newAddresses = []
+    // addressArray.forEach((address) => {
+    //   let addressData = address.split(',')
+    //   let newHash = {
+    //     address: addressData[0],
+    //     amount: addressData[1]
+    //   }
+    //   newAddresses.push(newHash)
+    // })
+    // this.setState({
+    //   addresses: [...newAddresses]
+    // })
+
+
     //console.log(this.state.addresses)
   }
 
@@ -120,7 +145,7 @@ class Senders extends React.Component {
       let addressData = twitterUser.split(',')
       let newHash = {
         username: addressData[0],
-        tokenNumber: addressData[1]
+        amount: addressData[1]
       }
       newTwitterUsers.push(newHash)
     })
@@ -206,7 +231,7 @@ class Senders extends React.Component {
     let newTextarea = ""
 
     for (let item of newTwitterUsers) {
-      newTextarea = `${item.username}, ${item.tokenNumber}\n`
+      newTextarea = `${item.username}, ${item.amount}\n`
     }
 
     //console.log(newTextarea)
@@ -247,43 +272,26 @@ class Senders extends React.Component {
     const provider = await getProvider(this.props.web3Modal, console.error)
     let nftContract = ''
 
-    if (this.state.customMarketplace === '') {
+    if (!this.state.marketplace.includes("CUSTOM")) {
       nftContract = this.state.marketplace
     } else {
       nftContract = this.state.customMarketplace
     }
 
-    //console.log(`provider: ${provider} nftContract: ${nftContract}`)
     let isApproved = await approve(provider, nftContract)
     console.log(isApproved)
   }
 
   handleGiftSubmit = async (event) => {
-    console.log("In gift submit")
-    /* data: [
-        {
-            tokenId: X,
-            eth: [
-                {recipient: "0x...", amount: 1 },
-                ...
-            ],
-            twitter: [
-                {recipient: "@...", amount: 1 },
-                ...
-            ]
-        },
-        ...
-    }]
-    */
-    // overrideAmount = # of tokens you want to spend - only for Rarible 1155 or custom 
     const provider = await getProvider(this.props.web3Modal, console.error)
     let nftContract = ''
 
-    if (this.state.customMarketplace === '') {
+    if (!this.state.marketplace.includes("CUSTOM")) {
       nftContract = this.state.marketplace
     } else {
       nftContract = this.state.customMarketplace
     }
+
     let data = []
     let nftHash = {}
     nftHash['tokenId'] = this.state.tokenID
@@ -292,7 +300,7 @@ class Senders extends React.Component {
       if (item.address != "") {
         let singleAddress = {
           recipient: item.address,
-          amount: item.tokenNumber
+          amount: item.amount
         }
         ethArray.push(singleAddress)
       }
@@ -311,7 +319,8 @@ class Senders extends React.Component {
     nftHash['twitter'] = twitterArray
     data.push(nftHash)
     console.log(data)
-    gft1155NFTs(provider, nftContract, data, this.state.numTokens)
+    const num = this.state.numTokens
+    gft1155NFTs(provider, nftContract, data, num && num == parseInt(num) ? num : undefined)
   }
 
 
@@ -406,10 +415,10 @@ class Senders extends React.Component {
                 onSubmit={event => this.handleGiftSubmit(event)}
                 name="gift"
               >
-                {this.state.marketplace.includes("1155") ?
+                {!this.using721() ?
                   "Enter NFT token ID"
                   : null}
-                {this.state.marketplace.includes("1155") ?
+                {!this.using721() ?
                   <Form.Item
                     onChange={this.handleChange} value={this.state.tokenID}
                     label=""
@@ -418,10 +427,12 @@ class Senders extends React.Component {
                     <Input name="tokenID" placeholder="For ex. 123456" style={{ width: '50%' }} />
                   </Form.Item>
                   : null}
-                {this.state.marketplace.includes("1155") ?
-                  "Enter # of tokens you want to send"
-                  : null}
-                {this.state.marketplace.includes("1155") ?
+
+
+                {!this.using721() ?
+                <>
+                  Enter default # of tokens to send
+                
                   <Form.Item
                     onChange={this.handleChange} value={this.state.numTokens}
                     label=""
@@ -429,24 +440,39 @@ class Senders extends React.Component {
                   >
                     <Input name="numTokens" placeholder="1" style={{ width: '50%' }} />
                   </Form.Item>
+                  </>
                   : null}
                 <strong>Send to recipients</strong>
-                {this.state.marketplace.includes("1155") ?
-                  <p>In each line, enter an address, # of tokens</p>
+
+
+                {!this.using721() ?
+                  <p>On each line, enter: <tt>address, # of tokens to send</tt></p>
                   :
-                  <p>In each line, enter an address, ID of token</p>}
+                  <p>On each line, enter: <tt>address, token ID</tt></p>}
+
+
                 <Form.Item name={['user', 'introduction']} label="">
-                  <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1" />
+                  <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder={`0xb44f91949174fb47A7059A476A882447Fc6A08dD, 1
+0xE2A5db9E741Cdf93e9C2eEA6e4247cA58Bf62024, 1`} />
                 </Form.Item>
-                {this.state.marketplace.includes("1155") ?
-                  <p>In each line, enter # of tokens</p>
-                  :
-                  <p>In each line, enter ID of token</p>}
-                {
-                  this.state.checkedArray.map((item, idx) => {
-                    return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }} /></Form.Item></Col><Col>{item.username}</Col></Row>
-                  })
+
+
+                {this.state.checkedArray && this.state.checkedArray.length ?
+                  <>
+                    {
+                      !this.using721() ?
+                        <p>For each twitter user, enter # of tokens to send</p>
+                        :
+                        <p>For each twitter user, enter ID of token</p>
+                    }
+                    {
+                      this.state.checkedArray.map((item, idx) => {
+                        return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }} /></Form.Item></Col><Col>{item.username}</Col></Row>
+                      })
+                    }
+                  </> : null
                 }
+
                 <Button type="primary" onClick={event => this.handleGiftSubmit(event)}>Send NFTs</Button>
               </Form>
             </div>
