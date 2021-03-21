@@ -23,7 +23,6 @@ class Senders extends React.Component {
     this.state = {
       tweetURL: '',
       tweetContent: '',
-      twitterUsers: '',
       checkedSet: new Set(),
       checkedArray: [],
       replies: [],
@@ -34,6 +33,7 @@ class Senders extends React.Component {
       addresses: [],
       twitterUsersTextarea: '',
       twitterUsers: [],
+      twitterMap: {},
       customMarketplace: '',
       marketplaceAlert: '',
       isApproved: true,
@@ -98,74 +98,21 @@ class Senders extends React.Component {
     }
   }
 
-  handleTwitterUsersChange = event => {
-    console.log(event.target.value)
-  }
+  // handleTwitterUsersChange = event => {
+  //   console.log(event.target.value)
+  // }
 
   handleAddressesChange = event => {
-    /////////////////////////////////////////////
 
     const addresses = event.target.value.trim().split("\n").map(l =>
       l.trim().replace(/,/g, " ").replace(/\s\s+/g, ' ').split(" ")
     ).filter(l => l && l.length > 0)
 
-
-    if (this.using721()) {
-
-    } else {
-      this.setState({
-        addresses: addresses.map(a => ({ address: a[0], amount: a[1] }))
-      })
-    }
-
-    // let addressArray = event.target.value.split('\n')
-    // let newAddresses = []
-    // addressArray.forEach((address) => {
-    //   let addressData = address.split(',')
-    //   let newHash = {
-    //     address: addressData[0],
-    //     amount: addressData[1]
-    //   }
-    //   newAddresses.push(newHash)
-    // })
-    // this.setState({
-    //   addresses: [...newAddresses]
-    // })
-
-
-    //console.log(this.state.addresses)
+      this.setState({addresses: addresses})
   }
 
-  handleTwitterUsersChange = event => {
-    //twitterUsersTextarea: '',
-    //twitterUsers: []
-    let twitterUsersArray = event.target.value.split('\n')
-    let newTwitterUsers = []
-    twitterUsersArray.forEach((twitterUser, index) => {
-      let addressData = twitterUser.split(',')
-      let newHash = {
-        username: addressData[0],
-        amount: addressData[1]
-      }
-      newTwitterUsers.push(newHash)
-    })
-    this.setState({
-      twitterUsers: [...newTwitterUsers]
-    })
-    this.setState({
-      twitterUsersTextarea: event.target.value
-    })
-  }
 
-  handleTwitterUsersTokensChange = event => {
-    let arrayIdx = event.target.id.split("_")[1]
-    let newArray = [...this.state.checkedArray]
-    newArray[arrayIdx].tokenNum = event.target.value
-    this.setState({
-      checkedArray: [...newArray]
-    })
-    console.log(this.state.checkedArray)
-  }
+
 
   handleSelectChange = event => {
     this.setState({
@@ -187,61 +134,35 @@ class Senders extends React.Component {
   }
 
 
+  handleTwitterUsersValueChange = event => {
+
+
+
+    const old =  this.state.twitterMap ? {... this.state.twitterMap} : {}
+  old[(event.target.id.split("_")[1]).toLowerCase()] = event.target.value
+    
+
+  this.setState({twitterMap: old})
+
+
+  }
+
   handleCheckChange = event => {
-    //console.log(this.state.twitterUsersTextarea)
-    //console.log(event.target.value)
-    //console.log(event.target.checked)
-    let newSet = new Set()
-    for (let item of this.state.checkedSet) newSet.add(item)
-    if (newSet.has(event.target.value)) {
-      newSet.delete(event.target.value)
-    } else {
-      newSet.add(event.target.value)
-    }
-    this.setState({
-      checkedSet: newSet
-    })
-    let newCheckedArray = []
-    let tempSetArray = Array.from(newSet)
-    for (let item of tempSetArray) {
-      let newItem = {
-        username: item,
-        tokenNum: 0
-      }
-      newCheckedArray.push(newItem)
-    }
-    this.setState({
-      checkedArray: [...newCheckedArray]
-    })
-    //Now update the text area
-    //twitterUsersTextarea: '',
-    //twitterUsers: []
-
-    let newTwitterUsers = []
-    // Iterate through the twitterUsers array - anything in there that's NOT in checkedSet needs to go
-    for (let item of this.state.twitterUsers) {
-      if (this.state.checkedSet.has(item.username)) {
-        newTwitterUsers.push(item)
-      }
+    
+    console.log(event.target.value)
+    console.log(event.target.checked)
+    
+    const old =  this.state.twitterMap ? {... this.state.twitterMap} : {}
+   
+    if (event.target.checked) {
+      old[event.target.value.toLowerCase()] = "DEFAULT"
+    }else {
+      delete old[event.target.value.toLowerCase()]
     }
 
-    // Iterate through checkedSet - anything that's NOT in twitterUsers needs to be added
 
-    // Recreate the textarea from the update twitterUsers array
-    let newTextarea = ""
+  this.setState({twitterMap: old})
 
-    for (let item of newTwitterUsers) {
-      newTextarea = `${item.username}, ${item.amount}\n`
-    }
-
-    //console.log(newTextarea)
-
-    this.setState({
-      twitterUsers: [...newTwitterUsers]
-    })
-    //this.setState({
-    //  twitterUsersTextarea: newTextarea
-    //})       
   }
 
   handleMarketplaceCheck = async (event) => {
@@ -292,35 +213,32 @@ class Senders extends React.Component {
       nftContract = this.state.customMarketplace
     }
 
-    let data = []
-    let nftHash = {}
-    nftHash['tokenId'] = this.state.tokenID
-    let ethArray = []
-    for (let item of this.state.addresses) {
-      if (item.address != "") {
-        let singleAddress = {
-          recipient: item.address,
-          amount: item.amount
-        }
-        ethArray.push(singleAddress)
-      }
+   let data;
+
+    if (this.using721()) {
+            data = {}
+    }else {
+      const num = this.state.numTokens
+      const defNum = num && num == parseInt(num) ? parseInt(num) : 1
+            data = [{
+              tokenId: this.state.tokenID,
+              eth: this.state.addresses.map(a => ({recipient:a[0], amount: a[1] && a[1] == parseInt(a[1]) ? parseInt(a[1]) : defNum || 1 })),
+              twitter: Object.keys(this.state.twitterMap).map(user => {
+                const amt = this.state.twitterMap[user]
+                return {recipient:user, amount: amt && amt == parseInt(amt) ? parseInt(amt) : (defNum || 1)  }
+              })
+            }]
     }
-    nftHash['eth'] = ethArray
-    let twitterArray = []
-    for (let item of this.state.checkedArray) {
-      if (item.username != "") {
-        let singleUser = {
-          recipient: item.username,
-          amount: item.tokenNum
-        }
-        twitterArray.push(singleUser)
-      }
-    }
-    nftHash['twitter'] = twitterArray
-    data.push(nftHash)
+
+
+    console.log("][][][][][][][][][][")
+    console.log("using721", this.using721())
     console.log(data)
-    const num = this.state.numTokens
-    gft1155NFTs(provider, nftContract, data, num && num == parseInt(num) ? num : undefined)
+
+    if (this.using721()) {
+    }else{
+      gft1155NFTs(provider, nftContract, data)
+    }
   }
 
 
@@ -457,7 +375,7 @@ class Senders extends React.Component {
                 </Form.Item>
 
 
-                {this.state.checkedArray && this.state.checkedArray.length ?
+                {this.state.twitterMap && Object.keys(this.state.twitterMap).length ?
                   <>
                     {
                       !this.using721() ?
@@ -466,12 +384,31 @@ class Senders extends React.Component {
                         <p>For each twitter user, enter ID of token</p>
                     }
                     {
-                      this.state.checkedArray.map((item, idx) => {
-                        return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }} /></Form.Item></Col><Col>{item.username}</Col></Row>
+                      // this.state.checkedArray.map((item, idx) => {
+                      //   return <Row>
+                      //     <Col>
+                      //   <Form.Item onChange={this.handleTwitterUsersValueChange} value={this.state.checkedArray[idx].value} label="" name={idx} style={{marginBottom: 2}}>
+                      //     <Input placeholder="1" style={{ width: '75%' }} />
+                      //     </Form.Item></Col>
+                      //     <Col>@{item.username}</Col>
+                      //     </Row>
+                      // })
+
+                      Object.keys(this.state.twitterMap).map((username) => {
+                        const val = this.state.twitterMap[username.toLowerCase()]
+                        console.log(val)
+                        return <Row>
+                          <Col>
+                        <Form.Item onChange={this.handleTwitterUsersValueChange}  label="" key={username} name={username} value={ val == "DEFAULT" ? "" : val} style={{marginBottom: 2}}>
+                          <Input placeholder="1" style={{ width: '75%' }} />
+                          </Form.Item></Col>
+                          <Col>@{username}</Col>
+                          </Row>
                       })
                     }
                   </> : null
                 }
+<br />
 
                 <Button type="primary" onClick={event => this.handleGiftSubmit(event)}>Send NFTs</Button>
               </Form>
