@@ -44,10 +44,10 @@ export default function Transactor(provider, gasPrice, etherscan) {
           result = await tx;
         } else {
           if (!tx.gasPrice) {
-            tx.gasPrice = gasPrice || parseUnits("4.1", "gwei");
+            tx.gasPrice = (await provider.getGasPrice()).toHexString()
           }
           if (!tx.gasLimit) {
-            tx.gasLimit = hexlify(120000);
+            tx.gasLimit = (await provider.estimateGas(tx)).toHexString()
           }
           console.log("RUNNING TX", tx);
           result = await signer.sendTransaction(tx);
