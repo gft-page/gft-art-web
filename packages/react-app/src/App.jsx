@@ -10,7 +10,6 @@ import ReceiversContainer from './containers/ReceiversContainer'
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import Container from 'react-bootstrap/Container';
-import Jumbotron from 'react-bootstrap/Jumbotron';
 
 import "antd/dist/antd.css";
 import { Row, Col } from "antd";
@@ -90,12 +89,10 @@ function App() {
                         <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
                         </Col>
                     </Row>
-                    <Jumbotron className="bg-light shadow-sm">
                         <Container>
                             <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
                             <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
                         </Container>
-                    </Jumbotron>
                 </Router>
             </Container>
         </div>
