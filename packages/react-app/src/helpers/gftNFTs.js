@@ -48,6 +48,7 @@ async function getNetwork(provider) {
     ...
 }]
 */
+// overrideAmount = # of tokens you want to spend - only for Rarible 1155 or custom
 export async function gft1155NFTs(provider, nftContract, data, overrideAmount) {
     const network = await getNetwork(provider)
     if (isPreset(nftContract)) nftContract = CONTRACT_PRESETS[network][nftContract]
@@ -188,6 +189,7 @@ export async function checkApproved(provider, nftContract) {
     const account = (await provider.listAccounts())[0]
 
     let approved = false
+    
     try {
         approved = await nft.isApprovedForAll(account, gftContract)
     } catch (error) {
@@ -197,6 +199,8 @@ export async function checkApproved(provider, nftContract) {
     return { approved }
 }
 
+
+// Call this when the secondary button is clicked
 export async function approve(provider, nftContract) {
     const network = await getNetwork(provider)
     if (isPreset(nftContract)) nftContract = CONTRACT_PRESETS[network][nftContract]
