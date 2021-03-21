@@ -72,6 +72,7 @@ class Senders extends React.Component {
       tweetContent: '',
       twitterUsers: '',
       checkedSet: new Set(),
+      checkedArray: [],
       replies: [],
       contract: 'ZORA',
       contractCustom: '',
@@ -196,7 +197,17 @@ class Senders extends React.Component {
     this.setState({
       twitterUsersTextarea: event.target.value
     })    
-  }   
+  }  
+  
+  handleTwitterUsersTokensChange = event => {
+   let arrayIdx = event.target.id.split("_")[1]
+   let newArray = [...this.state.checkedArray]
+   newArray[arrayIdx].tokenNum = event.target.value
+   this.setState({
+    checkedArray: [...newArray]
+    })    
+   console.log(this.state.checkedArray) 
+  }
 
   handleSelectChange = event => {
     this.setState({
@@ -205,7 +216,7 @@ class Senders extends React.Component {
   }
 
   handleCheckChange = event => {
-    console.log(this.state.twitterUsersTextarea)
+    //console.log(this.state.twitterUsersTextarea)
     //console.log(event.target.value)
     //console.log(event.target.checked)
     let newSet = new Set()
@@ -218,6 +229,18 @@ class Senders extends React.Component {
     this.setState({
       checkedSet: newSet
     })
+    let newCheckedArray = []
+    let tempSetArray = Array.from(newSet)
+    for (let item of tempSetArray) {
+      let newItem = {
+        username: item,
+        tokenNum: 0
+      }
+      newCheckedArray.push(newItem)
+    }
+    this.setState({
+      checkedArray: [...newCheckedArray]
+    })    
     //Now update the text area
     //twitterUsersTextarea: '',
     //twitterUsers: []
@@ -239,7 +262,7 @@ class Senders extends React.Component {
       newTextarea = `${item.username}, ${item.tokenNumber}\n`
     }
 
-    console.log(newTextarea)
+    //console.log(newTextarea)
 
     this.setState({
       twitterUsers: [...newTwitterUsers]
@@ -419,7 +442,6 @@ class Senders extends React.Component {
                           onChange={this.handleChange} value={this.state.tokenID}
                           label=""
                           name="tokenID"
-                          value="tokenID"
                         >
                           <Input placeholder="For ex. 123456" style={{ width: '50%' }}/>
                         </Form.Item>                          
@@ -439,8 +461,8 @@ class Senders extends React.Component {
                         </Form.Item>
                         <p>In each line, enter @twitter-handle, # of tokens</p>   
                         {
-                            this.state.replies.map((item) => {
-                                return <Row><Col>{item.author_id}</Col></Row>
+                            this.state.checkedArray.map((item, idx) => {
+                                return <Row><Col><Form.Item onChange={this.handleTwitterUsersTokensChange} value={this.state.checkedArray[idx].tokenNum} label="" name={idx}><Input placeholder="1" style={{ width: '75%' }}/></Form.Item></Col><Col>{item.username}</Col></Row>
                             })
                         }                                                         
                 </Form>             
