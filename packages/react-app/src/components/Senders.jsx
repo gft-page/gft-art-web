@@ -4,11 +4,13 @@ import { Link } from 'react-router-dom'
 import { needle } from 'needle'
 
 import "antd/dist/antd.css";
-import { Form, Input, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
+import { Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
 
 import { ethers, providers } from "ethers";
 
 const style = { padding: '8px 0' };
+
+const { Option } = Select;
 
 const APPROVAL_ABI = [
   { "constant": false, "inputs": [{ "internalType": "address", "name": "to", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" }], "name": "setApprovalForAll", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" },
@@ -76,7 +78,10 @@ class Senders extends React.Component {
       contractApproved: false,
       sendType: 'ERC721',
       same1155TokenId: 0,
-      recipients: ''
+      recipients: '',
+      marketplace: '',
+      tokenID: '',
+      numTokens: ''
     }
 
 
@@ -147,6 +152,12 @@ class Senders extends React.Component {
     }
   }
 
+  handleSelectChange = event => {
+    this.setState({
+      marketplace: event
+    }) 
+  }
+
   handleCheckChange = event => {
     console.log(event.target.value)
     console.log(event.target.checked)
@@ -160,6 +171,11 @@ class Senders extends React.Component {
     this.setState({
       checkedSet: newSet
     }) 
+  }
+
+  handleMarketplaceSubmit = async (event) => {
+    event.preventDefault()
+    console.log("In marketplace submit")
   }
 
   handleSubmit = async (event) => {
@@ -294,6 +310,62 @@ class Senders extends React.Component {
             <Col className="gutter-row" span={13}>
               <div style={style}>
                 <strong>Select the protocol or marketplace your NFT is listed on</strong>
+                <Form
+                      onSubmit={ event => this.handleMarketplaceSubmit(event) }
+                      name="marketplace"
+                    > 
+                    <Row>
+                      <Col>
+                      <Form.Item
+                        name="select"
+                        label=""
+                        hasFeedback
+                      >
+                        <Select value={this.state.marketplace} onChange={this.handleSelectChange}  placeholder="Please select a marketplace">
+                          <option value="ZORA">Zora</option>
+                          <option value="RARIBLE_721">Rarible 721</option>
+                          <option value="RARIBLE_1155">Rarible 1155</option>
+                          <option value="CUSTOM">Custom Address</option>
+                        </Select>
+                      </Form.Item> 
+                    </Col>
+                    <Col>
+                      <Button type="primary" htmlType="submit">Approve NFT Transfer</Button> 
+                    </Col>                      
+                  </Row>                                 
+                </Form>
+                <Form
+                      onSubmit={ event => this.handleGiftSubmit(event) }
+                      name="gift"
+                    >   
+                        Enter NFT token ID
+                        <Form.Item
+                          onChange={this.handleChange} value={this.state.tokenID}
+                          label=""
+                          name="tokenID"
+                          value="tokenID"
+                        >
+                          <Input placeholder="For ex. 123456" style={{ width: '50%' }}/>
+                        </Form.Item>                          
+                        Enter # of tokens you want to send                    
+                        <Form.Item
+                          onChange={this.handleChange} value={this.state.numTokens}
+                          label=""
+                          name="numTokens"
+                          value="numTokens"
+                        >
+                          <Input placeholder="1" style={{ width: '50%' }}/>
+                        </Form.Item> 
+                        <strong>Send to recipients</strong>    
+                        <p>In each line, enter an address, # of tokens</p>
+                        <Form.Item name={['user', 'introduction']} label="">
+                          <Input.TextArea placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
+                        </Form.Item>
+                        <p>In each line, enter @twitter-handle, # of tokens</p>   
+                        <Form.Item name={['user', 'introduction']} label="">
+                          <Input.TextArea />
+                        </Form.Item>                                                         
+                </Form>             
               </div>
             </Col>
           </Row>     
