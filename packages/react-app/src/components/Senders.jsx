@@ -237,7 +237,7 @@ class Senders extends React.Component {
     this.setState({
       marketplace: event
     })
-    if (this.state.marketplace != 'CUSTOM') {
+    if (!this.state.marketplace.includes('CUSTOM')) {
       this.handleMarketplaceCheck(event) 
     }
   }
@@ -534,7 +534,7 @@ class Senders extends React.Component {
                           <option value="CUSTOM">Custom Address</option>
                         </Select>
                       </Form.Item> 
-                      {this.state.marketplace === "CUSTOM" ?                      
+                      {this.state.marketplace.includes("CUSTOM") ?                      
                       <Form.Item
                       onChange={this.handleChange} value={this.state.customMarketplace}
                       label=""
