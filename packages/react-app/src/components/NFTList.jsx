@@ -1,8 +1,20 @@
 import React from "react";
 import NFT from './NFT';
+import { Empty } from 'antd';
 
 
 export default function NFTList(props) {
+
+  function renderEmpty() {
+    if (nftList) {
+      if (nftList.length < 1) {
+        return (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        )
+      }
+    }
+  }
+
   const nftList = props.list?.map((nft, i) => {
     return (
       <div key={nft.createdDate} style={{ marginBottom: 20 }}>
@@ -29,6 +41,7 @@ export default function NFTList(props) {
   });
   return (
     <div>
+      {renderEmpty()}
       {nftList}
     </div>
   );
