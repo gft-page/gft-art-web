@@ -12,6 +12,9 @@ import Nav from 'react-bootstrap/Nav'
 import Container from 'react-bootstrap/Container';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 
+import "antd/dist/antd.css";
+import { Row, Col } from "antd";
+
 import { useUserAddress } from "eth-hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
 import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
@@ -21,6 +24,8 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
+
+const style = { padding: '8px 0' };
 
 function App() {
     const mainnetProvider = mainnetInfura
@@ -77,9 +82,14 @@ function App() {
 
             <Container className="col-md-10">
                 <Router>
-                    <Link to="/">Sender</Link>
-                    <br />
-                    <Link to="/receiver">Receiver</Link>
+                    <Row gutter={16}>
+                        <Col>                   
+                            <Link to="/">Sender</Link>
+                        </Col>
+                        <Col>
+                            <Link to="/receiver">Receiver</Link>
+                        </Col>
+                    </Row>
                     <Jumbotron className="bg-light shadow-sm">
                         <Container>
                             <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
