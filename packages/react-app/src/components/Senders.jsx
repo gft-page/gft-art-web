@@ -264,7 +264,6 @@ class Senders extends React.Component {
         <Row gutter={16}>
           <Col className="gutter-row" span={11}>
             <div style={style}>
-              <Card>
                 <p>
                   <strong>Send to people from a tweet</strong>
                 </p>
@@ -299,7 +298,6 @@ class Senders extends React.Component {
                     </Checkbox.Group>
                   </Form.Item>
                 </Form>
-              </Card>
             </div>
           </Col>
           <Col className="gutter-row" span={13}>

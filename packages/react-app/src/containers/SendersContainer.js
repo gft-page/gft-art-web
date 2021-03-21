@@ -14,9 +14,7 @@ class SendersContainer extends React.Component {
     render() {
         return (
             <Container>
-                    <Jumbotron className="bg-light shadow-sm">
                 <Senders {...this.props} />
-                </Jumbotron>
             </Container>
         )
     }
