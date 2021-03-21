@@ -68,52 +68,47 @@ function App() {
     return (
         <div className="App">
             <ThemeSwitch />
-            <Container className="col-md-10">
                 <Router>
-<Container>
-                    <PageHeader
-                        title={
-                            <Image
-                                width={200}
-                                src={logo}
-                            />
-                        }
-                        className="site-page-header"
-                        subTitle={
-                            <Row gutter={16}>
-                                <Col>
-                                    <NavLink exact to="/" activeClassName="selected">Send</NavLink>
-                                </Col>
-                                <Col>
-                                    <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
-                                </Col>
-                            </Row>
-                        }
-                        extra={[
-                            <Account
-                                address={address}
-                                network={network}
-                                // localProvider={localProvider}
-                                userProvider={userProvider}
-                                mainnetProvider={mainnetProvider}
-                                // price={price}
-                                web3Modal={web3Modal}
-                                loadWeb3Modal={loadWeb3Modal}
-                                logoutOfWeb3Modal={logoutOfWeb3Modal}
-                                blockExplorer={blockExplorer}
-                            />
-                        ]}
-                    >
-                    </PageHeader>
-
-                    </Container>
-
                     <Container>
-                        <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
-                        <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
+                        <PageHeader
+                            title={
+                                <Image
+                                    width={200}
+                                    src={logo}
+                                />
+                            }
+                            className="site-page-header"
+                            subTitle={
+                                <Row gutter={16}>
+                                    <Col>
+                                        <NavLink exact to="/" activeClassName="selected">Send</NavLink>
+                                    </Col>
+                                    <Col>
+                                        <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
+                                    </Col>
+                                </Row>
+                            }
+                            extra={[
+                                <Account
+                                    address={address}
+                                    network={network}
+                                    // localProvider={localProvider}
+                                    userProvider={userProvider}
+                                    mainnetProvider={mainnetProvider}
+                                    // price={price}
+                                    web3Modal={web3Modal}
+                                    loadWeb3Modal={loadWeb3Modal}
+                                    logoutOfWeb3Modal={logoutOfWeb3Modal}
+                                    blockExplorer={blockExplorer}
+                                />
+                            ]}
+                        >
+                        </PageHeader>
+
                     </Container>
+                    <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
+                    <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
                 </Router>
-            </Container>
         </div>
     );
 }

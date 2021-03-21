@@ -24,3 +24,6 @@ code {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+.ant-avatar-lg {
+  line-height: 32px !important;
+}

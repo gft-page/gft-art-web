@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 //import {fetchAccounts} from '../actions/fetchAccounts'
 import Senders from '../components/Senders'
 import Jumbotron from 'react-bootstrap/Jumbotron';
+import Container from 'react-bootstrap/Container';
 
 class SendersContainer extends React.Component {
 
@@ -12,11 +13,11 @@ class SendersContainer extends React.Component {
 
     render() {
         return (
-            <div>
+            <Container>
                     <Jumbotron className="bg-light shadow-sm">
                 <Senders {...this.props} />
                 </Jumbotron>
-            </div>
+            </Container>
         )
     }
 }
