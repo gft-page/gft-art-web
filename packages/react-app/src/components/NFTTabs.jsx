@@ -44,7 +44,7 @@ export default function NFTTabs(props) {
         const all = await allNFTs(acct, props.network)
         console.log("all", all)
         if (all && all.data && all.data.length)
-            setNfts(all.data)
+            setNfts(all.data.map(d => ({ ...d, owner: acct })))
     }
 
     useEffect(() => {
@@ -54,14 +54,32 @@ export default function NFTTabs(props) {
         })()
     }, [props])
 
+
+    console.log("=======----===  nfts", nfts)
+    console.log("=======----===  props.list", props.list)
+    console.log("=======----===  burnerNfts", burnerNfts)
+
+    const unsecured = props.list.some(b => b.burnerAddress.toLowerCase() === account.toLowerCase())
+
     return (
         <Tabs defaultActiveKey="1" >
             <TabPane tab="NFTs to secure" key="1">
-                <NFTList list={burnerNfts} burner network={props.network} />
+                {unsecured ?
+                    <NFTList list={nfts} showTransfer={unsecured} network={props.network} />
+                    : null
+                }
+                {burnerNfts.length == 0 ? null :
+                    <NFTList list={burnerNfts.filter(
+                        b => !nfts.some(n => b.burnerAddress.toLowerCase() == n.owner.toLowerCase() || b.tokenAddress.toLowerCase() == n.tokenAddress.toLowerCase() || b.tokenId == n.tokenId)
+                    )} burner network={props.network} />
+                }
             </TabPane>
-            <TabPane tab={burnerNfts.some(b => b.burnerAddress.toLowerCase() === account.toLowerCase()) ? "Unsecured NFTs in this wallet" : "Secured NFTs"} key="2">
-                <NFTList list={nfts} network={props.network} showTransfer={true} provider={props.provider} />
-            </TabPane>
+
+            {!unsecured ?
+                <TabPane tab={"Secured NFTs"} key="2">
+                    <NFTList list={nfts} network={props.network} showTransfer={unsecured} provider={props.provider} />
+                </TabPane>
+                : null}
         </Tabs>
     )
 }
