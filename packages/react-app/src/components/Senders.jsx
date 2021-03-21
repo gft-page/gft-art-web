@@ -6,7 +6,9 @@ import { needle } from 'needle'
 import { gft1155NFTs, gft721NFTs, approve, checkApproved } from "../helpers/index";
 
 import "antd/dist/antd.css";
-import { Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
+import {  Tooltip, Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
+
+import { QuestionCircleOutlined } from '@ant-design/icons';
 
 import { ethers, providers } from "ethers";
 
@@ -37,7 +39,7 @@ class Senders extends React.Component {
       customMarketplace: '',
       marketplaceAlert: '',
       isApproved: true,
-      data: undefined
+      value: 0
     }
 
   }
@@ -241,12 +243,15 @@ class Senders extends React.Component {
     console.log(data)
 
     if (this.using721()) {
-      gft721NFTs(provider, nftContract, data)
+      gft721NFTs(provider, nftContract, data, this.state.value)
     }else{
-      gft1155NFTs(provider, nftContract, data)
+      gft1155NFTs(provider, nftContract, data, this.state.value)
     }
   }
 
+  handleValueChange = (event) => {
+    this.setState({value: event.target.value})
+  }
 
 
   render() {
@@ -406,6 +411,15 @@ class Senders extends React.Component {
                   </> : null
                 }
 <br />
+
+
+            <Form.Item onChange={this.handleValueChange}  label={<>
+            Send ETH to subsidize gas &nbsp; <Tooltip title="Transferring an NFT costs some gas. You can enter an amount of ETH to be split up equally between your recipients to subsidize their gas costs.">
+            <QuestionCircleOutlined />
+  </Tooltip>
+            </>}  value={this.state.value} style={{marginBottom: 2}}>
+                          <Input placeholder="0 ETH" style={{ width: '100px' }} />
+                          </Form.Item>
 
                 <Button type="primary" onClick={event => this.handleGiftSubmit(event)}>Send NFTs</Button>
               </Form>

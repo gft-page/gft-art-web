@@ -8,7 +8,7 @@ const CONTRACT_ABI = [{ "inputs": [{ "internalType": "address", "name": "nft", "
 
 const CONTRACT_ADDRESS = {
     "MAINNET": "0x0000000000000000000000000000000000000000",
-    "RINKEBY": "0xfd7bdd0ba917a32565de6da1b2c918a8a8feadb8"
+    "RINKEBY": "0x5164072f5eb25305961184e7b50FE9F9eB7Ed018" //"0xfd7bdd0ba917a32565de6da1b2c918a8a8feadb8"
 }
 
 const isPreset = (address) => ["ZORA", "RARIBLE_1155", "RARIBLE_721"].indexOf(address) !== -1
@@ -49,7 +49,7 @@ async function getNetwork(provider) {
 }]
 */
 // overrideAmount = # of tokens you want to spend - only for Rarible 1155 or custom
-export async function gft1155NFTs(provider, nftContract, data, overrideAmount) {
+export async function gft1155NFTs(provider, nftContract, data, eth) {
     const network = await getNetwork(provider)
     if (isPreset(nftContract)) nftContract = CONTRACT_PRESETS[network][nftContract]
     const gftContract = CONTRACT_ADDRESS[network]
@@ -82,14 +82,14 @@ export async function gft1155NFTs(provider, nftContract, data, overrideAmount) {
             d.eth.forEach(e => {
                 callTokenIds.push(d.tokenId)
                 callRecipients.push(e.recipient)
-                callAmts.push(overrideAmount || e.amount)
+                callAmts.push(e.amount)
             })
 
         if (d.twitter)
             d.twitter.forEach(e => {
                 callTokenIds.push(d.tokenId)
                 callRecipients.push(twitterToBurner[e.recipient])
-                callAmts.push(overrideAmount || e.amount)
+                callAmts.push(e.amount)
             })
     })
 
@@ -100,6 +100,8 @@ export async function gft1155NFTs(provider, nftContract, data, overrideAmount) {
         await contract.populateTransaction.distributeSame1155s(nftContract, callTokenIds[0], callRecipients, callAmts)
         :
         await contract.populateTransaction.distribute1155s(nftContract, callRecipients, callTokenIds, callAmts)
+
+    if (eth) tx.value = ethers.utils.parseEther(`${eth}`)
 
     await Transactor(provider)(tx)
 }
@@ -117,7 +119,7 @@ data: {
         ]
     }
 */
-export async function gft721NFTs(provider, nftContract, data) {
+export async function gft721NFTs(provider, nftContract, data, eth) {
     const network = await getNetwork(provider)
     if (isPreset(nftContract)) nftContract = CONTRACT_PRESETS[network][nftContract]
     const gftContract = CONTRACT_ADDRESS[network]
@@ -158,6 +160,8 @@ export async function gft721NFTs(provider, nftContract, data) {
     const contract = new ethers.Contract(gftContract, CONTRACT_ABI, provider.getSigner());
     console.log("============== 3", gftContract, nftContract, callRecipients, callTokenIds)
     const tx = await contract.populateTransaction.distribute721s(nftContract, callRecipients, callTokenIds)
+
+    if (eth) tx.value = ethers.utils.parseEther(`${eth}`)
 
     await Transactor(provider)(tx)
 }
