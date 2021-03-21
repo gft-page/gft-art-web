@@ -20,12 +20,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
 
-
-
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
-
-
-
 
 function App() {
     const mainnetProvider = mainnetInfura
@@ -64,6 +59,7 @@ function App() {
 
     return (
         <div className="App">
+            <ThemeSwitch />
             <div style={{ textAlign: "right", right: 0, top: 0, padding: 10, position: 'abosolute' }}>
                 <Account
                     address={address}
