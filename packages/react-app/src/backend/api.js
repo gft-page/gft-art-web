@@ -1,6 +1,4 @@
-const LIVE = true
-
-const API_PREFIX = LIVE ? 'https://api.gft.art/api/v1/' : 'http://localhost:4000/api/v1/'
+const API_PREFIX = (process.env.NODE_ENV == 'production') ? 'https://api.gft.art/api/v1/' : 'http://localhost:4000/api/v1/'
 
 async function send(method, endpoint, data, params) {
     const settings = {
