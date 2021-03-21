@@ -125,7 +125,7 @@ class Senders extends React.Component {
     this.setState({
       twitterUsers: newTwitterCard
     })       
-    console.log(newTwitterCard)
+    //console.log(newTwitterCard)
     //this.state.replies = [...newReplies]
   }  
 
@@ -174,7 +174,7 @@ class Senders extends React.Component {
     this.setState({
       addresses: [...newAddresses]
     })     
-    console.log(this.state.addresses)
+    //console.log(this.state.addresses)
   }  
 
   handleTwitterUsersChange = event => { 
@@ -193,7 +193,9 @@ class Senders extends React.Component {
     this.setState({
       twitterUsers: [...newTwitterUsers]
     })     
-    console.log(this.state.twitterUsers)
+    this.setState({
+      twitterUsersTextarea: event.target.value
+    })    
   }   
 
   handleSelectChange = event => {
@@ -203,8 +205,9 @@ class Senders extends React.Component {
   }
 
   handleCheckChange = event => {
-    console.log(event.target.value)
-    console.log(event.target.checked)
+    console.log(this.state.twitterUsersTextarea)
+    //console.log(event.target.value)
+    //console.log(event.target.checked)
     let newSet = new Set()
     for (let item of this.state.checkedSet) newSet.add(item)
     if (newSet.has(event.target.value)) {
@@ -214,7 +217,36 @@ class Senders extends React.Component {
     }
     this.setState({
       checkedSet: newSet
-    }) 
+    })
+    //Now update the text area
+    //twitterUsersTextarea: '',
+    //twitterUsers: []
+
+    let newTwitterUsers = []
+    // Iterate through the twitterUsers array - anything in there that's NOT in checkedSet needs to go
+    for (let item of this.state.twitterUsers) {
+      if(this.state.checkedSet.has(item.username)) {
+        newTwitterUsers.push(item)
+      }
+    }
+
+    // Iterate through checkedSet - anything that's NOT in twitterUsers needs to be added
+
+    // Recreate the textarea from the update twitterUsers array
+    let newTextarea = ""
+
+    for (let item of newTwitterUsers) {
+      newTextarea = `${item.username}, ${item.tokenNumber}\n`
+    }
+
+    console.log(newTextarea)
+
+    this.setState({
+      twitterUsers: [...newTwitterUsers]
+    })    
+    //this.setState({
+    //  twitterUsersTextarea: newTextarea
+    //})       
   }
 
   handleMarketplaceSubmit = async (event) => {
@@ -406,9 +438,11 @@ class Senders extends React.Component {
                           <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder="cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1 cvg8hrdfg8awfg5h18n904448fgjk984dt45113, 1"/>
                         </Form.Item>
                         <p>In each line, enter @twitter-handle, # of tokens</p>   
-                        <Form.Item name="twitterUsers" label="">
-                          <Input.TextArea value={this.state.twitterUsersTextarea} onChange={this.handleTwitterUsersChange} />
-                        </Form.Item>                                                         
+                        {
+                            this.state.replies.map((item) => {
+                                return <Row><Col>{item.author_id}</Col></Row>
+                            })
+                        }                                                         
                 </Form>             
               </div>
             </Col>
