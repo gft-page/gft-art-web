@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { BrowserRouter as Router } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { Route } from 'react-router-dom'
 import { Switch } from 'react-router-dom'
 import SendersContainer from './containers/SendersContainer'
@@ -10,10 +10,9 @@ import ReceiversContainer from './containers/ReceiversContainer'
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import Container from 'react-bootstrap/Container';
-import Jumbotron from 'react-bootstrap/Jumbotron';
 
 import "antd/dist/antd.css";
-import { Row, Col } from "antd";
+import { Row, Col, Image, PageHeader } from "antd";
 
 import { useUserAddress } from "eth-hooks";
 import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
@@ -22,6 +21,10 @@ import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+
+import logo from './logo.svg';
+
+const { Content } = PageHeader;
 
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
 
@@ -65,37 +68,50 @@ function App() {
     return (
         <div className="App">
             <ThemeSwitch />
-            <div style={{ textAlign: "right", right: 0, top: 0, padding: 10, position: 'abosolute' }}>
-                <Account
-                    address={address}
-                    network={network}
-                    // localProvider={localProvider}
-                    userProvider={userProvider}
-                    mainnetProvider={mainnetProvider}
-                    // price={price}
-                    web3Modal={web3Modal}
-                    loadWeb3Modal={loadWeb3Modal}
-                    logoutOfWeb3Modal={logoutOfWeb3Modal}
-                    blockExplorer={blockExplorer}
-                />
-            </div>
-
             <Container className="col-md-10">
                 <Router>
-                    <Row gutter={16}>
-                        <Col>                   
-                            <Link to="/">Sender</Link>
-                        </Col>
-                        <Col>
-                            <Link to="/receiver">Receiver</Link>
-                        </Col>
-                    </Row>
-                    <Jumbotron className="bg-light shadow-sm">
-                        <Container>
-                            <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
-                            <Route path="/receiver" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
-                        </Container>
-                    </Jumbotron>
+<Container>
+                    <PageHeader
+                        title={
+                            <Image
+                                width={200}
+                                src={logo}
+                            />
+                        }
+                        className="site-page-header"
+                        subTitle={
+                            <Row gutter={16}>
+                                <Col>
+                                    <NavLink exact to="/" activeClassName="selected">Send</NavLink>
+                                </Col>
+                                <Col>
+                                    <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
+                                </Col>
+                            </Row>
+                        }
+                        extra={[
+                            <Account
+                                address={address}
+                                network={network}
+                                // localProvider={localProvider}
+                                userProvider={userProvider}
+                                mainnetProvider={mainnetProvider}
+                                // price={price}
+                                web3Modal={web3Modal}
+                                loadWeb3Modal={loadWeb3Modal}
+                                logoutOfWeb3Modal={logoutOfWeb3Modal}
+                                blockExplorer={blockExplorer}
+                            />
+                        ]}
+                    >
+                    </PageHeader>
+
+                    </Container>
+
+                    <Container>
+                        <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
+                        <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
+                    </Container>
                 </Router>
             </Container>
         </div>

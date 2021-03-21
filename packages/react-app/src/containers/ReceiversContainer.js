@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 //import {fetchAccounts} from '../actions/fetchAccounts'
 import Receivers from '../components/Receivers'
 import RedeemGuide from '../components/RedeemGuide'
+import Jumbotron from 'react-bootstrap/Jumbotron';
 
 class ReceiversContainer extends React.Component {
 
@@ -14,7 +15,9 @@ class ReceiversContainer extends React.Component {
         return (
             <div>
                 <RedeemGuide />
+                    <Jumbotron className="bg-light shadow-sm">
                 <Receivers web3Modal={this.props.web3Modal} />
+                </Jumbotron>
             </div>
         )
     }

@@ -19,3 +19,8 @@ code {
 .ant-steps-item-description {
   max-width: 300px !important;
 }
+
+.ant-page-header {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
