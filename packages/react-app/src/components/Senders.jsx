@@ -336,6 +336,57 @@ class Senders extends React.Component {
 
   handleGiftSubmit = async (event) => {
     console.log("In gift submit")
+    /* data: [
+        {
+            tokenId: X,
+            eth: [
+                {recipient: "0x...", amount: 1 },
+                ...
+            ],
+            twitter: [
+                {recipient: "@...", amount: 1 },
+                ...
+            ]
+        },
+        ...
+    }]
+    */
+    // overrideAmount = # of tokens you want to spend - only for Rarible 1155 or custom 
+    const provider = await getProvider(this.props.web3Modal, console.error)
+    let nftContract = ''
+
+    if (this.state.customMarketplace === '') {
+      nftContract = this.state.marketplace
+    } else {
+      nftContract = this.state.customMarketplace
+    }  
+    let data = []
+    let nftHash = {}
+    nftHash['tokenID'] = this.state.tokenID
+    let ethArray = []
+    for (let item of this.state.addresses) {
+      if (item.address != "") {
+        let singleAddress = {
+          recipient: item.address,
+          amount: item.tokenNumber
+        }
+        ethArray.push(singleAddress)
+      }
+    }
+    nftHash['eth'] = ethArray
+    let twitterArray = []
+    for (let item of this.state.checkedArray) {
+      if (item.username != "") {
+        let singleUser = {
+          recipient: item.username,
+          amount: item.tokenNum
+        }
+        twitterArray.push(singleUser)
+      }
+    }
+    nftHash['twitter'] = twitterArray       
+    data.push(nftHash)
+    gft1155NFTs(provider, nftContract, data, this.state.numTokens) 
   }  
 
   handleSubmit = async (event) => {
@@ -542,6 +593,7 @@ class Senders extends React.Component {
 }
 
 //Uncomment once Ant is in
+/*
 function Approval(props) {
   const [approved, setApproved] = useState(false)
   const [error, setError] = useState("")
@@ -627,6 +679,7 @@ function Approval(props) {
   </div>
 
 }
+*/
 
 
 
