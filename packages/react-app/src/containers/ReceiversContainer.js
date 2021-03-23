@@ -17,6 +17,7 @@ class ReceiversContainer extends React.Component {
         return (
             <div>
                 <Container>
+                    <h1><small><strong>Redeem your NFTs</strong></small></h1>
                     <RedeemGuide />
                 </Container>
                 <Container fluid style={{ background: colors.LIGHT_PURPLE, paddingTop: 40, paddingBottom: 40 }}>

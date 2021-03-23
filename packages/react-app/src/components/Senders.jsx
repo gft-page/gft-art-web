@@ -1,7 +1,8 @@
-import React, { Component, useEffect, useState } from 'react'
-import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
-import { needle } from 'needle'
+import React, { Component, useEffect, useState } from 'react';
+import Jumbotron from 'react-bootstrap/Jumbotron';
+import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { needle } from 'needle';
 
 import { gft1155NFTs, gft721NFTs, approve, checkApproved } from "../helpers/index";
 
@@ -12,11 +13,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 
 import { ethers, providers } from "ethers";
 
-const style = { padding: '8px 0' };
-
 const { Option } = Select;
-
-
 
 class Senders extends React.Component {
 
@@ -280,16 +277,14 @@ class Senders extends React.Component {
   render() {
     return (
       <div>
-        <h1><small><strong>Airdrop NFTs to many, all at once ✨</strong></small></h1>
-          Send an NFT to people from a tweet with @twitter-handles, an address, or both
-        <br></br>
-        <br></br>
+        <h1><small><strong>Send multiple NFTs to many, all at once ✨</strong></small></h1>
+        <Jumbotron>
         <Row gutter={16}>
           <Col className="gutter-row" span={11}>
-            <div style={style}>
-                <p>
-                  <strong>Send to people from a tweet</strong>
-                </p>
+            <div>
+              <p>
+                <strong>Send to people from a tweet</strong>
+              </p>
                 <p>To send an NFT with someone’s @twitter-handle, paste the tweet link, and we’ll create an address book of @twitter-handles you can choose from.</p>
                 <strong>Paste tweet link</strong>
                 <Form
@@ -324,7 +319,7 @@ class Senders extends React.Component {
             </div>
           </Col>
           <Col className="gutter-row" span={13}>
-            <div style={style}>
+            <div>
               <strong>Select the protocol or marketplace your NFT is listed on</strong>
               <Form
                 onSubmit={event => this.handleMarketplaceSubmit(event)}
@@ -454,6 +449,7 @@ class Senders extends React.Component {
             </div>
           </Col>
         </Row>
+        </Jumbotron>
       </div>
     )
   }

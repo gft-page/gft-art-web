@@ -2,7 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 //import {fetchAccounts} from '../actions/fetchAccounts'
 import Senders from '../components/Senders'
-import Jumbotron from 'react-bootstrap/Jumbotron';
 import Container from 'react-bootstrap/Container';
 
 class SendersContainer extends React.Component {
