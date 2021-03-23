@@ -280,7 +280,7 @@ class Senders extends React.Component {
   render() {
     return (
       <div>
-        <h5 className="header"><strong>Gift an NFT to many, all at once ✨</strong></h5>
+        <h1><small><strong>Airdrop NFTs to many, all at once ✨</strong></small></h1>
           Send an NFT to people from a tweet with @twitter-handles, an address, or both
         <br></br>
         <br></br>
