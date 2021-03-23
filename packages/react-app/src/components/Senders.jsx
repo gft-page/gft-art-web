@@ -9,9 +9,9 @@ import { gft1155NFTs, gft721NFTs, approve, checkApproved } from "../helpers/inde
 import "antd/dist/antd.css";
 import {  Tooltip, Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card, message } from "antd";
 
-import { QuestionCircleOutlined } from '@ant-design/icons';
 
 import { ethers, providers } from "ethers";
+import SenderNFTForm from "./SenderNFTForm";
 
 const { Option } = Select;
 
@@ -49,11 +49,11 @@ class Senders extends React.Component {
     });
   }
 
-  using721() {
+  using721 = () => {
     return this.state.marketplace && this.state.marketplace.includes('721') || this.state.marketplace == "ZORA"
   }
 
-  getTweets(ID) {
+  getTweets = (ID) => {
     fetch(`https://api.gft.art/api/v1/twitter/${ID}/replies?limit=50`)
       .then(resp => resp.json())
       .then(json => this.processReplies(json))
@@ -61,7 +61,7 @@ class Senders extends React.Component {
     return "@NFTgirl My first NFT sale was my genesis piece on @KnownOrigin_io picked up my the OG himself @j1mmyeth - it's the intro to my animation reel and a personal favorite of mine. Also happened the same day Biden was projected to win the election. So it was a very good day \uD83D\uDE42"
   }
 
-  processReplies(json) {
+  processReplies = (json) => {
     console.log(json.usernames)
     let newReplies = []
     let newTwitterCard = ''
@@ -82,8 +82,6 @@ class Senders extends React.Component {
     this.setState({
       twitterUsers: newTwitterCard
     })
-    //console.log(newTwitterCard)
-    //this.state.replies = [...newReplies]
   }
 
   handleChange = event => {
@@ -101,17 +99,11 @@ class Senders extends React.Component {
     }
   }
 
-  // handleTwitterUsersChange = event => {
-  //   console.log(event.target.value)
-  // }
-
   handleAddressesChange = event => {
-
     const addresses = event.target.value.trim().split("\n").map(l =>
       l.trim().replace(/,/g, " ").replace(/\s\s+/g, ' ').split(" ")
-    ).filter(l => l && l.length > 0)
-
-      this.setState({addresses: addresses})
+    ).filter(l => l && l.length > 0);
+    this.setState({addresses: addresses});
   }
 
   handleSelectChange = event => {
@@ -350,89 +342,19 @@ class Senders extends React.Component {
           </Col>
           <Col className="gutter-row" span={13}>
             <div>
-              <Form
-                onSubmit={event => this.handleGiftSubmit(event)}
-                name="gift"
-              >
-                {!this.using721() ?
-                  "Enter NFT token ID"
-                  : null}
-                {!this.using721() ?
-                  <Form.Item
-                    onChange={this.handleChange} value={this.state.tokenID}
-                    label=""
-                    name="tokenID"
-                  >
-                    <Input name="tokenID" placeholder="For ex. 123456" style={{ width: '50%' }} />
-                  </Form.Item>
-                  : null}
-
-
-                {!this.using721() ?
-                <>
-                  Enter default # of tokens to send
-                
-                  <Form.Item
-                    onChange={this.handleChange} value={this.state.numTokens}
-                    label=""
-                    name="numTokens"
-                  >
-                    <Input name="numTokens" placeholder="1" style={{ width: '50%' }} />
-                  </Form.Item>
-                  </>
-                  : null}
-                <strong>Send to recipients</strong>
-
-
-                {!this.using721() ?
-                  <p>On each line, enter: <tt>address, # of tokens to send</tt></p>
-                  :
-                  <p>On each line, enter: <tt>address, token ID</tt></p>}
-
-
-                <Form.Item name={['user', 'introduction']} label="">
-                  <Input.TextArea value={this.state.addressesTextarea} onChange={this.handleAddressesChange} placeholder={`0xb44f91949174fb47A7059A476A882447Fc6A08dD, 1
-0xE2A5db9E741Cdf93e9C2eEA6e4247cA58Bf62024, 1`} />
-                </Form.Item>
-
-
-                {this.state.twitterMap && Object.keys(this.state.twitterMap).length ?
-                  <>
-                    {
-                      !this.using721() ?
-                        <p>For each twitter user, enter # of tokens to send</p>
-                        :
-                        <p>For each twitter user, enter ID of token</p>
-                    }
-                    {
-
-                      Object.keys(this.state.twitterMap).map((username) => {
-                        const val = this.state.twitterMap[username.toLowerCase()]
-                        console.log(val)
-                        return <Row>
-                          <Col>
-                        <Form.Item onChange={this.handleTwitterUsersValueChange}  label="" key={username} name={username} value={ val == "DEFAULT" ? "" : val} style={{marginBottom: 2}}>
-                          <Input placeholder="1" style={{ width: '75%' }} />
-                          </Form.Item></Col>
-                          <Col>@{username}</Col>
-                          </Row>
-                      })
-                    }
-                  </> : null
-                }
-<br />
-
-
-            <Form.Item onChange={this.handleValueChange}  label={<>
-            Send ETH to subsidize gas &nbsp; <Tooltip title="Transferring an NFT costs some gas. You can enter an amount of ETH to be split up equally between your recipients to subsidize their gas costs.">
-            <QuestionCircleOutlined />
-  </Tooltip>
-            </>}  value={this.state.value} style={{marginBottom: 2}}>
-                          <Input placeholder="0 ETH" style={{ width: '100px' }} />
-                          </Form.Item>
-
-                <Button type="primary" onClick={event => this.handleGiftSubmit(event)}>Send NFTs</Button>
-              </Form>
+              <SenderNFTForm
+                handleAddressesChange={this.handleAddressesChange}
+                handleChange={this.handleChange}
+                handleGiftSubmit={this.handleGiftSubmit}
+                handleTwitterUsersValueChange={this.handleTwitterUsersValueChange}
+                handleValueChange={this.handleValueChange}
+                using721={this.using721}
+                tokenID={this.state.tokenID}
+                numTokens={this.state.numTokens}
+                addressesTextarea={this.state.addressesTextarea}
+                twitterMap={this.state.twitterMap}
+                value={this.state.value}
+              />
             </div>
           </Col>
         </Row>
@@ -442,17 +364,12 @@ class Senders extends React.Component {
   }
 }
 
-
 async function getProvider(web3Modal, setError) {
   if (!web3Modal || !web3Modal.cachedProvider) {
-    setError("provider not set")
-    return
+    setError("provider not set");
+    return;
   }
-
-
-
   return new providers.Web3Provider(await web3Modal.connect());
 }
 
-//export default connect(null,{createUser})(Senders)
-export default connect(null)(Senders)
+export default connect(null)(Senders);
