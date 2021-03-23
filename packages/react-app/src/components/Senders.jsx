@@ -6,7 +6,7 @@ import { needle } from 'needle'
 import { gft1155NFTs, gft721NFTs, approve, checkApproved } from "../helpers/index";
 
 import "antd/dist/antd.css";
-import {  Tooltip, Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card } from "antd";
+import {  Tooltip, Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card, message } from "antd";
 
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
@@ -39,9 +39,17 @@ class Senders extends React.Component {
       customMarketplace: '',
       marketplaceAlert: '',
       isApproved: true,
-      value: 0
+      value: 0,
+      provider: null,
+      selectIsOpen: false
     }
 
+  }
+
+  componentDidMount() {
+    getProvider(this.props.web3Modal, console.error).then((provider) => {
+      provider && this.setState({ provider });
+    });
   }
 
 
@@ -118,13 +126,15 @@ class Senders extends React.Component {
 
   handleSelectChange = event => {
     this.setState({
+      selectIsOpen: false,
       marketplace: event
-    })
-    setTimeout(() => {
+    }, () => {
+      setTimeout(() => {
       if (!this.state.marketplace.includes('CUSTOM')) {
-        this.handleMarketplaceCheck(event)
+        this.handleMarketplaceCheck(event);
       }
-    }, 100)
+    }, 100);
+    });
   }
 
   handleCustomMarketplaceChange = event => {
@@ -168,10 +178,8 @@ class Senders extends React.Component {
   }
 
   handleMarketplaceCheck = async (event) => {
-    const provider = await getProvider(this.props.web3Modal, console.error)
     let nftContract = ''
     console.log(this.state.marketplace.includes("CUSTOM"))
-    // if (this.state.customMarketplace === '') {
     if (!this.state.marketplace.includes("CUSTOM")) {
       nftContract = this.state.marketplace
     } else {
@@ -179,8 +187,8 @@ class Senders extends React.Component {
     }
 
     console.log(`handleMarketplaceCheck nftContract: ${nftContract}`)
-
-    let isApproved = await checkApproved(provider, nftContract)
+    try {
+    let isApproved = await checkApproved(this.state.provider, nftContract)
     console.log(isApproved)
     this.setState({ isApproved: isApproved.approved })
 
@@ -189,12 +197,13 @@ class Senders extends React.Component {
       else 
        this.setState({marketplaceAlert: ''})
 
-      
-    
+    } catch (err) {
+      message.error('Please connect your wallet first');
+      return;
+    }
   }
 
   handleMarketplaceSubmit = async (event) => {
-    const provider = await getProvider(this.props.web3Modal, console.error)
     let nftContract = ''
 
     if (!this.state.marketplace.includes("CUSTOM")) {
@@ -203,12 +212,11 @@ class Senders extends React.Component {
       nftContract = this.state.customMarketplace
     }
 
-    let isApproved = await approve(provider, nftContract)
+    let isApproved = await approve(this.state.provider, nftContract)
     console.log(isApproved)
   }
 
   handleGiftSubmit = async (event) => {
-    const provider = await getProvider(this.props.web3Modal, console.error)
     let nftContract = ''
 
     if (!this.state.marketplace.includes("CUSTOM")) {
@@ -243,16 +251,31 @@ class Senders extends React.Component {
     console.log(data)
 
     if (this.using721()) {
-      gft721NFTs(provider, nftContract, data, this.state.value)
+      gft721NFTs(this.state.provider, nftContract, data, this.state.value)
     }else{
-      gft1155NFTs(provider, nftContract, data, this.state.value)
+      gft1155NFTs(this.state.provider, nftContract, data, this.state.value)
     }
   }
 
   handleValueChange = (event) => {
-    this.setState({value: event.target.value})
+    this.setState({value: event.target.value});
   }
 
+  handleSelectClick = () => {
+    if (!this.checkConnected()) {
+      this.setState({ selectIsOpen: false });
+    } else {
+      this.setState({ selectIsOpen: !this.state.selectIsOpen })
+    }
+  }
+
+  checkConnected = () => {
+    if (!this.state.provider) {
+      message.error('Please connect your web3 wallet');
+      return false;
+    }
+    return true;
+  }
 
   render() {
     return (
@@ -311,7 +334,14 @@ class Senders extends React.Component {
                   name="select"
                   label=""
                 >
-                  <Select value={this.state.marketplace} onChange={this.handleSelectChange} placeholder="Please select a marketplace">
+                  <Select
+                    value={this.state.marketplace}
+                    onClick={this.handleSelectClick}
+                    onChange={this.handleSelectChange}
+                    // onSelect={() => {this.setState({ selectIsOpen: false })}}
+                    placeholder="Please select a marketplace"
+                    open={this.state.selectIsOpen}
+                  >
                     <option value="ZORA">Zora</option>
                     <option value="RARIBLE_721">Rarible 721</option>
                     <option value="RARIBLE_1155">Rarible 1155</option>
