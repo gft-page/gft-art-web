@@ -65,7 +65,7 @@ export default function NFTTabs(props) {
         <Tabs defaultActiveKey="1" >
             <TabPane tab="NFTs to secure" key="1">
                 {unsecured ?
-                    <NFTList list={nfts} showTransfer={unsecured} network={props.network} />
+                    <NFTList list={nfts} showTransfer={unsecured} network={props.network} provider={props.provider} />
                     : null
                 }
                 {burnerNfts.length == 0 ? null :
