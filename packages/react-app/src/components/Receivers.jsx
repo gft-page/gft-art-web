@@ -94,7 +94,7 @@ class Receivers extends React.Component {
                 </Button>
           </Space>
           <div>
-            <NFTTabs list={this.state.nftList} network="rinkeby" provider={this.state.provider} />
+            <NFTTabs list={this.state.nftList} network={this.props.network} provider={this.state.provider} />
           </div>
         </div>
       ) :
@@ -121,3 +121,4 @@ class Receivers extends React.Component {
 
 //export default connect(null,{createUser})(Senders)
 export default connect(null)(Receivers)
+

@@ -23,7 +23,7 @@ class ReceiversContainer extends React.Component {
                 <Container fluid style={{ background: colors.LIGHT_PURPLE, paddingTop: 40, paddingBottom: 40 }}>
                     <Container>
                         <h1><small>Your GFT list ✨</small></h1>
-                        <Receivers web3Modal={this.props.web3Modal} />
+                        <Receivers web3Modal={this.props.web3Modal} network={this.props.network} />
                     </Container>
                 </Container>
             </div>
