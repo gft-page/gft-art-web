@@ -1,5 +1,5 @@
 import React, { Component, useEffect, useState } from 'react';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, TwitterOutlined } from '@ant-design/icons';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -257,9 +257,9 @@ class Senders extends React.Component {
       <div>
         <h1><small><strong>Send multiple NFTs to many, all at once ✨</strong></small></h1>
         <Jumbotron>
-          <p>
-            <strong>Select the protocol or marketplace your NFT is listed on</strong>
-          </p>
+          <h5>
+            <strong>Select the protocol or marketplace your NFTs are listed on</strong>
+          </h5>
           <Form
             onSubmit={event => this.handleMarketplaceSubmit(event)}
             name="marketplace"
@@ -306,9 +306,17 @@ class Senders extends React.Component {
           <Row gutter={16}>
             <Col className="gutter-row" span={11}>
               <div>
-                <p>
+                <h5>
+                <TwitterOutlined
+                  style={{
+                    position: "absolute",
+                    marginTop: "-8px",
+                    marginLeft: "-12px",
+                    color: "yellow"
+                  }}
+                />
                   <strong>Send to people from a tweet</strong>
-                </p>
+                </h5>
                 <p>To send an NFT with someone’s @twitter-handle, paste the tweet link, and we’ll create an address book of @twitter-handles you can choose from.</p>
                 <strong>Paste tweet link</strong>
                 <Form
@@ -347,10 +355,11 @@ class Senders extends React.Component {
                 <Form
                   onSubmit={event => this.handleGiftSubmit(event)}
                   name="gift"
+                  style={{ textAlign: "right" }}
                 >
                   <SenderTabs
                     form={
-                    <div style={{ padding: "50px" }}>
+                    <div style={{ padding: "50px", textAlign: "left" }}>
                       <SenderNFTForm
                         handleAddressesChange={this.handleAddressesChange}
                         handleChange={this.handleChange}
@@ -382,7 +391,18 @@ class Senders extends React.Component {
                     </div>
                   }
                   />
-                  <Button type="primary" onClick={event => this.handleGiftSubmit(event)}>Send NFTs</Button>
+                  <Button
+                    type="primary"
+                    onClick={event => this.handleGiftSubmit(event)}
+                    size="large"
+                    style={{
+                      marginTop: "30px",
+                      borderRadius: "0px",
+                      width: "33%"
+                    }}
+                  >
+                      Send NFTs
+                  </Button>
                 </Form>
               </div>
             </Col>

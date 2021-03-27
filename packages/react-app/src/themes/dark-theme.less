@@ -17,6 +17,7 @@
 @link-color: @text-color;
 @icon-color: @primary-color;
 
+@dark-purple: #381D2A;
 @light-pink: #F4EBE8;
 @eggplant: #5E4B56;
 @gray: #bdbdbd;
@@ -31,10 +32,13 @@
 
 .ant-card {
   background-color: @light-pink;
-  color: #5E4B56;
+  color: white;
 }
 .ant-card-bordered {
   border: 1px solid @light-pink;
+}
+.ant-btn {
+  border-radius: 0px;
 }
 .ant-btn-primary {
   color: #381D2A;
@@ -54,6 +58,10 @@
 .ant-input, .ant-select-selector {
   background-color: white !important;
   color: @eggplant;
+  border-radius: 0px !important;
+}
+.ant-select-single {
+  border-radius: 0px;
 }
 .ant-input::selection {
   color: @eggplant;
@@ -69,6 +77,9 @@
 }
 .anticon {
   color: @eggplant;
+}
+.ant-steps-item-process .ant-steps-item-icon .ant-steps-icon {
+	color: @dark-purple;
 }
 
 /*
