@@ -1,20 +1,18 @@
 import React from "react";
 import {  Tooltip, Form, Input, Select, InputNumber, Radio, Button, Checkbox, Row, Col, Divider, Card, message } from "antd";
-import { QuestionCircleOutlined } from '@ant-design/icons';
 
 export default function SenderNFTForm(props) {
   return(
-    <Form
-      onSubmit={event => props.handleGiftSubmit(event)}
-      name="gift"
-    >
-      {!props.using721() ? "Enter NFT token ID" : null}
+    <>
+      {!props.using721() ? <strong>Token ID</strong> : null}
       {!props.using721() ?
         <Form.Item
           onChange={props.handleChange}
           value={props.tokenID}
           label=""
           name="tokenID"
+          required
+          tooltip="NFT Token ID"
         >
           <Input
             name="tokenID"
@@ -26,7 +24,9 @@ export default function SenderNFTForm(props) {
       }
       {!props.using721() ?
         <>
-          Enter default # of tokens to send
+        <strong>
+          Default # of tokens/person
+        </strong>
           <Form.Item
             onChange={props.handleChange} value={props.numTokens}
             label=""
@@ -84,22 +84,6 @@ export default function SenderNFTForm(props) {
         : null
       }
       <br />
-      <Form.Item
-        onChange={props.handleValueChange}
-        label={
-          <>
-            Send ETH to subsidize gas &nbsp;
-            <Tooltip title="Transferring an NFT costs some gas. You can enter an amount of ETH to be split up equally between your recipients to subsidize their gas costs.">
-              <QuestionCircleOutlined />
-            </Tooltip>
-          </>
-        }
-        value={props.value}
-        style={{marginBottom: 2}}
-      >
-        <Input placeholder="0 ETH" style={{ width: '100px' }} />
-      </Form.Item>
-      <Button type="primary" onClick={event => props.handleGiftSubmit(event)}>Send NFTs</Button>
-    </Form>
+      </>
   );
 }

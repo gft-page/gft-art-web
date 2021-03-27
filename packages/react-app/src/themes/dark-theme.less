@@ -17,6 +17,10 @@
 @link-color: @text-color;
 @icon-color: @primary-color;
 
+@light-pink: #F4EBE8;
+@eggplant: #5E4B56;
+@gray: #bdbdbd;
+
 .highlight {
   background-color: #3f3f3f;
 }
@@ -26,17 +30,45 @@
 }
 
 .ant-card {
-  background-color: #F4EBE8;
+  background-color: @light-pink;
   color: #5E4B56;
 }
 .ant-card-bordered {
-  border: 1px solid #F4EBE8;
+  border: 1px solid @light-pink;
 }
 .ant-btn-primary {
   color: #381D2A;
 }
 .selected {
   color: @primary-color;
+}
+.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+  background: @light-pink;
+}
+.ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+  border: @light-pink;
+}
+.ant-tabs-card.ant-tabs-top > .ant-tabs-nav .ant-tabs-tab {
+  border-radius: 4px 0px 0 0;
+}
+.ant-input, .ant-select-selector {
+  background-color: white !important;
+  color: @eggplant;
+}
+.ant-input::selection {
+  color: @eggplant;
+}
+.ant-form-item-label > label {
+  color: @eggplant;
+}
+.ant-input::placeholder, .ant-select-selection-placeholder {
+  color: @gray;
+}
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+	color: @eggplant;
+}
+.anticon {
+  color: @eggplant;
 }
 
 /*
