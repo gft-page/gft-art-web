@@ -1,14 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { BrowserRouter as Router } from 'react-router-dom'
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { Route } from 'react-router-dom'
-import { Switch } from 'react-router-dom'
 import SendersContainer from './containers/SendersContainer'
 import ReceiversContainer from './containers/ReceiversContainer'
-//import ReceiversContainer from './containers/ReceiversContainer'
-import Navbar from 'react-bootstrap/Navbar'
-import Nav from 'react-bootstrap/Nav'
+import AboutContainer from './containers/AboutContainer'
 import Container from 'react-bootstrap/Container';
 
 import "antd/dist/antd.css";
@@ -24,11 +21,7 @@ import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants"
 
 import logo from './logo.svg';
 
-const { Content } = PageHeader;
-
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
-
-const style = { padding: '8px 0' };
 
 function App() {
     const mainnetProvider = mainnetInfura
@@ -85,6 +78,9 @@ function App() {
                                     <Col>
                                         <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
                                     </Col>
+                                    <Col>
+                                        <NavLink to="/about" activeClassName="selected">About</NavLink>
+                                    </Col>
                                 </Row>
                             }
                             extra={[
@@ -107,6 +103,7 @@ function App() {
                     </Container>
                     <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
                     <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
+                    <Route path="/about" component={() => <AboutContainer />} />
                 </Router>
         </div>
     );
