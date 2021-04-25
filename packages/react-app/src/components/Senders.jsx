@@ -255,7 +255,7 @@ class Senders extends React.Component {
   render() {
     return (
       <div>
-        <h1><small><strong>Send multiple NFTs to many, all at once ✨</strong></small></h1>
+        <h1><small><strong>Send multiple NFTs all at once ✨</strong></small></h1>
         <Jumbotron>
           <h5>
             <strong>Select the protocol or marketplace your NFTs are listed on</strong>
