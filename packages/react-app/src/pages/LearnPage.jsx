@@ -63,76 +63,56 @@ export default function LearnPage() {
           <br />
         </Container>
       </Container>
-      <Container>
+      <footer className="text-center text-lg-start" style={{ textAlign: 'left' }}>
         <br />
         <br />
-        <h1><small><strong>Contact us</strong></small></h1>
-        <br />
-        <h5><strong>Create a wallet</strong></h5>
-        <p>
-          Set up your own permanent crypto wallet to store your NFTs. <a href="https://metamask.io/">Try Metamask</a>.
-        </p>
-        <br />
-        <br />
-        <h5><strong>Get some ETH</strong></h5>
-        <p>
-          Fund your wallet to pay the "gas" fees to transfer assets like NFTs. <a href="https://support.mycrypto.com/general-knowledge/ethereum-blockchain/what-is-gas">Learn about gas on MyCrypto</a>.
-        </p>
-        <br />
-        <br />
-        <h5><strong>Secure your NFTs</strong></h5>
-        <p>
-          Transfer your NFT gifts to your own wallet to keep them safe. <a href="https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-Account">Import your account into Metamask</a>.
-        </p>
-        <br />
-        <br />
-      </Container>
-      <footer className="bg-light text-center text-lg-start" style={{ textAlign: 'left' }}>
         <div className="container p-4">
           <Row>
-            <div className="col-lg-6 col-md-12 mb-4 mb-md-0" style={{ color: colors.PURPLE, textAlign: 'left' }}>
-              <h5 className="text-uppercase" style={{ color: colors.PURPLE }}>About</h5>
+            <div className="col-lg-6 col-md-12 mb-4 mb-md-0" style={{ textAlign: 'left' }}>
+              <h5 className="text-uppercase">About</h5>
               <p>
                 gft.art is a platform for airdropping NFTs. Learn more about us by following our social channels.
                 © 2021
-        </p>
+              </p>
             </div>
             <Col lg={3} md={6} className="mb-4 mb-md-0" style={{ textAlign: 'left' }}>
-              <h5 class="text-uppercase" style={{ color: colors.PURPLE }}>Updates</h5>
-              <ul class="list-unstyled mb-0" style={{ color: colors.PURPLE }}>
+              <h5 class="text-uppercase">Updates</h5>
+              <ul class="list-unstyled mb-0">
                 <li>
-                  <a href='https://discord.gg/wCwAnCWjKp' style={{ color: colors.BLUE }}>discord.gg/wCwAnCWjKp</a>
+                  <a href='https://discord.gg/wCwAnCWjKp' style={{ color: colors.YELLOW }}>discord.gg/wCwAnCWjKp</a>
                 </li>
                 <li>
-                  Twitter: <a href='https://twitter.com/gft_art' style={{ color: colors.BLUE }}>@gft_art</a>
+                  Twitter: <a href='https://twitter.com/gft_art' style={{ color: colors.YELLOW }}>@gft_art</a>
                 </li>
                 <li>
-                  Medium: <a href='https://medium.com/@gftart' style={{ color: colors.BLUE }}>@gftart</a>
+                  Medium: <a href='https://medium.com/@gftart' style={{ color: colors.YELLOW }}>@gftart</a>
                 </li>
               </ul>
             </Col>
             <Col lg={3} md={6} className="mb-4 mb-md-0" style={{ textAlign: 'left' }}>
-              <h5 class="text-uppercase" style={{ color: colors.PURPLE }}>Team</h5>
-              <ul class="list-unstyled mb-0" style={{ color: colors.PURPLE }}>
+              <h5 class="text-uppercase">Team</h5>
+              <ul class="list-unstyled mb-0">
                 <li>
-                  <a href="https://linkedin.com/in/sashamack" style={{ color: colors.BLUE }}>Sasha M</a>
+                  <a href="https://linkedin.com/in/sashamack" style={{ color: colors.YELLOW }}>Sasha M</a>
                 </li>
                 <li>
-                  <a href="https://twitter.com/invisLightNet" style={{ color: colors.BLUE }}>@invisLightNet</a>
+                  <a href="https://twitter.com/invisLightNet" style={{ color: colors.YELLOW }}>@invisLightNet</a>
                 </li>
                 <li>
-                  <a href="https://twitter.com/reaalkhalil" style={{ color: colors.BLUE }}>@reaalkhalil</a>
+                  <a href="https://twitter.com/reaalkhalil" style={{ color: colors.YELLOW }}>@reaalkhalil</a>
                 </li>
                 <li>
-                  <a href="https://twitter.com/v_stickykeys" style={{ color: colors.BLUE }}>@v_stickykeys</a>
+                  <a href="https://twitter.com/v_stickykeys" style={{ color: colors.YELLOW }}>@v_stickykeys</a>
                 </li>
                 <li>
-                  <a href="https://twitter.com/roxravago" style={{ color: colors.BLUE }}>@roxravago</a>
+                  <a href="https://twitter.com/roxravago" style={{ color: colors.YELLOW }}>@roxravago</a>
                 </li>
               </ul>
             </Col>
           </Row>
         </div>
+        <br />
+        <br />
       </footer>
     </div>
   )
