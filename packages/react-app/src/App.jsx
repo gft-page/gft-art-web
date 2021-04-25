@@ -1,25 +1,25 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { BrowserRouter as Router } from 'react-router-dom'
 import { NavLink } from 'react-router-dom'
 import { Route } from 'react-router-dom'
 import SendersContainer from './containers/SendersContainer'
 import ReceiversContainer from './containers/ReceiversContainer'
-import AboutContainer from './containers/AboutContainer'
-import Container from 'react-bootstrap/Container';
+import LearnContainer from './containers/LearnContainer'
+import Container from 'react-bootstrap/Container'
 
-import "antd/dist/antd.css";
-import { Row, Col, Image, PageHeader } from "antd";
+import { Row, Col, Image, PageHeader } from 'antd'
 
-import { useUserAddress } from "eth-hooks";
-import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from "./components";
-import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from "./hooks";
-import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers";
-import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
-import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from "./constants";
+import { useUserAddress } from 'eth-hooks'
+import { Header, Account, Faucet, Ramp, Contract, GasGauge, ThemeSwitch } from './components'
+import { useExchangePrice, useGasPrice, useUserProvider, useContractLoader, useContractReader, useEventListener, useBalance, useExternalContractLoader } from './hooks'
+import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
+import Web3Modal from 'web3modal'
+import WalletConnectProvider from '@walletconnect/web3-provider'
+import { INFURA_ID, DAI_ADDRESS, DAI_ABI, NETWORK, NETWORKS } from './constants'
 
-import logo from './logo.svg';
+import 'antd/dist/antd.css'
+import logo from './logo.svg'
 
 const mainnetInfura = new JsonRpcProvider("https://mainnet.infura.io/v3/" + INFURA_ID)
 
@@ -79,7 +79,7 @@ function App() {
                                         <NavLink to="/redeem" activeClassName="selected">Redeem</NavLink>
                                     </Col>
                                     <Col>
-                                        <NavLink to="/about" activeClassName="selected">About</NavLink>
+                                        <NavLink to="/learn" activeClassName="selected">Learn</NavLink>
                                     </Col>
                                 </Row>
                             }
@@ -103,7 +103,7 @@ function App() {
                     </Container>
                     <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
                     <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
-                    <Route path="/about" component={() => <AboutContainer />} />
+                    <Route path="/learn" component={() => <LearnContainer />} />
                 </Router>
         </div>
     );
