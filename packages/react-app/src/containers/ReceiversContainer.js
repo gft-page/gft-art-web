@@ -8,11 +8,6 @@ import Container from 'react-bootstrap/Container';
 import * as colors from '../themes/dark';
 
 class ReceiversContainer extends React.Component {
-
-    //componentDidMount() {
-    //    this.props.fetchAccounts()
-    //}
-
     render() {
         return (
             <div>
@@ -32,11 +27,7 @@ class ReceiversContainer extends React.Component {
 }
 
 const mapStateToProps = state => {
-    return {
-        //loading: state.loading,
-        //accounts: state.accounts
-    }
+    return {}
 }
 
-//export default connect(mapStateToProps, {fetchAccounts})(AccountsContainer)
 export default connect(mapStateToProps,)(ReceiversContainer)
