@@ -6,6 +6,7 @@ import { Route } from 'react-router-dom'
 import SendersContainer from './containers/SendersContainer'
 import ReceiversContainer from './containers/ReceiversContainer'
 import AboutContainer from './containers/AboutContainer'
+import MintContainer from './containers/MintContainer'
 import Container from 'react-bootstrap/Container';
 
 import "antd/dist/antd.css";
@@ -73,6 +74,9 @@ function App() {
                             subTitle={
                                 <Row gutter={16}>
                                     <Col>
+                                        <NavLink to="/mint" activeClassName="selected">Mint</NavLink>
+                                    </Col>
+                                    <Col>
                                         <NavLink exact to="/" activeClassName="selected">Send</NavLink>
                                     </Col>
                                     <Col>
@@ -102,6 +106,7 @@ function App() {
 
                     </Container>
                     <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
+                    <Route path="/mint" component={() => <MintContainer network={network} />} />
                     <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
                     <Route path="/about" component={() => <AboutContainer />} />
                 </Router>
