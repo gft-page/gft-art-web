@@ -71,10 +71,27 @@ function getRecipientParams(data) {
   }
 
   if (data.twitter) {
-    // TODO (#20): Order needs to match! Change this so we can guarantee the order is correct.
-    const burners = getBurnersForTwitterUsernames(data.twitter, data.tokenContractAddress)
-    recipientAddresses = recipientAddresses.concat(burners)
-    recipientAmounts = recipientAmounts.concat(data.twitter.map(recipient => recipient.amount))
+    const burnerData = getBurnersForTwitterUsernames(data.twitter, data.tokenContractAddress)
+    /*
+
+    twitter: [{
+      username,
+      amount,
+      tokenId
+    }]
+
+    burnerMap: {
+      username: address
+    }
+
+    */
+    Object.keys(burnerData).forEach((username) => {
+      const recipient = data.twitter.filter(recipient => recipient.username == username)
+      const address = burnerData[username]
+      const amount = recipient[0].amount
+      recipientAddresses.push(address)
+      recipientAmounts.push(amount)
+    })
   }
 
   return { recipientAddresses, recipientAmounts }
