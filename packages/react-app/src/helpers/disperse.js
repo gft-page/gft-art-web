@@ -56,12 +56,12 @@ export async function disperseToken(provider, tokenContractAddress, disperseReci
   const signer = await provider.getSigner()
   const disperseContract = buildDisperseContract(network, signer)
 
-  const { recipientAddresses, recipientAmounts } = getRecipientParams(disperseRecipientData)
+  const { recipientAddresses, recipientAmounts } = await getRecipientParams(disperseRecipientData)
 
   await disperseContract.disperseTokenSimple(tokenContractAddress, recipientAddresses, recipientAmounts)
 }
 
-function getRecipientParams(data) {
+async function getRecipientParams(data) {
   let recipientAddresses = []
   let recipientAmounts = []
 
@@ -71,7 +71,7 @@ function getRecipientParams(data) {
   }
 
   if (data.twitter) {
-    const burnerData = getBurnersForTwitterUsernames(data.twitter, data.tokenContractAddress)
+    const burnerData = await getBurnersForTwitterUsernames(data.twitter, data.tokenContractAddress)
     /*
 
     twitter: [{
@@ -106,7 +106,7 @@ function getRecipientParams(data) {
 function buildDisperseContract(network, signer) {
   const contractAddress = DISPERSE_CONTRACT_ADDRESS[network]
   if (!contractAddress) throw new Error(`NET: No address for network ${network}`)
-  return buildContract(address, DISPERSE_CONTRACT_ABI, signer)
+  return buildContract(contractAddress, DISPERSE_CONTRACT_ABI, signer)
 }
 
 /**

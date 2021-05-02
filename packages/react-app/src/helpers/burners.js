@@ -13,7 +13,7 @@ disperseRecipientData = {
  * @param {string} nftContractAddress
  * @returns Map of twitter usernames to burner addresses
  */
-export function getBurnersForTwitterUsernames(twitterRecipientData, tokenContractAddress) {
+export async function getBurnersForTwitterUsernames(twitterRecipientData, tokenContractAddress) {
   const twitterBurners = {}
 
   const twitterUsernames = twitterRecipientData.map(user => user.username)
