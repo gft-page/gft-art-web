@@ -45,17 +45,20 @@ export async function approveTransfer(provider, tokenContractAddress, amount) {
   await tokenContract.approve(disperseContractAddress, amount)
 }
 
+/**
+ * Sends tokens to recipients
+ * @param {object} provider
+ * @param {string} tokenContractAddress
+ * @param {object} disperseRecipientData
+ */
 export async function disperseToken(provider, tokenContractAddress, disperseRecipientData) {
   const network = await getNetwork(provider)
   const signer = await provider.getSigner()
-
-  const contractAddress = DISPERSE_CONTRACT_ADDRESS[network]
-  if (!contractAddress) throw new Error(`NET: No address for network ${network}`)
-  const contract = new ethers.Contract(contractAddress, DISPERSE_CONTRACT_ABI, signer)
+  const disperseContract = buildDisperseContract(network, signer)
 
   const { recipientAddresses, recipientAmounts } = getRecipientParams(disperseRecipientData)
 
-  await contract.disperseTokenSimple(tokenContractAddress, recipientAddresses, recipientAmounts)
+  await disperseContract.disperseTokenSimple(tokenContractAddress, recipientAddresses, recipientAmounts)
 }
 
 function getRecipientParams(data) {
