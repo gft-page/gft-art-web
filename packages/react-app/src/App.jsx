@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { BrowserRouter as Router, NavLink, Route } from 'react-router-dom'
+import Erc20Container from './containers/Erc20Container'
 import SendersContainer from './containers/SendersContainer'
 import ReceiversContainer from './containers/ReceiversContainer'
 import LearnContainer from './containers/LearnContainer'
@@ -102,6 +103,7 @@ function App() {
                     <Route exact path="/" component={() => <SendersContainer web3Modal={web3Modal} network={network} />} />
                     <Route path="/redeem" component={() => <ReceiversContainer web3Modal={web3Modal} network={network} />} />
                     <Route path="/learn" component={() => <LearnContainer />} />
+                    <Route path="/erc20" component={() => <Erc20Container web3Modal={web3Modal} network={network} />} />
                 </Router>
         </div>
     );

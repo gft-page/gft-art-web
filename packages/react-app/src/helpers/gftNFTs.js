@@ -1,5 +1,5 @@
-import { ethers } from "ethers";
-import { get } from "../backend/api";
+import { ethers } from "ethers"
+import { get } from "../backend/api"
 import { default as Transactor } from './Transactor'
 
 import { sendGFT } from '../backend/gft'

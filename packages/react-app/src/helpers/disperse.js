@@ -42,7 +42,9 @@ export async function approveTransfer(provider, tokenContractAddress, amount) {
   const disperseContractAddress = DISPERSE_CONTRACT_ADDRESS[network]
 
   const tokenContract = new ethers.Contract(tokenContractAddress, ERC20_CONTRACT_ABI, signer)
-  await tokenContract.approve(disperseContractAddress, amount)
+  const tx = await tokenContract.approve(disperseContractAddress, amount)
+  console.log(tx)
+  await tx.wait()
 }
 
 /**
