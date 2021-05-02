@@ -24,6 +24,7 @@ export function getBurnersForTwitterUsernames(twitterRecipientData, tokenContrac
     throw new Error(`BUR: Failed to get burners. ${res.error}`)
   }
   res.data.addresses.forEach(address => {
+    // TODO (#20): Order needs to match! Change this so we can guarantee the order is correct.
     twitterBurners[address.username] = address.address
   })
 
