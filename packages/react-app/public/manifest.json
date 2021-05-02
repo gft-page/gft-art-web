@@ -1,20 +1,20 @@
 {
-  "short_name": "🏗 Scaffold-Eth App",
+  "short_name": "gft.art",
   "start_url": ".",
-  "name": "🏗 Scaffold-Eth App",
+  "name": "gft.art",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "gftart-logo.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "gftart-logo-small.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "gftart-logo.png",
       "type": "image/png",
       "sizes": "512x512"
     }

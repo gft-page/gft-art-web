@@ -2,7 +2,7 @@ import React from 'react'
 import { Container, Col, Jumbotron, Row } from 'react-bootstrap'
 
 import * as colors from '../themes/dark'
-import learnHeader from '../images/learn-header.png'
+import learnHeader from '../images/nft-basics.webp'
 
 export default function LearnPage() {
 
@@ -11,7 +11,7 @@ export default function LearnPage() {
       <Container fluid style={{ textAlign: 'center', background: colors.LIGHT_PINK, paddingTop: 40, paddingBottom: 40 }}>
         <Container>
           <h1 style={{ color: colors.PURPLE }}><small>Redeeming your NFTs with a secure crypto wallet</small></h1>
-          <img src={learnHeader} />
+          <img src={learnHeader} alt="NFT basics" />
         </Container>
       </Container>
       <Container>
