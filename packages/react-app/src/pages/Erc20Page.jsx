@@ -20,14 +20,11 @@ export default function Erc20Page(props) {
             name="customMarketplace"
           >
             <Input
-              ref={props.inputRef}
+              loading={props.isLoadingTokenInput}
               name="customMarketplace"
               placeholder="0x12345...."
               style={{ minWidth: "375px", maxWidth: "400px" }}
               onChange={props.handleTokenInput}
-              onKeyPress={props.handleTokenInput}
-              onClick={props.handleTokenInput}
-              onBlur={props.handleTokenInput}
             />
           </Form.Item>
           <h5>
@@ -41,18 +38,21 @@ export default function Erc20Page(props) {
                 `0xb44f91949174fb47A7059A476A882447Fc6A08dD,1\n0xE2A5db9E741Cdf93e9C2eEA6e4247cA58Bf62024,1`
               }
             />
+            <div>Total amount: {props.totalAmount}</div>
           </Form.Item>
           {!props.isApproved && !props.isAlreadyApproved && props.showApprovedButton ?
             <Button loading={props.isLoadingApprove} type="primary" onClick={props.handleApprove}>
               Approve Transfer
-                </Button>
+            </Button>
             : null}
           {props.isAlreadyApproved && <div>Already approved!</div>}
-          {props.isApproved && props.showSendButton ?
-            <Button type="primary" onClick={props.handleSend}>
+          {props.approvedTxHash && <div><a target='_blank' href={`${props.etherscanHost}/${props.approvedTxHash}`}>{props.approvedTxHash}</a></div>}
+          {!props.isSent && props.isApproved && props.showSendButton ?
+            <Button loading={props.isLoadingSend} type="primary" onClick={props.handleSend}>
               Send
-                </Button>
+            </Button>
             : null}
+          {props.sentTxHash && <div><a target='_blank' href={`${props.etherscanHost}/${props.sentTxHash}`}>{props.sentTxHash}</a></div>}
         </Form>
       </Jumbotron>
     </div>

@@ -14,7 +14,20 @@ export const DISPERSE_CONTRACT_ABI = [{"constant":false,"inputs":[{"name":"token
  *
  * @param {object} provider
  * @param {string} tokenContractAddress
- * @param {string} amount Gets converted to BigNumber
+ * @returns {Promise<string>}
+ */
+export async function getDecimals(provider, tokenContractAddress) {
+  const signer = provider.getSigner()
+  const tokenContract = buildContract(tokenContractAddress, ERC20_CONTRACT_ABI, signer)
+  const decimals = await tokenContract.decimals()
+  return decimals.toString()
+}
+
+/**
+ *
+ * @param {object} provider
+ * @param {string} tokenContractAddress
+ * @param {BigNumber} amount Gets converted to BigNumber
  * @returns True if the Disperse contract is approved to send the amount of token on behalf of the provider signer
  */
 export async function checkApproved(provider, tokenContractAddress, amount) {
@@ -26,14 +39,14 @@ export async function checkApproved(provider, tokenContractAddress, amount) {
   const tokenContract = buildContract(tokenContractAddress, ERC20_CONTRACT_ABI, signer)
 
   const allowedAmount = await tokenContract.allowance(signerAddress, disperseContract.address)
-  return BigNumber.from(amount).lte(BigNumber.from(allowedAmount))
+  return amount.lte(allowedAmount)
 }
 
 /**
  * Approves Disperse contract to send amount of token on behalf of provider signer
  * @param {object} provider
  * @param {string} tokenContractAddress
- * @param {string} amount Total amount for the airdrop
+ * @param {BigNumber} amount Total amount for the airdrop
  */
 export async function approveTransfer(provider, tokenContractAddress, amount) {
   const network = await getNetwork(provider)
@@ -45,6 +58,7 @@ export async function approveTransfer(provider, tokenContractAddress, amount) {
   const tx = await tokenContract.approve(disperseContractAddress, amount)
   console.log(tx)
   await tx.wait()
+  return tx.hash
 }
 
 /**
@@ -60,33 +74,25 @@ export async function disperseToken(provider, tokenContractAddress, disperseReci
 
   const { recipientAddresses, recipientAmounts } = await getRecipientParams(disperseRecipientData)
 
-  await disperseContract.disperseTokenSimple(tokenContractAddress, recipientAddresses, recipientAmounts)
+  const tx = await disperseContract.disperseTokenSimple(tokenContractAddress, recipientAddresses, recipientAmounts)
+  console.log(tx)
+  await tx.wait()
+  return tx.hash
 }
 
 async function getRecipientParams(data) {
   let recipientAddresses = []
   let recipientAmounts = []
 
-  if (data.direct) {
-    recipientAddresses = recipientAddresses.concat(data.direct.map(recipient => recipient.address))
-    recipientAmounts = recipientAmounts.concat(data.direct.map(recipient => recipient.amount))
+  if (data.direct.length > 0) {
+    data.direct.forEach((recipient) => {
+      recipientAddresses.push(recipient.address)
+      recipientAmounts.push(recipient.amount)
+    })
   }
 
-  if (data.twitter) {
+  if (data.twitter.length > 0) {
     const burnerData = await getBurnersForTwitterUsernames(data.twitter, data.tokenContractAddress)
-    /*
-
-    twitter: [{
-      username,
-      amount,
-      tokenId
-    }]
-
-    burnerMap: {
-      username: address
-    }
-
-    */
     Object.keys(burnerData).forEach((username) => {
       const recipient = data.twitter.filter(recipient => recipient.username == username)
       const address = burnerData[username]
